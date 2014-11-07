@@ -1,0 +1,4 @@
+site_name: Enjoin ORM
+pages:
+- [index.md, Installation]
+theme: readthedocs
