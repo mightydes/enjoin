@@ -6,7 +6,6 @@ use DB, Config, Exception, Cache;
 use Doctrine\Common\Inflector\Inflector;
 
 // TODO: `bulkCreate` second parameter (an array) to let it know which fields you want to build explicitly.
-// TODO: `update` method.
 
 class Model
 {

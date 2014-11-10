@@ -1,4 +1,6 @@
 site_name: Enjoin ORM
+repo_url: https://github.com/mightydes/enjoin
 pages:
-- [index.md, Installation]
+- ['index.md', 'Installation']
+- ['models/definition.md', 'Models', 'Definition']
 theme: readthedocs
