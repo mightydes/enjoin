@@ -22,7 +22,7 @@ class Model
 
     /**
      * Model description object.
-     * @var \Models\BaseModel
+     * @var BaseModel
      */
     public $Context;
 
@@ -39,7 +39,7 @@ class Model
     }
 
     /**
-     * @param \Models\BaseModel $Context
+     * @param BaseModel $Context
      */
     public function __construct($Context)
     {
@@ -280,6 +280,20 @@ class Model
 
         $this->flushCache();
         return $this->connect()->insert($collections);
+    }
+
+    /**
+     * @param array $where
+     * @param array $updateCollection
+     * @return int
+     */
+    public function update(array $where, array $updateCollection)
+    {
+        $this->flushCache();
+
+        $Finders = new Finders($this->connect(), $this);
+        $Finders->handle(['where' => $where]);
+        return $Finders->DB->update($updateCollection);
     }
 
     /**
