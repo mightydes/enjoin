@@ -306,6 +306,11 @@ class Model
 
         $this->flushCache();
 
+        if (!$where && !$options) {
+            # Delete all records
+            return $this->connect()->delete();
+        }
+
         if ($where) {
             $Finders = new Finders($this->connect(), $this);
             $Finders->handle(['where' => $where]);

@@ -1,8 +1,0 @@
-site_name: Enjoin ORM
-site_description: PHP Active Record ORM designed for Laravel
-
-repo_url: https://github.com/mightydes/enjoin
-
-pages:
-- ['index.md', 'Installation']
-- ['models/definition.md', 'Models', 'Definition']
