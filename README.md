@@ -15,4 +15,5 @@ Unfortunately, there are some major disadvantages in Eloquent:
 * Unable to order by eager loaded records. 
 
 Enjoin relies on Laravel components, such as `Database` and `Cache`. 
-Yau can find documentation [here](http://enjoin.readthedocs.org/en/latest/).
+
+Check for [documentation](http://enjoin.readthedocs.org/en/latest/).
