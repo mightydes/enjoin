@@ -120,15 +120,15 @@ class Orders
     private function isArrayNotation($input)
     {
         if (is_array($input)) {
-            if (count($input) === 2) {
-                $ok = true;
-                foreach ($input as $v) {
-                    if (!is_string($v)) {
-                        $ok = false;
-                        break;
-                    }
+            $len = count($input);
+            if ($len === 1 && is_string($input[0])) {
+                return true;
+            } elseif ($len === 2 && is_string($input[0]) && is_string($input[1])) {
+                $r = [];
+                preg_match("/[dD][eE][sS][cC]|[aA][sS][cC]/", $input[1], $r);
+                if ($r) {
+                    return true;
                 }
-                return $ok;
             }
         }
         return false;
