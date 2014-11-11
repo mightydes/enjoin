@@ -106,8 +106,6 @@ class Finders
      */
     private function resolveJoin()
     {
-        // TODO: handle `required` option.
-
         $this->Handler->walkTree(function ($itemB, $path) {
             $len = count($path);
             if ($len > 1) {
@@ -131,6 +129,10 @@ class Finders
                     $onB = $as . '.' . $itemB['rel']['foreign_key'];
                 }
 
+                # Handle `required` option
+                $joinMethod = array_key_exists('required', $itemB) && $itemB['required']
+                    ? 'join'
+                    : 'leftJoin';
                 # Handle `where`
                 if (array_key_exists('where', $itemB)) {
                     /**
@@ -143,9 +145,9 @@ class Finders
                         };
                         $this->resolveWhere($itemB['where'], $itemB, $getContext);
                     };
-                    $this->DB = $this->DB->leftJoin($table . " as $as", $closure);
+                    $this->DB = call_user_func([$this->DB, $joinMethod], $table . " as $as", $closure);
                 } else {
-                    $this->DB = $this->DB->leftJoin($table . " as $as", $onA, '=', $onB);
+                    $this->DB = call_user_func([$this->DB, $joinMethod], $table . " as $as", $onA, '=', $onB);
                 }
             }
         });
