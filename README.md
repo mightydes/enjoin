@@ -34,7 +34,7 @@ Add `mightydes\enjoin` as a requirement to composer.json:
 ```json
 {
     "require": {
-        "mightydes\enjoin": "0.*"
+        "mightydes/enjoin": "dev-master@dev"
     }
 }
 ```
@@ -69,12 +69,12 @@ use Enjoin;
 
 ## Definition
 
-Each Eloquent model should be placed in `app/models` folder and extends `BaseMode`:
+Create `BaseModel.php` in `app/models` directory:
 
 ```php
 <?php
 
-namespace Enjoin;
+namespace Models;
 
 abstract class BaseModel
 {
@@ -115,3 +115,5 @@ abstract class BaseModel
 
 } // end of class
 ```
+
+Each Enjoin model should be placed in `app/models` folder and extends `BaseModel` class.
