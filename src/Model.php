@@ -296,11 +296,11 @@ class Model
     }
 
     /**
-     * @param array|object $where
+     * @param null|array|object $where
      * @param array $options
      * @return int affected rows
      */
-    public function destroy($where, array $options = [])
+    public function destroy($where = null, array $options = [])
     {
         // TODO: handle `$options['truncate']`
 

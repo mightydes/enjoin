@@ -1,7 +1,7 @@
-Enjoin
-======
+Enjoin ORM
+==========
 
-# Introduction
+## Introduction
 
 Enjoin is another PHP ORM (Object Relational Mapping) designed for [Laravel 4](http://laravel.com/) framework
 and inspired by [Sequelize.js](http://sequelizejs.com/) ORM.
@@ -17,18 +17,18 @@ Unfortunately, there are some major disadvantages in Eloquent:
 
 Enjoin relies on Laravel components, such as `Database` and `Cache`. 
 
-# Installation
+## Installation
 
-## Warning
+### Warning
 
 Do not use this package in production because it still in heavy development phase.  
 
-## Requirements
+### Requirements
 
 * PHP 5.4+
 * Laravel 4.2+
 
-## Via composer
+### Via composer
 
 Add `mightydes\enjoin` as a requirement to composer.json:
 ```json
@@ -65,9 +65,9 @@ Now you can access Enjoin in global namespace or in other namespace by adding:
 use Enjoin;
 ```
 
-# Models
+## Models
 
-## Definition
+### Definition
 
 Create `BaseModel.php` in `app/models` directory:
 
