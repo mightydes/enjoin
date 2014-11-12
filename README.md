@@ -69,7 +69,7 @@ use Enjoin;
 
 ### Definition
 
-Create `BaseModel.php` in `app/models` directory:
+First of all, create `BaseModel.php` in `app/models` directory:
 
 ```php
 <?php
@@ -117,3 +117,46 @@ abstract class BaseModel
 ```
 
 Each Enjoin model should be placed in `app/models` folder and extends `BaseModel` class.
+
+```php
+<?php
+
+namespace Models;
+
+use Enjoin;
+
+class Project extends BaseModel
+{
+
+    public function getAttributes()
+    {
+        return [
+            'id' => ['type' => Enjoin::Integer()],
+            'title' => ['type' => Enjoin::String()],
+            'description' => ['type' => Enjoin::Text()]
+         ];
+    }
+
+} // end of class
+```
+
+You can place model file in sub-folder, in this case you can access model like this:
+
+```php
+// app/models/alpha/Users.php
+Enjoin::get('alpha.Users');
+```
+
+### Data types
+
+Enjoin currently supports the following data types:
+
+```
+Enjoin.Integer();
+Enjoin.Boolean();
+Enjoin.String();
+Enjoin.Text();
+Enjoin.Float();
+Enjoin.Date();
+Enjoin.Enum();
+```
