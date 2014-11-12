@@ -15,9 +15,16 @@ Unfortunately, there are some major disadvantages in Eloquent:
 * Unable to built in validation for model.
 * Unable to order by eager loaded records. 
 
-Enjoin relies on Laravel components, such as `Database` and `Cache`. 
+Enjoin relies on Laravel components, such as `Database` and `Cache`.
 
-## Installation
+## Documentation
+
+* [Installation](#Installation)
+* [Models](#Models)
+  * [Definition](#Definition)
+  * [Data types](#DataTypes)
+
+## <a name="Installation"></a>Installation
 
 ### Warning
 
@@ -65,14 +72,15 @@ Now you can access Enjoin in global namespace or in other namespace by adding:
 use Enjoin;
 ```
 
-## Models
+## <a name="Models"></a>Models
 
-### Definition
+### <a name="Definition"></a>Definition
 
 First of all, create `BaseModel.php` in `app/models` directory:
 
 ```php
 <?php
+// app/models/BaseModel.php
 
 namespace Models;
 
@@ -120,6 +128,7 @@ Each Enjoin model should be placed in `app/models` folder and extends `BaseModel
 
 ```php
 <?php
+// app/models/Project.php
 
 namespace Models;
 
@@ -147,16 +156,16 @@ You can place model file in sub-folder, in this case you can access model like t
 Enjoin::get('alpha.Users');
 ```
 
-### Data types
+### <a name="DataTypes"></a>Data types
 
 Enjoin currently supports the following data types:
 
 ```
-Enjoin.Integer();
-Enjoin.Boolean();
-Enjoin.String();
-Enjoin.Text();
-Enjoin.Float();
-Enjoin.Date();
-Enjoin.Enum();
+Enjoin.Integer();   // --> INTEGER
+Enjoin.Boolean();   // --> TINYINT(1) (1 or null)
+Enjoin.String();    // --> VARCHAR
+Enjoin.Text();      // --> TEXT
+Enjoin.Float();     // --> FLOAT
+Enjoin.Date();      // -->DATETIME
+Enjoin.Enum();      // --> ENUM
 ```
