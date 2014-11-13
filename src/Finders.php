@@ -65,7 +65,11 @@ class Finders
                 ->handle($params['order']);
         }
 
-        // TODO: handle `group`
+        # Resolve `group`
+        if (array_key_exists('group', $params)) {
+            $this->DB = (new Groups($this->DB, $this->Invoker))
+                ->handle($params['group']);
+        }
 
         # Resolve `offset`
         if (array_key_exists('offset', $params)) {

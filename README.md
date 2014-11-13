@@ -19,12 +19,12 @@ Enjoin relies on Laravel components, such as `Database` and `Cache`.
 
 ## Documentation
 
-* [Installation](#Installation)
-* [Models](#Models)
-  * [Definition](#Definition)
-  * [Data types](#DataTypes)
+* [Installation](#installation)
+* [Models](#models)
+  * [Definition](#definition)
+  * [Data types](#data-types)
 
-## <a name="Installation"></a>Installation
+## Installation
 
 ### Warning
 
@@ -72,9 +72,9 @@ Now you can access Enjoin in global namespace or in other namespace by adding:
 use Enjoin;
 ```
 
-## <a name="Models"></a>Models
+## Models
 
-### <a name="Definition"></a>Definition
+### Definition
 
 First of all, create `BaseModel.php` in `app/models` directory:
 
@@ -156,11 +156,11 @@ You can place model file in sub-folder, in this case you can access model like t
 Enjoin::get('alpha.Users');
 ```
 
-### <a name="DataTypes"></a>Data types
+### Data types
 
 Enjoin currently supports the following data types:
 
-```
+```php
 Enjoin.Integer();   // --> INTEGER
 Enjoin.Boolean();   // --> TINYINT(1) (1 or null)
 Enjoin.String();    // --> VARCHAR
