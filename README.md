@@ -23,6 +23,7 @@ Enjoin relies on Laravel components, such as `Database` and `Cache`.
 * [Models](#models)
   * [Definition](#definition)
   * [Data types](#data-types)
+  * [Getters and setters](#getters-and-setters)
 
 ## Installation
 
@@ -169,3 +170,44 @@ Enjoin.Float();     // --> FLOAT
 Enjoin.Date();      // -->DATETIME
 Enjoin.Enum();      // --> ENUM
 ```
+
+### Getters and setters
+
+It is possible to define 'object-property' getters and setters functions on your models,
+these can be used both for 'protecting' properties that map to database fields and for defining 'pseudo' properties.
+
+To define getter or setter, add `get` or `set` closure to model field:
+
+```php
+    public function getAttributes()
+    {
+        return [
+        
+            'latlong' => [
+                'type' => Enjoin::String(),
+                'allowNull' => false,
+                'get' => function ($attr, $getValue) {
+                        $latlong = $getValue($attr);
+                        if (is_string($latlong) && strlen($latlong) > 0) {
+                            $latlong = explode(',', $latlong);
+                            if (count($latlong) === 2) {
+                                return array_map('floatval', $latlong);
+                            }
+                        }
+                        return null;
+                    },
+                'set' => function ($attr, $getValue) {
+                        $latlong = $getValue($attr);
+                        if (is_array($latlong)) {
+                            return implode(',', $latlong);
+                        }
+                        return $latlong;
+                    }
+            ],
+
+        ];
+    }
+```
+
+Getter (setter) closure has string `$attr` parameter (table column name),
+and closure `$getValue` parameter, which returns value for given attribute.
