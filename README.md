@@ -24,6 +24,9 @@ Enjoin relies on Laravel components, such as `Database` and `Cache`.
   * [Definition](#definition)
   * [Data types](#data-types)
   * [Getters and setters](#getters-and-setters)
+  * [Validations](#validations)
+  * [Data retrieval / Finders](#data-retrieval-/-finders)
+    * [find](#find)
 
 ## Installation
 
@@ -179,35 +182,95 @@ these can be used both for 'protecting' properties that map to database fields a
 To define getter or setter, add `get` or `set` closure to model field:
 
 ```php
-    public function getAttributes()
-    {
-        return [
-        
-            'latlong' => [
-                'type' => Enjoin::String(),
-                'allowNull' => false,
-                'get' => function ($attr, $getValue) {
-                        $latlong = $getValue($attr);
-                        if (is_string($latlong) && strlen($latlong) > 0) {
-                            $latlong = explode(',', $latlong);
-                            if (count($latlong) === 2) {
-                                return array_map('floatval', $latlong);
-                            }
+public function getAttributes()
+{
+    return [
+    
+        'latlong' => [
+            'type' => Enjoin::String(),
+            'allowNull' => false,
+            'get' => function ($attr, $getValue) {
+                    $latlong = $getValue($attr);
+                    if (is_string($latlong) && strlen($latlong) > 0) {
+                        $latlong = explode(',', $latlong);
+                        if (count($latlong) === 2) {
+                            return array_map('floatval', $latlong);
                         }
-                        return null;
-                    },
-                'set' => function ($attr, $getValue) {
-                        $latlong = $getValue($attr);
-                        if (is_array($latlong)) {
-                            return implode(',', $latlong);
-                        }
-                        return $latlong;
                     }
-            ],
+                    return null;
+                },
+            'set' => function ($attr, $getValue) {
+                    $latlong = $getValue($attr);
+                    if (is_array($latlong)) {
+                        return implode(',', $latlong);
+                    }
+                    return $latlong;
+                }
+        ],
 
-        ];
-    }
+    ];
+}
 ```
 
 Getter (setter) closure has string `$attr` parameter (table column name),
 and closure `$getValue` parameter, which returns value for given attribute.
+
+### Validations
+
+You can specify validation on model field.
+Validation will be called when executing the `build()` or `create()` functions.
+For example:
+
+```php
+public function getAttributes()
+{
+    return [
+    
+        'name' => [
+            'type' => Enjoin::String(),
+            'allowNull' => false,
+            'validate' => 'between:1,255'
+        ],
+
+    ];
+}
+```
+
+On validation fail error would be dropped.
+For mor information about available methods and notations
+look at corresponded [Laravel section](http://laravel.com/docs/4.2/validation#available-validation-rules).
+
+### Data retrieval / Finders
+
+Finder methods are designed to get data from the database.
+The returned data is an active record object.
+Take a look at available model finders:
+
+#### find
+
+Search for one specific element in the database:
+
+```php
+
+// search for known ids
+$project = Enjoin::get('Project')->find(123);
+// $project will be an instance of Record and stores the content of the table entry
+// with id 123. if such an entry is not defined you will get null
+ 
+// search for attributes
+$project = Enjoin::get('Project')->find([
+    'where' => ['title' => 'aProject']
+]);
+// $project will be the first entry of the Projects table with the title 'aProject' || null
+ 
+// select some attributes
+$project = Enjoin::get('Project')->find([
+    'where' => ['title' => 'aProject'],
+    'attributes' => ['id', 'name']
+]);
+// $project will be the first entry of the Projects table with the title 'aProject' || null
+// picked only 'id' and 'name' columns
+
+```
+
+*TODO: attribute renaming*
