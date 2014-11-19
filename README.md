@@ -25,8 +25,11 @@ Enjoin relies on Laravel components, such as `Database` and `Cache`.
   * [Data types](#data-types)
   * [Getters and setters](#getters-and-setters)
   * [Validations](#validations)
-  * [Data retrieval / Finders](#data-retrieval-/-finders)
+  * [Data retrieval / Finders](#data-retrieval--finders)
     * [find](#find)
+    * [findOrCreate](#findorcreate)
+    * [findAndCountAll](#findandcountall)
+    * [findAll](#findall)
 
 ## Installation
 
@@ -274,3 +277,85 @@ $project = Enjoin::get('Project')->find([
 ```
 
 *TODO: attribute renaming*
+
+#### findOrCreate
+
+Search for a specific element or create it if not available.
+The method `findOrCreate` can be used to check if a certain element is already existing in the database.
+If that is the case the method will result in a respective instance.
+If the element does not yet exist, it will be created.
+
+Let's assume we have an empty database with a `User` model which has a `username` and a `job`:
+
+```php
+$user = Enjoin::get('User')
+    ->findOrCreate([ 'username' => 'Bob', 'job' => 'Technical Lead JavaScript' ]);
+```
+
+The code created a new instance.
+
+So when we already have an instance,
+
+```php
+Enjoin::get('User')->create([ 'username' => 'Alice', 'job' => 'Ultramarine' ]);
+$user = Enjoin::get('User')
+    ->findOrCreate([ 'username' => 'Alice', 'job' => 'Ultramarine' ]);
+```
+
+the existing entry will not be changed. See the `job` of the second user, and the fact that created was false.
+
+#### findAndCountAll
+
+Search for multiple elements in the database, returns both data and total count.
+
+This is a convenience method that combines `findAll()` and `count()` (see below),
+this is useful when dealing with queries related to pagination where you want to retrieve data
+with a `limit` and `offset` but also need to know the total number of records that match the query.
+
+The success handler will always receive an object with two properties:
+
+* `count` - an integer, total number records (matching the where clause).
+* `rows` - an array of objects, the records (matching the where clause) within the limit/offset range.
+
+```php
+$r = Enjoin::get('Project')->findAndCountAll([
+    'where' => [ 'title' => ['like' => '%foo%'] ],
+    'offset' => 10,
+    'limit' => 2
+]);
+```
+The options list that you pass to `findAndCountAll()` is the same as for `findAll()` (described below).
+
+#### findAll
+
+Search for multiple elements in the database:
+
+```php
+// find multiple entries
+$projects = Enjoin::get('Project')->findAll();
+// $projects will be an array of all Project instances
+
+// search for specific attributes - hash usage
+$projects = Enjoin::get('Project')->findAll([ 'where' => [ 'name' => 'A Project' ] ]);
+// $projects will be an array of Project instances with the specified name
+
+// search within a specific range
+$projects = Enjoin::get('Project')->findAll([ 'where' => ['id' => [1, 2, 3]] ]);
+// projects will be an array of Projects having the id 1, 2 or 3
+// this is actually doing an `IN` query
+
+$projects = Enjoin::get('Project')->findAll([
+    'where' => [
+        'id' => [
+            'gt' => 6,              // id > 6
+            'gte' => 6,             // id >= 6
+            'lt' => 10,             // id < 10
+            'lte' => 10,            // id <= 10
+            'ne' => 20,             // id != 20
+            'between' => [6, 10],   // BETWEEN 6 AND 10
+            'nbetween' => [6, 10],  // NOT BETWEEN 11 AND 15
+            'like' => '%1%',        // LIKE '%1%'
+        ]
+    ]
+]);
+```
