@@ -30,6 +30,13 @@ Enjoin relies on Laravel components, such as `Database` and `Cache`.
     * [findOrCreate](#findorcreate)
     * [findAndCountAll](#findandcountall)
     * [findAll](#findall)
+    * [Complex filtering / OR queries](#complex-filtering--or-queries)
+    * [Manipulating the dataset with limit, offset, order and group](#manipulating-the-dataset-with-limit-offset-order-and-group)
+    * [Raw queries](#raw-queries)
+    * [*TODO count*](#count)
+    * [*TODO max*](#max)
+    * [*TODO min*](#min)
+    * [*TODO sum*](#sum)
 
 ## Installation
 
@@ -359,3 +366,105 @@ $projects = Enjoin::get('Project')->findAll([
     ]
 ]);
 ```
+
+*TODO: between, nbetween*
+
+#### Complex filtering / OR queries
+
+It is possible to do complex where queries with multiple levels of nested `AND` and `OR` conditions.
+In order to do that you can use `Enjoin::sqlOr` and `Enjoin::sqlAnd` and pass an arbitrary amount of arguments to it.
+Every argument will get transformed into a proper SQL condition and gets joined with the either `AND` or `OR`.
+
+```php
+Enjoin::get('Project')->find([
+    'where' => Enjoin::sqlAnd(
+        ['name' => 'a project'],
+        Enjoin::sqlOr(
+            ['id' => [1, 2, 3]],
+            ['id' => ['lt' => 10]]
+        )
+    )
+]);
+```
+
+This code will generate the following query:
+
+```sql
+SELECT *
+FROM `Projects`
+WHERE (
+  `Projects`.`name`='a project'
+   AND (`Projects`.`id` IN (1,2,3) OR `Projects`.`id` < 10)
+)
+LIMIT 1;
+```
+
+Notice, that instead of `Enjoin::sqlAnd` you can also use a plain array which will be treated as `Enjoin::sqlAnd`
+if it contains objects or hashes or other complex data types.
+
+#### Manipulating the dataset with limit, offset, order and group
+
+To get more relevant data, you can use limit, offset, order and grouping:
+
+```php
+// limit the results of the query
+Enjoin::get('Project')->findAll([ 'limit' => 10 ]);
+
+// step over the first 10 elements
+Enjoin::get('Project')->findAll([ 'offset' => 10 ]);
+
+// step over the first 10 elements, and take 2
+Enjoin::get('Project')->findAll([ 'offset' => 10, 'limit' => 2 ]);
+```
+
+The syntax for grouping and ordering are equal, so below it is only explained with a single example for group,
+and the rest for order. Everything you see below can also be done for group:
+
+```php
+Enjoin::get('Project')->findAll([ 'order' => 'title DESC' ]);
+// yields ORDER BY title DESC
+ 
+Enjoin::get('Project')->findAll([ 'group' => 'name' ]);
+// yields GROUP BY name
+```
+
+Notice how in the two examples above, the string provided is inserted verbatim into the query,
+i.e. column names are not escaped. If you want to escape column names, you should provide an array of arguments,
+even though you only want to order / group by a single column:
+
+```php
+Enjoin::get('Foo')->find([
+    'order' => [
+        'name',
+        // will return `name`
+        
+        'username DESC',
+        // will return `username DESC` -- i.e. don't do it!
+        
+        ['username', 'DESC'],
+        // will return `username` DESC
+    ]
+]);
+```
+
+*TODO: aggregate methods*
+
+#### Raw queries
+
+Supported by Laravel Database component, [see](http://laravel.com/docs/4.2/database).
+
+#### count
+
+*TODO: Count the occurrences of elements in the database*
+
+#### max
+
+*TODO: Get the greatest value of a specific attribute within a specific table*
+
+#### min
+
+*TODO: Get the least value of a specific attribute within a specific table*
+
+#### sum
+
+*TODO: Sum the value of specific attributes*
