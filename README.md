@@ -37,6 +37,9 @@ Enjoin relies on Laravel components, such as `Database` and `Cache`.
     * [*TODO max*](#max)
     * [*TODO min*](#min)
     * [*TODO sum*](#sum)
+  * [Eager loading](#eager-loading)
+  * [Ordering Eager Loaded Associations](#ordering-eager-loaded-associations)
+  * [Nested eager loading](#nested-eager-loading)
 
 ## Installation
 
@@ -468,3 +471,165 @@ Supported by Laravel Database component, [see](http://laravel.com/docs/4.2/datab
 #### sum
 
 *TODO: Sum the value of specific attributes*
+
+### Eager loading
+
+When you are retrieving data from the database there is a fair chance that you also want to get their associations.
+This is possible and is called eager loading. The basic idea behind that, is the use of the attribute
+`include` when you are calling `find` or `findAll`. Lets assume the following setup:
+
+```php
+// app/models/Task.php
+
+public function getRelations()
+{
+    return [
+        Enjoin::belongsTo(Enjoin::get('User'))
+    ];
+}
+
+
+// app/models/User.php
+
+public function getRelations()
+{
+    return [
+        Enjoin::hasMany(Enjoin::get('Task')),
+        Enjoin::hasMany(Enjoin::get('Tool'), ['as' => 'Instruments'])
+    ];
+}
+```
+
+OK. So, first of all, let's load all tasks with their associated user:
+
+```php
+$r = Enjoin::get('Task')->findAll([ 'include' => Enjoin::get('User') ]);
+
+/*
+[{
+    "name": "A Task",
+    "id": 1,
+    "createdAt": "2013-03-20T20:31:40.000Z",
+    "updatedAt": "2013-03-20T20:31:40.000Z",
+    "UserId": 1,
+    "user": {
+        "name": "John Doe",
+        "id": 1,
+        "createdAt": "2013-03-20T20:31:45.000Z",
+        "updatedAt": "2013-03-20T20:31:45.000Z"
+    }
+}]
+*/
+```
+
+Notice that the accessor of the associated data is the name of the model in camel-case with lower-cased first character.
+Also the accessor is singular as the association is one-to-something.
+
+Next thing: Loading of data with many-to-something associations:
+
+```php
+$r = Enjoin::get('User')->findAll([ 'include' => Enjoin::get('Task') ]);
+
+/*
+[{
+    "name": "John Doe",
+    "id": 1,
+    "createdAt": "2013-03-20T20:31:45.000Z",
+    "updatedAt": "2013-03-20T20:31:45.000Z",
+    "tasks": [{
+        "name": "A Task",
+        "id": 1,
+        "createdAt": "2013-03-20T20:31:40.000Z",
+        "updatedAt": "2013-03-20T20:31:40.000Z",
+        "UserId": 1
+    }]
+}]
+*/
+```
+
+Notice that the accessor is plural. This is because the association is many-to-something.
+
+If an association is aliased (using the `as` option), you **must** specify this alias when including the model.
+Notice how the user's `Tool`s are aliased as `Instruments` above.
+In order to get that right you have to specify the model you want to load, as well as the alias:
+
+```php
+$r = Enjoin::get('User')
+    ->findAll([ 'include' => ['model' => Enjoin::get('Tool'), 'as' => 'Instruments'] ]);
+
+/*
+[{
+    "name": "John Doe",
+    "id": 1,
+    "createdAt": "2013-03-20T20:31:45.000Z",
+    "updatedAt": "2013-03-20T20:31:45.000Z",
+    "instruments": [{
+        "name": "Toothpick",
+        "id": 1,
+        "createdAt": null,
+        "updatedAt": null,
+        "UserId": 1
+    }]
+}]
+*/
+```
+
+### Ordering Eager Loaded Associations
+
+In the case of a one-to-many relationship:
+
+```php
+Enjoin::get('Company')->findAll([
+    'include' => Enjoin::get('Division'),
+    'order' => [ Enjoin::get('Division'), 'name' ]
+]);
+Enjoin::get('Company')->findAll([
+    'include' => Enjoin::get('Division'),
+    'order' => [ Enjoin::get('Division'), ['name', 'DESC'] ]
+]);
+Enjoin::get('Company')->findAll([
+    'include' => [ ['model' => Enjoin::get('Division'), 'as' => 'Div'] ],
+    'order' => [ ['model' => Enjoin::get('Division'), 'as' => 'Div'], 'name' ]
+]);
+Enjoin::get('Company')->findAll([
+    'include' => [ ['model' => Enjoin::get('Division'), 'include' => Enjoin::get('Department')] ],
+    'order' => [ Enjoin::get('Division'), Enjoin::get('Department'), 'name' ]
+]);
+```
+
+*TODO: sort by attributes in the `through` table*
+
+### Nested eager loading
+
+```php
+$r = Enjoin::get('User')->findAll([
+    'include' => [
+        ['model' => Enjoin::get('Tool'), 'as' => 'Instruments', 'include' => [
+            ['model' => Enjoin::get('Teacher'), 'include' => [
+                /* etc */
+            ]]
+        ]]
+    ]
+]);
+
+/*
+[{
+    "name": "John Doe",
+    "id": 1,
+    "createdAt": "2013-03-20T20:31:45.000Z",
+    "updatedAt": "2013-03-20T20:31:45.000Z",
+    "instruments": [{ // 1:M and N:M association
+        "name": "Toothpick",
+        "id": 1,
+        "createdAt": null,
+        "updatedAt": null,
+        "UserId": 1,
+        "Teacher": { // 1:1 association
+            "name": "Jimi Hendrix"
+        }
+    }]
+}]
+*/
+```
+
+**Final note**: If you include an object which is not associated, Enjoin will throw an error.
