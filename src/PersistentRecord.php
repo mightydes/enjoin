@@ -32,6 +32,7 @@ class PersistentRecord
             }
         }
 
+        $update = [];
         $skip = [];
 
         # Perform timestamps
@@ -50,7 +51,6 @@ class PersistentRecord
 
         # Perform setters
         $contextAttrs = $Model->Context->getAttributes();
-        $update = [];
         foreach ($attributes as $attr) {
             if (!array_key_exists($attr, $values) || in_array($attr, $skip)) {
                 continue;

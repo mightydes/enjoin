@@ -29,6 +29,7 @@ class NonPersistentRecord
             $attributes = array_keys($values);
         }
 
+        $insert = [];
         $skip = [];
 
         # Perform timestamps
@@ -45,7 +46,6 @@ class NonPersistentRecord
 
         # Perform setters
         $contextAttrs = $Model->Context->getAttributes();
-        $insert = [];
         foreach ($attributes as $attr) {
             if (!array_key_exists($attr, $values) || in_array($attr, $skip)) {
                 continue;
