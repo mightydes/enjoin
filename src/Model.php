@@ -168,19 +168,29 @@ class Model
         ];
         $Finders = new Finders($this->connect(), $this);
 
-        # Count first
-        $Finders->handle($params, ['isCount' => true]);
-        $count = $Finders->DB->count();
-
-        if ($count) {
-            $out['count'] = $count;
+        if (array_key_exists('include', $params)) {
+            # Perform records first
             $Finders->handle($params);
             $rows = $Finders->DB->get();
             if ($rows) {
                 $Records = new Records($Finders->Handler);
                 $out['rows'] = $Records->handleRows($rows);
+                $out['count'] = count($out['rows']);
+            }
+        } else {
+            # Count first
+            $Finders->handle($params, ['isCount' => true]);
+            if ($count = $Finders->DB->count()) {
+                $out['count'] = $count;
+                $Finders->handle($params);
+                $rows = $Finders->DB->get();
+                if ($rows) {
+                    $Records = new Records($Finders->Handler);
+                    $out['rows'] = $Records->handleRows($rows);
+                }
             }
         }
+
         $this->putCache($cache_key, $out);
         return $out;
     }
@@ -197,9 +207,23 @@ class Model
             return $cache;
         }
 
+        $count = 0;
         $Finders = new Finders($this->connect(), $this);
-        $Finders->handle($params, ['isCount' => true]);
-        $count = $Finders->DB->count();
+        if (array_key_exists('include', $params)) {
+            # Perform records, then count
+            $Finders->handle($params);
+            $rows = $Finders->DB->get();
+            if ($rows) {
+                $Records = new Records($Finders->Handler);
+                $count = count($Records->handleRows($rows));
+            }
+        } else {
+            # Perform count as is
+            $Finders = new Finders($this->connect(), $this);
+            $Finders->handle($params, ['isCount' => true]);
+            $count = $Finders->DB->count();
+        }
+
         $this->putCache($cache_key, $count);
         return $count;
     }

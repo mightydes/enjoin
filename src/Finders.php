@@ -23,12 +23,6 @@ class Finders
     public $Handler;
 
     /**
-     * Blacklisted options for `count` handling.
-     * @var array
-     */
-    private $count_omit = ['offset', 'limit', 'order'];
-
-    /**
      * @param $DB
      * @param $Invoker
      */
@@ -45,10 +39,8 @@ class Finders
      */
     public function handle(array $params, array $options = [])
     {
+        # Handle options
         $isCount = array_key_exists('isCount', $options);
-        if ($isCount) {
-            $params = Extras::omit($params, $this->count_omit);
-        }
 
         $this->Handler = new Handler;
 
@@ -74,7 +66,7 @@ class Finders
         $this->resolveJoin();
 
         # Resolve `order`
-        if (array_key_exists('order', $params)) {
+        if (array_key_exists('order', $params) && !$isCount) {
             $this->DB = (new Orders($this->DB, $this->Invoker))
                 ->handle($params['order']);
         }
@@ -86,12 +78,12 @@ class Finders
         }
 
         # Resolve `offset`
-        if (array_key_exists('offset', $params)) {
+        if (array_key_exists('offset', $params) && !$isCount) {
             $this->DB = $this->DB->skip($params['offset']);
         }
 
         # Resolve `limit`
-        if (array_key_exists('limit', $params)) {
+        if (array_key_exists('limit', $params) && !$isCount) {
             $this->DB = $this->DB->take($params['limit']);
         }
     }
