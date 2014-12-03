@@ -14,12 +14,6 @@ class Model
     const CACHE_EXPIRES = 24; // hours
 
     /**
-     * Blacklisted options for `count` handling.
-     * @var array
-     */
-    private $count_omit = ['offset', 'limit', 'order'];
-
-    /**
      * Model description object.
      * @var BaseModel
      */
@@ -175,7 +169,7 @@ class Model
         $Finders = new Finders($this->connect(), $this);
 
         # Count first
-        $Finders->handle(Extras::omit($params, $this->count_omit));
+        $Finders->handle($params, ['isCount' => true]);
         $count = $Finders->DB->count();
 
         if ($count) {
@@ -204,7 +198,7 @@ class Model
         }
 
         $Finders = new Finders($this->connect(), $this);
-        $Finders->handle(Extras::omit($params, $this->count_omit));
+        $Finders->handle($params, ['isCount' => true]);
         $count = $Finders->DB->count();
         $this->putCache($cache_key, $count);
         return $count;

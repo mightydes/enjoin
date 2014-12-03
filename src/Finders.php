@@ -23,6 +23,12 @@ class Finders
     public $Handler;
 
     /**
+     * Blacklisted options for `count` handling.
+     * @var array
+     */
+    private $count_omit = ['offset', 'limit', 'order'];
+
+    /**
      * @param $DB
      * @param $Invoker
      */
@@ -35,9 +41,15 @@ class Finders
     /**
      * Handles params array to build sql query via builder.
      * @param array $params
+     * @param array $options
      */
-    public function handle(array $params)
+    public function handle(array $params, array $options = [])
     {
+        $isCount = array_key_exists('isCount', $options);
+        if ($isCount) {
+            $params = Extras::omit($params, $this->count_omit);
+        }
+
         $this->Handler = new Handler;
 
         # Push base path entry
@@ -49,7 +61,9 @@ class Finders
         }
 
         $this->Handler->resolveTree();
-        $this->resolveSelect();
+        if (!$isCount) {
+            $this->resolveSelect();
+        }
 
         # Resolve `where` for invoker
         $item = $this->Handler->getTree()[0];
