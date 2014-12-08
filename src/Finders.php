@@ -3,6 +3,7 @@
 namespace Enjoin;
 
 use Exception;
+use Illuminate\Database\Query\JoinClause;
 
 class Finders
 {
@@ -146,7 +147,7 @@ class Finders
                 # Handle `where`
                 if (array_key_exists('where', $itemB)) {
                     /**
-                     * @param $join \Illuminate\Database\Query\JoinClause
+                     * @param $join JoinClause
                      */
                     $closure = function ($join) use ($onA, $onB, $itemB) {
                         $join->on($onA, '=', $onB);
@@ -288,7 +289,11 @@ class Finders
     {
         if (is_callable($getContext)) {
             $context = $getContext();
-            call_user_func_array([$context, $method], $args);
+            if ($context instanceof JoinClause && $method === 'whereIn') {
+                $this->DB = call_user_func_array([$this->DB, $method], $args);
+            } else {
+                call_user_func_array([$context, $method], $args);
+            }
         } else {
             $this->DB = call_user_func_array([$this->DB, $method], $args);
         }
