@@ -26,6 +26,8 @@ class Setters
             return self::getDate($values[$attr]);
         } elseif ($type === Extras::$BOOL_TYPE) {
             return intval($values[$attr]) > 0 ? 1 : null;
+        } elseif ($type === Extras::$INT_TYPE) {
+            return intval($values[$attr]);
         }
         return $values[$attr];
     }
