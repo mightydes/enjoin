@@ -66,6 +66,16 @@ class Extras
     public static $NON_PERSISTENT_RECORD = 'non_persistent';
 
     /**
+     * Blacklisted methods for `Record` values collecting.
+     * @var array
+     */
+    public static $RECORD_OMIT = [
+        '_internal', '_getInternal', '_setInternal',
+        '__construct', '__toArray', '__toString',
+        'save', 'updateAttributes', 'destroy'
+    ];
+
+    /**
      * Determines if array is collection (ie `['name' => 'Alice', 'age' => 23]`)
      * @param $arr
      * @return bool

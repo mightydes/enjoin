@@ -13,7 +13,7 @@ class PersistentRecord
      * @return bool
      * @throws \Exception
      */
-    public static function save(Record &$Record, array $attributes = [])
+    public static function save(Record $Record, array $attributes = [])
     {
         /**
          * @var Model $Model
@@ -21,7 +21,7 @@ class PersistentRecord
         $Model = $Record->_getInternal('model');
 
         # Collect values
-        $values = Extras::omit(get_object_vars($Record), $Record->_getInternal('omit'));
+        $values = Extras::omit(get_object_vars($Record), Extras::$RECORD_OMIT);
         if (!$values) {
             throw new Exception('Expected non-empty attributes list');
         }
@@ -91,7 +91,7 @@ class PersistentRecord
      * @param Record $Record
      * @return bool
      */
-    public static function destroy(Record &$Record)
+    public static function destroy(Record $Record)
     {
         /**
          * @var Model $Model

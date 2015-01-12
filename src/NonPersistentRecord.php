@@ -13,7 +13,7 @@ class NonPersistentRecord
      * @return Record
      * @throws \Exception
      */
-    public static function save(Record &$Record, array $attributes = [])
+    public static function save(Record $Record, array $attributes = [])
     {
         /**
          * @var Model $Model
@@ -21,7 +21,7 @@ class NonPersistentRecord
         $Model = $Record->_getInternal('model');
 
         # Collect values
-        $values = Extras::omit(get_object_vars($Record), $Record->_getInternal('omit'));
+        $values = Extras::omit(get_object_vars($Record), Extras::$RECORD_OMIT);
         if (!$values) {
             throw new Exception('Expected non-empty attributes list');
         }
@@ -64,7 +64,7 @@ class NonPersistentRecord
         # Apply entry properties
         $entry = $Model->find($id);
         foreach (get_object_vars($entry) as $k => $v) {
-            if (!in_array($k, $Record->_getInternal('omit'))) {
+            if (!in_array($k, Extras::$RECORD_OMIT)) {
                 $Record->$k = $v;
             }
         }
@@ -82,7 +82,7 @@ class NonPersistentRecord
      * @param Record $Record
      * @return bool
      */
-    public static function destroy(Record &$Record)
+    public static function destroy(Record $Record)
     {
         $Record->_setInternal('type', null);
         return true;

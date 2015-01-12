@@ -13,11 +13,6 @@ class Record
      */
     private $_internal = [
 
-        # Blacklisted methods for values collecting.
-        'omit' => ['_internal', '_getInternal', '_setInternal',
-            '__construct', '__toArray', '__toString',
-            'save', 'updateAttributes', 'destroy'],
-
         # Corresponded model instance.
         'model' => null,
 
@@ -122,7 +117,7 @@ class Record
     public function __toArray()
     {
         $out = [];
-        foreach (Extras::omit(get_object_vars($this), $this->_internal['omit']) as $prop => $value) {
+        foreach (Extras::omit(get_object_vars($this), Extras::$RECORD_OMIT) as $prop => $value) {
             if ($value instanceof Record) {
                 $out[$prop] = $value->__toArray();
             } elseif (is_array($value)) {
