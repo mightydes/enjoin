@@ -27,7 +27,12 @@ class Setters
         } elseif ($type === Extras::$BOOL_TYPE) {
             return intval($values[$attr]) > 0 ? 1 : null;
         } elseif ($type === Extras::$INT_TYPE) {
-            return intval($values[$attr]);
+            $v = $values[$attr];
+            is_null($v) ?: $v = intval($v);
+            if (array_key_exists('allowNull', $contextAttr) && !$contextAttr['allowNull']) {
+                $v = intval($v);
+            }
+            return $v;
         }
         return $values[$attr];
     }
