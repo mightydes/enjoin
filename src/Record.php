@@ -2,9 +2,9 @@
 
 namespace Enjoin;
 
-use Exception;
+use Exception, stdClass;
 
-class Record
+class Record extends stdClass
 {
 
     /**
