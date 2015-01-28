@@ -2,6 +2,7 @@
 
 namespace Enjoin;
 
+use stdClass;
 use Doctrine\Common\Inflector\Inflector;
 
 class Main
@@ -55,11 +56,11 @@ class Main
     }
 
     /**
-     * @return \stdClass
+     * @return stdClass
      */
     public function sqlOr()
     {
-        $out = new \stdClass;
+        $out = new stdClass;
         $out->type = Extras::$SQL_OR;
         $out->body = func_get_args();
         return $out;

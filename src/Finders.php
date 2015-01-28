@@ -8,6 +8,9 @@ use Illuminate\Database\Query\JoinClause;
 class Finders
 {
 
+    const SCOPE_JOIN = 'join';
+    const SCOPE_OR = 'or';
+
     /**
      * @var \Illuminate\Database\Query\Builder
      */
@@ -61,7 +64,7 @@ class Finders
         # Resolve `where` for invoker
         $item = $this->Handler->getTree()[0];
         if (array_key_exists('where', $item)) {
-            $this->resolveWhere($item['where'], $item, null);
+            $this->resolveWhere($item['where'], $item);
         }
 
         $this->resolveJoin();
@@ -151,10 +154,12 @@ class Finders
                      */
                     $closure = function ($join) use ($onA, $onB, $itemB) {
                         $join->on($onA, '=', $onB);
-                        $getContext = function () use ($join) {
+                        $scope = [];
+                        $scope['type'] = self::SCOPE_JOIN;
+                        $scope['getContext'] = function () use ($join) {
                             return $join;
                         };
-                        $this->resolveWhere($itemB['where'], $itemB, $getContext);
+                        $this->resolveWhere($itemB['where'], $itemB, $scope);
                     };
                     $this->DB = call_user_func([$this->DB, $joinMethod], $table . " as $as", $closure);
                 } else {
@@ -178,23 +183,22 @@ class Finders
      *
      * @param $where
      * @param array $item
-     * @param null|\Closure $getContext
-     * @return null
+     * @param array $scope
      * @throws Exception
      */
-    private function resolveWhere($where, array $item, $getContext)
+    private function resolveWhere($where, array $item, array $scope = [])
     {
         if (is_object($where)) {
-            $this->handleWhereOperator($where, $item, $getContext);
+            $this->handleWhereOperator($where, $item, $scope);
         } elseif (is_array($where)) {
             foreach ($where as $attr => $value) {
                 if (is_string($attr)) {
                     /*
                      * General statement, ie `'name' => 'Alice'`
                      */
-                    $this->handleWhereStatement($attr, $value, $item, $getContext);
+                    $this->handleWhereStatement($attr, $value, $item, $scope);
                 } else {
-                    $this->resolveWhere($value, $item, $getContext);
+                    $this->resolveWhere($value, $item, $scope);
                 }
             }
         } else {
@@ -206,19 +210,21 @@ class Finders
      * Currently handles only `sql_or`.
      * @param $Operator
      * @param array $item
-     * @param $getContext
+     * @param array $scope
      * @throws Exception
      */
-    private function handleWhereOperator($Operator, array $item, $getContext)
+    private function handleWhereOperator($Operator, array $item, array $scope = [])
     {
         if ($Operator->type === Extras::$SQL_OR) {
             $closure = function ($query) use ($Operator, $item) {
-                $getContext = function () use ($query) {
+                $scope = [];
+                $scope['type'] = self::SCOPE_OR;
+                $scope['getContext'] = function () use ($query) {
                     return $query;
                 };
-                $this->resolveWhere($Operator->body, $item, $getContext);
+                $this->resolveWhere($Operator->body, $item, $scope);
             };
-            $this->applyWhere($getContext, 'orWhere', [$closure]);
+            $this->applyWhere('', [$closure], $scope);
         } else {
             throw new Exception("Unknown operator type: `{$Operator->type}`");
         }
@@ -229,10 +235,10 @@ class Finders
      * @param $attr
      * @param $statement
      * @param array $item
-     * @param $getContext
+     * @param array $scope
      * @throws Exception
      */
-    private function handleWhereStatement($attr, $statement, array $item, $getContext)
+    private function handleWhereStatement($attr, $statement, array $item, array $scope = [])
     {
         $name = $item['prefix']
             ? $item['prefix'] . '.' . $attr
@@ -250,15 +256,15 @@ class Finders
                  */
                 foreach ($statement as $clause => $v) {
                     if (array_key_exists($clause, Extras::$WHERE_CLAUSES)) {
-                        $this->applyWhere($getContext, 'where', [$name, Extras::$WHERE_CLAUSES[$clause], $v]);
+                        $this->applyWhere('', [$name, Extras::$WHERE_CLAUSES[$clause], $v], $scope);
                     } elseif ($clause === 'ne') {
                         # Not equal
                         if (is_null($v)) {
-                            $this->applyWhere($getContext, 'whereNotNull', [$name]);
+                            $this->applyWhere('NotNull', [$name], $scope);
                         } elseif (is_array($v)) {
-                            $this->applyWhere($getContext, 'whereNotIn', [$name, $v]);
+                            $this->applyWhere('NotIn', [$name, $v], $scope);
                         } else {
-                            $this->applyWhere($getContext, 'where', [$name, '!=', $v]);
+                            $this->applyWhere('', [$name, '!=', $v], $scope);
                         }
                     } else {
                         throw new Exception("Unsupported where clause: `$clause`");
@@ -268,28 +274,34 @@ class Finders
                 /*
                  * Example: [ 'id' => [1, 2, 3] ]
                  */
-                $this->applyWhere($getContext, 'whereIn', [$name, $statement]);
+                $this->applyWhere('In', [$name, $statement], $scope);
             }
         } else {
             /*
              * Simple statement, ie [ 'name' => 'Alice' ]
              */
-            $this->applyWhere($getContext, 'where', [$name, '=', $statement]);
+            $this->applyWhere('', [$name, '=', $statement], $scope);
         }
     }
 
     /**
      * Applies `where` instructions to query builder object,
      * or to query closure.
-     * @param $getContext
      * @param $method
      * @param array $args
+     * @param array $scope
      */
-    private function applyWhere($getContext, $method, array $args)
+    private function applyWhere($method, array $args, array $scope = [])
     {
-        if (is_callable($getContext)) {
-            $context = $getContext();
-            if ($context instanceof JoinClause && $method === 'whereIn') {
+        $isScope = count($scope) > 0;
+        $isInMethod = $method === 'In';
+        $isContext = $isScope && array_key_exists('getContext', $scope) && is_callable($scope['getContext']);
+        $method = $isScope && array_key_exists('type', $scope) && $scope['type'] === self::SCOPE_OR
+            ? 'orWhere' . $method : 'where' . $method;
+
+        if ($isContext) {
+            $context = $scope['getContext']();
+            if ($context instanceof JoinClause && $isInMethod) {
                 $this->DB = call_user_func_array([$this->DB, $method], $args);
             } else {
                 call_user_func_array([$context, $method], $args);
