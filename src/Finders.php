@@ -2,7 +2,7 @@
 
 namespace Enjoin;
 
-use Exception;
+use Exception, DB;
 use Illuminate\Database\Query\JoinClause;
 
 class Finders
@@ -61,13 +61,13 @@ class Finders
             $this->resolveSelect();
         }
 
+        $this->resolveJoin();
+
         # Resolve `where` for invoker
         $item = $this->Handler->getTree()[0];
         if (array_key_exists('where', $item)) {
             $this->resolveWhere($item['where'], $item);
         }
-
-        $this->resolveJoin();
 
         # Resolve `order`
         if (array_key_exists('order', $params) && !$isCount) {
@@ -294,7 +294,7 @@ class Finders
     private function applyWhere($method, array $args, array $scope = [])
     {
         $isScope = count($scope) > 0;
-        $isInMethod = $method === 'In';
+        $isInMethod = $method === 'In' || $method === 'NotIn';
         $isContext = $isScope && array_key_exists('getContext', $scope) && is_callable($scope['getContext']);
         $method = $isScope && array_key_exists('type', $scope) && $scope['type'] === self::SCOPE_OR
             ? 'orWhere' . $method : 'where' . $method;
@@ -302,7 +302,22 @@ class Finders
         if ($isContext) {
             $context = $scope['getContext']();
             if ($context instanceof JoinClause && $isInMethod) {
-                $this->DB = call_user_func_array([$this->DB, $method], $args);
+                /*
+                 * Weird magic, because Laravel doesn't support `whereIn` for joins,
+                 * see https://github.com/laravel/framework/issues/4412
+                 *
+                 * For join prepared statement hack,
+                 * see http://stackoverflow.com/a/26180287/3639678
+                 *
+                 * For join bindings hack,
+                 * see http://stackoverflow.com/a/17736960/3639678
+                 *
+                 * Notice, that `resolveJoin()` called before general `resolveWhere()` in `handle()`,
+                 * because of this shit.
+                 */
+                $raw = sprintf('%s in (%s)', $args[0], implode(',', array_fill(0, count($args[1]), '?')));
+                call_user_func_array([$context, 'on'], [DB::raw($raw), DB::raw(''), DB::raw('')]);
+                $this->DB->setBindings(array_merge($this->DB->getBindings(), $args[1]));
             } else {
                 call_user_func_array([$context, $method], $args);
             }
