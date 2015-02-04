@@ -155,7 +155,7 @@ class Finders
                     $closure = function ($join) use ($onA, $onB, $itemB) {
                         $join->on($onA, '=', $onB);
                         $scope = [];
-                        $scope['type'] = self::SCOPE_JOIN;
+                        $scope[self::SCOPE_JOIN] = null;
                         $scope['getContext'] = function () use ($join) {
                             return $join;
                         };
@@ -216,15 +216,31 @@ class Finders
     private function handleWhereOperator($Operator, array $item, array $scope = [])
     {
         if ($Operator->type === Extras::$SQL_OR) {
-            $closure = function ($query) use ($Operator, $item) {
-                $scope = [];
-                $scope['type'] = self::SCOPE_OR;
-                $scope['getContext'] = function () use ($query) {
-                    return $query;
+            if (array_key_exists(self::SCOPE_JOIN, $scope)) {
+                # `OR` statement in join context.
+                # For now there is no way to resolve nested join `AND`/`OR`.
+                $isFirst = true;
+                foreach ($Operator->body as $cond) {
+                    if (!$isFirst) {
+                        $scope[self::SCOPE_OR] = true;
+                    } elseif (array_key_exists(self::SCOPE_OR, $scope)) {
+                        unset($scope[self::SCOPE_OR]);
+                    }
+                    $this->resolveWhere($cond, $item, $scope);
+                    $isFirst = false;
+                }
+            } else {
+                # `OR` statement in general context.
+                $closure = function ($query) use ($Operator, $item) {
+                    $scope = [];
+                    $scope[self::SCOPE_OR] = null;
+                    $scope['getContext'] = function () use ($query) {
+                        return $query;
+                    };
+                    $this->resolveWhere($Operator->body, $item, $scope);
                 };
-                $this->resolveWhere($Operator->body, $item, $scope);
-            };
-            $this->applyWhere('', [$closure], $scope);
+                $this->applyWhere('', [$closure], $scope);
+            }
         } else {
             throw new Exception("Unknown operator type: `{$Operator->type}`");
         }
@@ -296,8 +312,8 @@ class Finders
         $isScope = count($scope) > 0;
         $isInMethod = $method === 'In' || $method === 'NotIn';
         $isContext = $isScope && array_key_exists('getContext', $scope) && is_callable($scope['getContext']);
-        $method = $isScope && array_key_exists('type', $scope) && $scope['type'] === self::SCOPE_OR
-            ? 'orWhere' . $method : 'where' . $method;
+        $isOr = $isScope && array_key_exists(self::SCOPE_OR, $scope);
+        $method = $isOr ? 'orWhere' . $method : 'where' . $method;
 
         if ($isContext) {
             $context = $scope['getContext']();
@@ -316,7 +332,7 @@ class Finders
                  * because of this shit.
                  */
                 $raw = sprintf('%s in (%s)', $args[0], implode(',', array_fill(0, count($args[1]), '?')));
-                call_user_func_array([$context, 'on'], [DB::raw($raw), DB::raw(''), DB::raw('')]);
+                call_user_func_array([$context, ($isOr ? 'orOn' : 'on')], [DB::raw($raw), DB::raw(''), DB::raw('')]);
                 $this->DB->setBindings(array_merge($this->DB->getBindings(), $args[1]));
             } else {
                 call_user_func_array([$context, $method], $args);
