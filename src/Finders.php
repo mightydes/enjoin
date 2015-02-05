@@ -217,30 +217,17 @@ class Finders
     {
         if ($Operator->type === Extras::$SQL_OR) {
             if (array_key_exists(self::SCOPE_JOIN, $scope)) {
-                # `OR` statement in join context.
-                # For now there is no way to resolve nested join `AND`/`OR`.
-                $isFirst = true;
-                foreach ($Operator->body as $cond) {
-                    if (!$isFirst) {
-                        $scope[self::SCOPE_OR] = true;
-                    } elseif (array_key_exists(self::SCOPE_OR, $scope)) {
-                        unset($scope[self::SCOPE_OR]);
-                    }
-                    $this->resolveWhere($cond, $item, $scope);
-                    $isFirst = false;
-                }
-            } else {
-                # `OR` statement in general context.
-                $closure = function ($query) use ($Operator, $item) {
-                    $scope = [];
-                    $scope[self::SCOPE_OR] = null;
-                    $scope['getContext'] = function () use ($query) {
-                        return $query;
-                    };
-                    $this->resolveWhere($Operator->body, $item, $scope);
-                };
-                $this->applyWhere('', [$closure], $scope);
+                throw new Exception('Unable to use `sqlOr` in `join` context.');
             }
+            $closure = function ($query) use ($Operator, $item) {
+                $scope = [];
+                $scope[self::SCOPE_OR] = null;
+                $scope['getContext'] = function () use ($query) {
+                    return $query;
+                };
+                $this->resolveWhere($Operator->body, $item, $scope);
+            };
+            $this->applyWhere('', [$closure], $scope);
         } else {
             throw new Exception("Unknown operator type: `{$Operator->type}`");
         }
