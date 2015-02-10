@@ -1,25 +1,31 @@
 {
-    "name": "mightydes/enjoin",
-    "description": "ORM inspired by Sequelize.js",
-    "license": "CNU",
-    "keywords": ["laravel", "database", "sql", "orm", "sequelize"],
-    "authors": [
-        {
-            "name": "Lev Nazarenko",
-            "email": "gwae@yandex.ru"
-        }
-    ],
-    "require": {
-        "php": ">=5.4.0",
-        "laravel/framework": "4.2.*",
-        "doctrine/inflector": "~1.0",
-        "nesbot/carbon": "~1.0"
-    },
-    "require-dev": {},
-    "autoload": {
-        "psr-4": {
-            "Enjoin\\": ["src"]
-        }
-    },
-    "minimum-stability": "dev"
+  "name": "mightydes/enjoin",
+  "description": "ORM inspired by Sequelize.js",
+  "license": "CNU",
+  "keywords": [
+    "laravel",
+    "database",
+    "sql",
+    "orm",
+    "sequelize"
+  ],
+  "authors": [
+    {
+      "name": "Lev Nazarenko",
+      "email": "gwae@yandex.ru"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "laravel/framework": ">=4.2",
+    "doctrine/inflector": "~1.0",
+    "nesbot/carbon": "~1.0"
+  },
+  "require-dev": {},
+  "autoload": {
+    "psr-4": {
+      "Enjoin\\": ["src"]
+    }
+  },
+  "minimum-stability": "dev"
 }
