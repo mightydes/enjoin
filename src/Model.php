@@ -166,10 +166,10 @@ class Model
             'count' => 0,
             'rows' => []
         ];
-        $Finders = new Finders($this->connect(), $this);
 
         if (array_key_exists('include', $params)) {
             # Perform records first
+            $Finders = new Finders($this->connect(), $this);
             $Finders->handle($params);
             $rows = $Finders->DB->get();
             if ($rows) {
@@ -179,9 +179,11 @@ class Model
             }
         } else {
             # Count first
+            $Finders = new Finders($this->connect(), $this);
             $Finders->handle($params, ['isCount' => true]);
             if ($count = $Finders->DB->count()) {
                 $out['count'] = $count;
+                $Finders = new Finders($this->connect(), $this);
                 $Finders->handle($params);
                 $rows = $Finders->DB->get();
                 if ($rows) {
