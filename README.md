@@ -50,7 +50,7 @@ Do not use this package in production because it still in heavy development phas
 ### Requirements
 
 * PHP 5.4+
-* Laravel 4.2+
+* Laravel 5.0+
 
 ### Via composer
 
@@ -63,12 +63,17 @@ Add `mightydes\enjoin` as a requirement to composer.json:
 }
 ```
 
-All models files should be in `Models` namespace, so create folder `app/models`,
-and add to composer.json `autoload` section:
-```json
-"psr-4": {
-    "Models\\": "app/models"
-}
+By default, all models files should be in `Models` namespace.
+You can change it in `app/Providers/ConfigServiceProvider.php`:
+```php
+    public function register()
+    {
+        config([
+            'enjoin' => [
+                'models_namespace' => 'App\Models'
+            ]
+        ]);
+    }
 ```
 
 Update your packages with `composer update` or install with `composer install`.

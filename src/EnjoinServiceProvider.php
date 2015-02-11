@@ -10,7 +10,7 @@ class EnjoinServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind('enjoin', function () {
-            return new Main;
+            return new Main(config('enjoin'));
         });
     }
 

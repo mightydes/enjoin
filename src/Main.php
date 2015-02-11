@@ -12,12 +12,27 @@ class Main
      * List of cached models.
      * @var array
      */
-    private $_models = [];
+    private $models = [];
 
     /**
-     * @var string
+     * Service parameters.
+     * @var array
      */
-    protected $base_namespace = '\Models';
+    private $config = [];
+
+    /**
+     * @param array $config
+     */
+    public function __construct(array $config = [])
+    {
+        $def = [
+            'models_namespace' => '\Models'
+        ];
+        $config = array_merge($def, $config);
+        $config['models_namespace'][0] === '\\'
+            ?: $config['models_namespace'] = '\\' . $config['models_namespace'];
+        $this->config = $config;
+    }
 
     /**
      * @param $model_name
@@ -25,7 +40,7 @@ class Main
      */
     private function getClassName($model_name)
     {
-        return $this->base_namespace . '\\' . str_replace('.', '\\', $model_name);
+        return $this->config['models_namespace'] . '\\' . str_replace('.', '\\', $model_name);
     }
 
     /**
@@ -35,11 +50,11 @@ class Main
     public function get($model_name)
     {
         $class = $this->getClassName($model_name);
-        if (array_key_exists($class, $this->_models)) {
-            return $this->_models[$class];
+        if (array_key_exists($class, $this->models)) {
+            return $this->models[$class];
         }
-        $this->_models[$class] = new Model(new $class);
-        return $this->_models[$class];
+        $this->models[$class] = new Model(new $class);
+        return $this->models[$class];
     }
 
 
@@ -191,28 +206,6 @@ class Main
     public function Enum()
     {
         return ['key' => Extras::$ENUM_TYPE];
-    }
-
-
-    /*
-     * Record manipulations
-     */
-
-    /**
-     * @param Record $Record
-     * @param mixed $pick
-     * @return array
-     */
-    public function pick(Record $Record, $pick)
-    {
-        if (!is_array($pick)) {
-            $pick = [$pick];
-        }
-        $out = [];
-        foreach ($pick as $prop) {
-            $out[$prop] = $Record->$prop;
-        }
-        return $out;
     }
 
 } // end of class
