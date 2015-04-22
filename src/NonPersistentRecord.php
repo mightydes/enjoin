@@ -42,6 +42,7 @@ class NonPersistentRecord
             $updated_at = $Model->getUpdatedAtAttr();
             $update[$updated_at] = Setters::getUpdatedAt();
             $skip [] = $updated_at;
+            $Record->$updated_at = PersistentRecord::touchUpdatedAt($Record->$updated_at);
         }
 
         # Perform setters

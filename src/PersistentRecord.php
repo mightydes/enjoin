@@ -2,6 +2,7 @@
 
 namespace Enjoin;
 
+use Carbon\Carbon;
 use Exception, Validator;
 
 class PersistentRecord
@@ -47,6 +48,7 @@ class PersistentRecord
             $updated_at = $Model->getUpdatedAtAttr();
             $update[$updated_at] = Setters::getUpdatedAt();
             $skip [] = $updated_at;
+            $Record->$updated_at = self::touchUpdatedAt($Record->$updated_at);
         }
 
         # Perform setters
@@ -67,6 +69,18 @@ class PersistentRecord
         $Model->connect()->where('id', $Record->_getInternal('id'))->take(1)->update($update);
 
         return true;
+    }
+
+    /**
+     * @param $value
+     * @return string|static
+     */
+    public static function touchUpdatedAt($value)
+    {
+        if ($value instanceof Carbon) {
+            return Carbon::now();
+        }
+        return Carbon::now()->toDateTimeString();
     }
 
     /**
