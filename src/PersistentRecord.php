@@ -48,7 +48,9 @@ class PersistentRecord
             $updated_at = $Model->getUpdatedAtAttr();
             $update[$updated_at] = Setters::getUpdatedAt();
             $skip [] = $updated_at;
-            $Record->$updated_at = self::touchUpdatedAt($Record->$updated_at);
+            $Record->$updated_at = self::touchUpdatedAt(
+                (isset($Record->$updated_at) ? $Record->$updated_at : null)
+            );
         }
 
         # Perform setters
