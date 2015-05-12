@@ -33,6 +33,13 @@ class Setters
                 $v = intval($v);
             }
             return $v;
+        } elseif ($type === Extras::$FLOAT_TYPE) {
+            $v = $values[$attr];
+            is_null($v) ?: $v = floatval($v);
+            if (array_key_exists('allowNull', $contextAttr) && !$contextAttr['allowNull']) {
+                $v = floatval($v);
+            }
+            return $v;
         }
         return $values[$attr];
     }

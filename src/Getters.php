@@ -41,6 +41,8 @@ class Getters
             return $contextAttr['get'];
         } elseif ($type === Extras::$INT_TYPE) {
             return self::getInteger($allowNull);
+        } elseif ($type === Extras::$FLOAT_TYPE) {
+            return self::getFloat($allowNull);
         } elseif ($type === Extras::$BOOL_TYPE) {
             return self::getBoolean();
         } elseif ($type === Extras::$DATE_TYPE) {
@@ -67,6 +69,22 @@ class Getters
                 return null;
             }
             return intval($value);
+        };
+    }
+
+    /**
+     * Perform float handler.
+     * @param $allowNull
+     * @return callable
+     */
+    private static function getFloat($allowNull)
+    {
+        return function ($attr, \Closure $getValue) use ($allowNull) {
+            $value = $getValue($attr);
+            if ($allowNull && is_null($value)) {
+                return null;
+            }
+            return floatval($value);
         };
     }
 
