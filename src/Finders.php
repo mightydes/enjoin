@@ -297,14 +297,18 @@ class Finders
     private function applyWhere($method, array $args, array $scope = [])
     {
         $isScope = count($scope) > 0;
-        $isInMethod = $method === 'In' || $method === 'NotIn';
+
+        $isIn = null;
+        $method !== 'In' && $method !== 'NotIn'
+            ?: $isIn = $method;
+
         $isContext = $isScope && array_key_exists('getContext', $scope) && is_callable($scope['getContext']);
         $isOr = $isScope && array_key_exists(self::SCOPE_OR, $scope);
         $method = $isOr ? 'orWhere' . $method : 'where' . $method;
 
         if ($isContext) {
             $context = $scope['getContext']();
-            if ($context instanceof JoinClause && $isInMethod) {
+            if ($context instanceof JoinClause && $isIn) {
                 /*
                  * Weird magic, because Laravel doesn't support `whereIn` for joins,
                  * see https://github.com/laravel/framework/issues/4412
@@ -318,7 +322,8 @@ class Finders
                  * Notice, that `resolveJoin()` called before general `resolveWhere()` in `handle()`,
                  * because of this shit.
                  */
-                $raw = sprintf('%s in (%s)', $args[0], implode(',', array_fill(0, count($args[1]), '?')));
+                $raw = sprintf('%s ' . ($isIn === 'NotIn' ? 'not ' : '') . 'in (%s)',
+                    $args[0], implode(',', array_fill(0, count($args[1]), '?')));
                 call_user_func_array([$context, ($isOr ? 'orOn' : 'on')], [DB::raw($raw), DB::raw(''), DB::raw('')]);
                 $this->DB->setBindings(array_merge($this->DB->getBindings(), $args[1]));
             } else {
