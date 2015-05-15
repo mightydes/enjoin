@@ -10,6 +10,7 @@ class Finders
 
     const SCOPE_JOIN = 'join';
     const SCOPE_OR = 'or';
+    const SCOPE_AND = 'and';
 
     /**
      * @var \Illuminate\Database\Query\Builder
@@ -219,15 +220,18 @@ class Finders
             if (array_key_exists(self::SCOPE_JOIN, $scope)) {
                 throw new Exception('Unable to use `sqlOr` in `join` context.');
             }
-            $closure = function ($query) use ($Operator, $item) {
-                $scope = [];
-                $scope[self::SCOPE_OR] = null;
-                $scope['getContext'] = function () use ($query) {
-                    return $query;
+
+            foreach ($Operator->body as $k => $v) {
+                $closure = function ($query) use ($v, $item) {
+                    $this->resolveWhere($v, $item, [
+                        'getContext' => function () use ($query) {
+                            return $query;
+                        }
+                    ]);
                 };
-                $this->resolveWhere($Operator->body, $item, $scope);
-            };
-            $this->applyWhere('', [$closure], $scope);
+                $scope[($k > 0 ? self::SCOPE_OR : self::SCOPE_AND)] = true;
+                $this->applyWhere('', [$closure], $scope);
+            }
         } else {
             throw new Exception("Unknown operator type: `{$Operator->type}`");
         }
