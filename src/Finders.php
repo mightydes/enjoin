@@ -221,17 +221,22 @@ class Finders
                 throw new Exception('Unable to use `sqlOr` in `join` context.');
             }
 
-            foreach ($Operator->body as $k => $v) {
-                $closure = function ($query) use ($v, $item) {
-                    $this->resolveWhere($v, $item, [
-                        'getContext' => function () use ($query) {
-                            return $query;
+            $this->applyWhere('', [function ($wrapQuery) use ($Operator, $item) {
+                foreach ($Operator->body as $k => $v) {
+                    $this->applyWhere('', [function ($query) use ($v, $item) {
+                        $this->resolveWhere($v, $item, [
+                            'getContext' => function () use ($query) {
+                                return $query;
+                            }
+                        ]);
+                    }], [
+                        self::SCOPE_OR => true,
+                        'getContext' => function () use ($wrapQuery) {
+                            return $wrapQuery;
                         }
                     ]);
-                };
-                $scope[($k > 0 ? self::SCOPE_OR : self::SCOPE_AND)] = true;
-                $this->applyWhere('', [$closure], $scope);
-            }
+                }
+            }]);
         } else {
             throw new Exception("Unknown operator type: `{$Operator->type}`");
         }
