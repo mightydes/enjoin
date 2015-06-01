@@ -99,10 +99,9 @@ class Model
     public function find($params)
     {
         # Check cache
-        $forcedCache = array_key_exists('forcedCache', $params);
         $cache_key = $this->getCacheKey(__FUNCTION__, $params);
         if ($cache = $this->getCache($cache_key)) {
-            if ($forcedCache && $cache instanceof EmptyCache) {
+            if ($cache instanceof EmptyCache) {
                 return null;
             }
             return $cache;
@@ -125,9 +124,8 @@ class Model
             $result = $Records->handleRows($rows)[0];
             $this->putCache($cache_key, $result);
             return $result;
-        } elseif ($forcedCache) {
-            $this->putCache($cache_key, new EmptyCache);
         }
+        $this->putCache($cache_key, new EmptyCache);
         return null;
     }
 
@@ -138,10 +136,9 @@ class Model
     public function findAll(array $params = [])
     {
         # Check cache
-        $forcedCache = array_key_exists('forcedCache', $params);
         $cache_key = $this->getCacheKey(__FUNCTION__, $params);
         if ($cache = $this->getCache($cache_key)) {
-            if ($forcedCache && $cache instanceof EmptyCache) {
+            if ($cache instanceof EmptyCache) {
                 return [];
             }
             return $cache;
@@ -155,9 +152,8 @@ class Model
             $result = $Records->handleRows($rows);
             $this->putCache($cache_key, $result);
             return $result;
-        } elseif ($forcedCache) {
-            $this->putCache($cache_key, new EmptyCache);
         }
+        $this->putCache($cache_key, new EmptyCache);
         return [];
     }
 
