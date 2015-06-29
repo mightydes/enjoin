@@ -357,7 +357,7 @@ class Model
     {
         return self::CACHE_PREFIX . '.'
         . $func_name . '.'
-        . sha1(json_encode([$params, $this->getKey()]));
+        . md5(json_encode([$params, $this->getKey()], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
     }
 
     /**
