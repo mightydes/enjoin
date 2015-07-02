@@ -182,7 +182,7 @@ class Finders
      *          sql_or->[ ... ]
      *      - sql_or->[ ... ]
      *
-     * @param $where
+     * @param mixed $where
      * @param array $item
      * @param array $scope
      * @throws Exception
@@ -317,27 +317,7 @@ class Finders
 
         if ($isContext) {
             $context = $scope['getContext']();
-            if ($context instanceof JoinClause && $isIn) {
-                /*
-                 * Weird magic, because Laravel doesn't support `whereIn` for joins,
-                 * see https://github.com/laravel/framework/issues/4412
-                 *
-                 * For join prepared statement hack,
-                 * see http://stackoverflow.com/a/26180287/3639678
-                 *
-                 * For join bindings hack,
-                 * see http://stackoverflow.com/a/17736960/3639678
-                 *
-                 * Notice, that `resolveJoin()` called before general `resolveWhere()` in `handle()`,
-                 * because of this shit.
-                 */
-                $raw = sprintf('%s ' . ($isIn === 'NotIn' ? 'not ' : '') . 'in (%s)',
-                    $args[0], implode(',', array_fill(0, count($args[1]), '?')));
-                call_user_func_array([$context, ($isOr ? 'orOn' : 'on')], [DB::raw($raw), DB::raw(''), DB::raw('')]);
-                $this->DB->setBindings(array_merge($this->DB->getBindings(), $args[1]));
-            } else {
-                call_user_func_array([$context, $method], $args);
-            }
+            call_user_func_array([$context, $method], $args);
         } else {
             $this->DB = call_user_func_array([$this->DB, $method], $args);
         }

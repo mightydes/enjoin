@@ -17,14 +17,16 @@
   ],
   "require": {
     "php": ">=5.4.0",
-    "laravel/framework": ">=5.0",
+    "laravel/framework": ">=5.1.5",
     "doctrine/inflector": "~1.0",
     "nesbot/carbon": "~1.0"
   },
   "require-dev": {},
   "autoload": {
     "psr-4": {
-      "Enjoin\\": ["src"]
+      "Enjoin\\": [
+        "src"
+      ]
     }
   },
   "minimum-stability": "dev"
