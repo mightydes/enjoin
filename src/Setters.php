@@ -8,12 +8,12 @@ class Setters
 {
 
     /**
-     * @param $attr
-     * @param $contextAttr
+     * @param string $attr
+     * @param array $contextAttr
      * @param array $values
      * @return string
      */
-    public static function perform($attr, $contextAttr, array $values)
+    public static function perform($attr, array $contextAttr, array $values)
     {
         $type = $contextAttr['type']['key'];
         if (array_key_exists('set', $contextAttr)) {
@@ -22,24 +22,34 @@ class Setters
                 return $values[$attr];
             };
             return $contextAttr['set']($attr, $getValue);
-        } elseif ($type === Extras::$DATE_TYPE) {
-            return self::getDate($values[$attr]);
-        } elseif ($type === Extras::$BOOL_TYPE) {
-            return intval($values[$attr]) > 0 ? 1 : null;
-        } elseif ($type === Extras::$INT_TYPE) {
-            $v = $values[$attr];
-            is_null($v) ?: $v = intval($v);
-            if (array_key_exists('allowNull', $contextAttr) && !$contextAttr['allowNull']) {
-                $v = intval($v);
+        } else {
+            switch ($type) {
+                case Extras::$DATE_TYPE:
+                    return self::getDate($values[$attr]);
+                case Extras::$BOOL_TYPE:
+                    return intval($values[$attr]) > 0 ? 1 : null;
+                case Extras::$STR_TYPE:
+                    $v = $values[$attr];
+                    is_null($v) ?: $v = strval($v);
+                    if (array_key_exists('allowNull', $contextAttr) && !$contextAttr['allowNull']) {
+                        $v = strval($v);
+                    }
+                    return $v;
+                case Extras::$INT_TYPE:
+                    $v = $values[$attr];
+                    is_null($v) ?: $v = intval($v);
+                    if (array_key_exists('allowNull', $contextAttr) && !$contextAttr['allowNull']) {
+                        $v = intval($v);
+                    }
+                    return $v;
+                case Extras::$FLOAT_TYPE:
+                    $v = $values[$attr];
+                    is_null($v) ?: $v = floatval($v);
+                    if (array_key_exists('allowNull', $contextAttr) && !$contextAttr['allowNull']) {
+                        $v = floatval($v);
+                    }
+                    return $v;
             }
-            return $v;
-        } elseif ($type === Extras::$FLOAT_TYPE) {
-            $v = $values[$attr];
-            is_null($v) ?: $v = floatval($v);
-            if (array_key_exists('allowNull', $contextAttr) && !$contextAttr['allowNull']) {
-                $v = floatval($v);
-            }
-            return $v;
         }
         return $values[$attr];
     }
