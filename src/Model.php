@@ -320,7 +320,38 @@ class Model
 
         $Finders = new Finders($this->connect(), $this);
         $Finders->handle(['where' => $where]);
-        return $Finders->DB->update($updateCollection);
+
+        $update = [];
+        $skip = [];
+
+        # Perform timestamps
+        if ($this->isTimestamps()) {
+            ## Created at
+            $created_at = $this->getCreatedAtAttr();
+            if (array_key_exists($created_at, $updateCollection)) {
+                $update[$created_at] = Setters::getCreatedAt($updateCollection[$created_at]);
+            }
+            $skip [] = $created_at;
+            ## Updated at
+            $updated_at = $this->getUpdatedAtAttr();
+            $update[$updated_at] = Setters::getUpdatedAt();
+            $skip [] = $updated_at;
+        }
+
+        # Perform setters
+        $contextAttrs = $this->Context->getAttributes();
+        foreach (array_keys($updateCollection) as $attr) {
+            if (in_array($attr, $skip)) {
+                continue;
+            }
+            $update[$attr] = Setters::perform($attr, $contextAttrs[$attr], $updateCollection);
+            # Perform validation
+            if (array_key_exists('validate', $contextAttrs[$attr])) {
+                PersistentRecord::validate($attr, $update[$attr], $contextAttrs[$attr]['validate']);
+            }
+        }
+
+        return $Finders->DB->update($update);
     }
 
     /**
