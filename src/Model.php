@@ -293,20 +293,44 @@ class Model
      */
     public function bulkCreate(array $collections)
     {
-        # Handle timestamps
-        if ($this->isTimestamps()) {
-            $created_at = $this->getCreatedAtAttr();
-            $updated_at = $this->getUpdatedAtAttr();
-            foreach ($collections as &$v) {
-                $v[$created_at] = array_key_exists($created_at, $v)
-                    ? Setters::getCreatedAt($v[$created_at])
-                    : Setters::getCreatedAt(null, true);
-                $v[$updated_at] = Setters::getUpdatedAt();
+        $this->flushCache();
+
+        $bulk = [];
+        foreach ($collections as $col) {
+            $update = [];
+            $skip = [];
+
+            # Perform timestamps
+            if ($this->isTimestamps()) {
+                ## Created at
+                $created_at = $this->getCreatedAtAttr();
+                if (array_key_exists($created_at, $col)) {
+                    $update[$created_at] = Setters::getCreatedAt($col[$created_at]);
+                }
+                $skip [] = $created_at;
+                ## Updated at
+                $updated_at = $this->getUpdatedAtAttr();
+                $update[$updated_at] = Setters::getUpdatedAt();
+                $skip [] = $updated_at;
             }
+
+            # Perform setters
+            $contextAttrs = $this->Context->getAttributes();
+            foreach (array_keys($col) as $attr) {
+                if (in_array($attr, $skip)) {
+                    continue;
+                }
+                $update[$attr] = Setters::perform($attr, $contextAttrs[$attr], $col);
+                # Perform validation
+                if (array_key_exists('validate', $contextAttrs[$attr])) {
+                    PersistentRecord::validate($attr, $update[$attr], $contextAttrs[$attr]['validate']);
+                }
+            }
+
+            $bulk [] = $update;
         }
 
-        $this->flushCache();
-        return $this->connect()->insert($collections);
+        return $this->connect()->insert($bulk);
     }
 
     /**
