@@ -35,6 +35,13 @@ class Setters
                         $v = strval($v);
                     }
                     return $v;
+                case Extras::$TEXT_TYPE:
+                    $v = $values[$attr];
+                    is_null($v) ?: $v = strval($v);
+                    if (array_key_exists('allowNull', $contextAttr) && !$contextAttr['allowNull']) {
+                        $v = strval($v);
+                    }
+                    return $v;
                 case Extras::$INT_TYPE:
                     $v = $values[$attr];
                     is_null($v) ?: $v = intval($v);
