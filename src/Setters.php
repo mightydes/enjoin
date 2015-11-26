@@ -87,9 +87,10 @@ class Setters
 
         if ($value instanceof Carbon) {
             return $value->toDateTimeString();
-        } else {
+        } elseif ($value) {
             return $value;
         }
+        return Carbon::now()->toDateTimeString();
     }
 
     /**

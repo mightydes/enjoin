@@ -19,6 +19,7 @@ class NonPersistentRecord
          * @var Model $Model
          */
         $Model = $Record->_getInternal('model');
+        $contextAttrs = $Model->Context->getAttributes();
 
         # Collect values
         $values = Extras::omit(get_object_vars($Record), Extras::$RECORD_OMIT);
@@ -28,6 +29,10 @@ class NonPersistentRecord
         if (!$attributes) {
             $attributes = array_keys($values);
         }
+        # Filter attributes by model context.
+        $attributes = array_filter($attributes, function ($attr) use ($contextAttrs) {
+            return array_key_exists($attr, $contextAttrs);
+        });
 
         $insert = [];
         $skip = [];
@@ -48,7 +53,6 @@ class NonPersistentRecord
         }
 
         # Perform setters
-        $contextAttrs = $Model->Context->getAttributes();
         foreach ($attributes as $attr) {
             if (!array_key_exists($attr, $values) || in_array($attr, $skip)) {
                 continue;
