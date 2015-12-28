@@ -65,7 +65,7 @@ class NonPersistentRecord
         }
 
         # Insert entry
-        $Model->flushCache();
+        $Model->CC->flush();
         $id = $Model->connect()->insertGetId($insert);
 
         # Apply entry properties

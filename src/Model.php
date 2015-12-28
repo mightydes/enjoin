@@ -2,7 +2,7 @@
 
 namespace Enjoin;
 
-use DB, Config, Exception, Cache;
+use DB, Config, Exception;
 use Doctrine\Common\Inflector\Inflector;
 
 // TODO: `bulkCreate` second parameter (an array) to let it know which fields you want to build explicitly.
@@ -10,14 +10,17 @@ use Doctrine\Common\Inflector\Inflector;
 class Model
 {
 
-    const CACHE_PREFIX = 'enjoin';
-    const CACHE_EXPIRES = 24; // hours
-
     /**
      * Model description object.
      * @var BaseModel
      */
     public $Context;
+
+    /**
+     * CacheControl object.
+     * @var CacheControl
+     */
+    public $CC;
 
     /**
      * @return \Illuminate\Database\Query\Builder
@@ -45,6 +48,7 @@ class Model
             $Context->table = Inflector::tableize(end($arr));
         }
         $this->Context = $Context;
+        $this->CC = new CacheControl($this);
     }
 
     /**
@@ -99,8 +103,8 @@ class Model
     public function find($params)
     {
         # Check cache
-        $cache_key = $this->getCacheKey(__FUNCTION__, $params);
-        if ($cache = $this->getCache($cache_key)) {
+        $cache_key = $this->CC->getKey(__FUNCTION__, $params);
+        if ($cache = $this->CC->get($cache_key)) {
             if ($cache instanceof EmptyCache) {
                 return null;
             }
@@ -122,10 +126,10 @@ class Model
         if ($rows) {
             $Records = new Records($Finders->Handler);
             $result = $Records->handleRows($rows)[0];
-            $this->putCache($cache_key, $result);
+            $this->CC->put($cache_key, $result);
             return $result;
         }
-        $this->putCache($cache_key, new EmptyCache);
+        $this->CC->put($cache_key, new EmptyCache);
         return null;
     }
 
@@ -136,8 +140,8 @@ class Model
     public function findAll(array $params = [])
     {
         # Check cache
-        $cache_key = $this->getCacheKey(__FUNCTION__, $params);
-        if ($cache = $this->getCache($cache_key)) {
+        $cache_key = $this->CC->getKey(__FUNCTION__, $params);
+        if ($cache = $this->CC->get($cache_key)) {
             if ($cache instanceof EmptyCache) {
                 return [];
             }
@@ -150,10 +154,10 @@ class Model
         if ($rows) {
             $Records = new Records($Finders->Handler);
             $result = $Records->handleRows($rows);
-            $this->putCache($cache_key, $result);
+            $this->CC->put($cache_key, $result);
             return $result;
         }
-        $this->putCache($cache_key, new EmptyCache);
+        $this->CC->put($cache_key, new EmptyCache);
         return [];
     }
 
@@ -164,8 +168,8 @@ class Model
     public function findAndCountAll(array $params = [])
     {
         # Check cache
-        $cache_key = $this->getCacheKey(__FUNCTION__, $params);
-        if ($cache = $this->getCache($cache_key)) {
+        $cache_key = $this->CC->getKey(__FUNCTION__, $params);
+        if ($cache = $this->CC->get($cache_key)) {
             return $cache;
         }
 
@@ -200,7 +204,7 @@ class Model
             }
         }
 
-        $this->putCache($cache_key, $out);
+        $this->CC->put($cache_key, $out);
         return $out;
     }
 
@@ -211,8 +215,8 @@ class Model
     public function count(array $params = [])
     {
         # Check cache
-        $cache_key = $this->getCacheKey(__FUNCTION__, $params);
-        $cache = $this->getCache($cache_key);
+        $cache_key = $this->CC->getKey(__FUNCTION__, $params);
+        $cache = $this->CC->get($cache_key);
         if (is_numeric($cache)) {
             return $cache;
         }
@@ -234,7 +238,7 @@ class Model
             $count = $Finders->DB->count();
         }
 
-        $this->putCache($cache_key, $count);
+        $this->CC->put($cache_key, $count);
         return $count;
     }
 
@@ -283,7 +287,7 @@ class Model
      */
     public function create(array $collection, array $attributes = [])
     {
-        $this->flushCache();
+        $this->CC->flush();
         return $this->build($collection, $attributes)->save();
     }
 
@@ -293,7 +297,7 @@ class Model
      */
     public function bulkCreate(array $collections)
     {
-        $this->flushCache();
+        $this->CC->flush();
 
         $bulk = [];
         foreach ($collections as $col) {
@@ -340,7 +344,7 @@ class Model
      */
     public function update(array $where, array $updateCollection)
     {
-        $this->flushCache();
+        $this->CC->flush();
 
         $Finders = new Finders($this->connect(), $this);
         $Finders->handle(['where' => $where]);
@@ -387,7 +391,7 @@ class Model
     {
         // TODO: handle `$options['truncate']`
 
-        $this->flushCache();
+        $this->CC->flush();
 
         if (!$where && !$options) {
             # Delete all records
@@ -401,73 +405,6 @@ class Model
         }
 
         return 0;
-    }
-
-    /**
-     * @param string $func_name
-     * @param mixed $params
-     * @return string
-     */
-    private function getCacheKey($func_name, $params)
-    {
-        return self::CACHE_PREFIX . '.'
-        . $func_name . '.'
-        . md5(json_encode([$params, $this->getKey()], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-    }
-
-    /**
-     * @param string $key
-     * @return mixed
-     */
-    private function getCache($key)
-    {
-        if (!$this->Context->cache) {
-            return null;
-        }
-        return Cache::tags($this->getKey())->get($key);
-    }
-
-    /**
-     * @param string $key
-     * @param mixed $data
-     * @return null
-     */
-    private function putCache($key, $data)
-    {
-        // TODO: add `cacheExpires` model option.
-
-        if (!$this->Context->cache) {
-            return null;
-        }
-        Cache::tags($this->getKey())->put($key, $data, self::CACHE_EXPIRES * 60);
-    }
-
-    /**
-     * Flush cache.
-     */
-    public function flushCache()
-    {
-        $tags = [];
-        $this->getFlushTags($tags);
-        if ($tags) {
-            Cache::tags($tags)->flush();
-        }
-    }
-
-    /**
-     * @param array $tags
-     * @return null
-     */
-    public function getFlushTags(array &$tags)
-    {
-        $key = $this->getKey();
-        if (in_array($key, $tags)) {
-            return null;
-        }
-        $tags [] = $key;
-        foreach ($this->Context->getRelations() as $v) {
-            $v['model']->getFlushTags($tags);
-        }
     }
 
 } // end of class

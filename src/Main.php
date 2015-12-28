@@ -53,8 +53,12 @@ class Main
         if (array_key_exists($class, $this->models)) {
             return $this->models[$class];
         }
-        $this->models[$class] = new Model(new $class);
-        return $this->models[$class];
+
+        # Register model:
+        $Context = new $class;
+        return $this->models[$class] = $Context->expanseModel
+            ? new $Context->expanseModel($Context)
+            : new Model($Context);
     }
 
 

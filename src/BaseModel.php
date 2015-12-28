@@ -17,6 +17,8 @@ abstract class BaseModel
 
     public $cache = false;
 
+    public $expanseModel = null;
+
     /**
      * @return array
      */

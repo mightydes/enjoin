@@ -71,7 +71,7 @@ class PersistentRecord
         }
 
         # Update entry
-        $Model->flushCache();
+        $Model->CC->flush();
         $Model->connect()->where('id', $Record->_getInternal('id'))->take(1)->update($update);
 
         return true;
@@ -118,7 +118,7 @@ class PersistentRecord
          */
         $Model = $Record->_getInternal('model');
 
-        $Model->flushCache();
+        $Model->CC->flush();
         $Model->connect()->where('id', $Record->_getInternal('id'))->take(1)->delete();
         $Record->_setInternal('type', null);
         return true;
