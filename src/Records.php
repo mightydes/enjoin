@@ -83,7 +83,8 @@ class Records
         $id = $item['prefix']
             ? $row->{$item['prefix'] . Extras::$GLUE_CHAR . 'id'}
             : $row->id;
-        $Record = new Record($item['model'], Extras::$PERSISTENT_RECORD, (int)$id);
+        $recordClass = $item['model']->Context->expanseRecord ?: Record::class;
+        $Record = new $recordClass($item['model'], Extras::$PERSISTENT_RECORD, (int)$id);
 
         # Handle attributes
         $getValue = function ($attr) use ($item, $row) {

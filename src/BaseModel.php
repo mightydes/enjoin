@@ -19,6 +19,8 @@ abstract class BaseModel
 
     public $expanseModel = null;
 
+    public $expanseRecord = null;
+
     /**
      * @return array
      */

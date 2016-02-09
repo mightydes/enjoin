@@ -267,7 +267,8 @@ class Model
      */
     public function build(array $collection = [], array $attributes = [])
     {
-        $Record = new Record($this, Extras::$NON_PERSISTENT_RECORD);
+        $recordClass = $this->Context->expanseRecord ?: Record::class;
+        $Record = new $recordClass($this, Extras::$NON_PERSISTENT_RECORD);
         foreach ($collection as $k => $v) {
             if ($attributes) {
                 if (in_array($k, $attributes)) {
