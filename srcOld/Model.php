@@ -7,7 +7,7 @@ use Doctrine\Common\Inflector\Inflector;
 
 // TODO: `bulkCreate` second parameter (an array) to let it know which fields you want to build explicitly.
 
-class Model
+class ModelOld
 {
 
     /**

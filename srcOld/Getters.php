@@ -5,7 +5,7 @@ namespace Enjoin;
 use Carbon\Carbon;
 use Exception;
 
-class Getters
+class GettersOld
 {
 
     /**

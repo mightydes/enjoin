@@ -1,74 +1,36 @@
 <?php
 
-namespace Enjoin;
+namespace Enjoin\Record;
 
-use Exception, stdClass;
+use Enjoin\Model\Model;
+use Enjoin\Extras;
+use stdClass;
 
 class Record extends stdClass
 {
 
     /**
-     * List of internal properties.
-     * @var array
+     * @var Engine|null
      */
-    private $_internal = [
-
-        # Corresponded model instance.
-        'model' => null,
-
-        # Entry `id`
-        'id' => null,
-
-        # Record type (`persistent` or `non persistent`)
-        'type' => null
-
-    ]; // end of internal
-
-    /**
-     * @param $key
-     * @return mixed
-     */
-    public function _getInternal($key)
-    {
-        return $this->_internal[$key];
-    }
-
-    /**
-     * @param $key
-     * @param $value
-     */
-    public function _setInternal($key, $value)
-    {
-        $this->_internal[$key] = $value;
-    }
+    private $Engine = null;
 
     /**
      * @param Model $Model
-     * @param $type
-     * @param null $id
+     * @param string $type
+     * @param null|int $id
      */
-    public function __construct(Model $Model, $type, $id = null)
+    public function __construct(Model $Model, $type = Engine::NON_PERSISTENT, $id = null)
     {
-        $this->_internal['model'] = $Model;
-        $this->_internal['id'] = $id;
-        $this->_internal['type'] = $type;
+        $this->Engine = new Engine($this, $Model, $type, $id);
     }
 
     /**
-     * @param array $attributes
-     * @return bool|int
-     * @throws \Exception
+     * @param array|null $attributes
+     * @return Record
      */
-    public function save(array $attributes = [])
+    public function save(array $attributes = null)
     {
-        switch ($this->_internal['type']) {
-            case(Extras::$PERSISTENT_RECORD):
-                return PersistentRecord::save($this, $attributes);
-            case(Extras::$NON_PERSISTENT_RECORD):
-                return NonPersistentRecord::save($this, $attributes);
-            default:
-                throw new Exception('Record destroyed');
-        }
+        return $this->Engine->save($attributes);
     }
 
     /**
@@ -117,7 +79,10 @@ class Record extends stdClass
     public function __toArray()
     {
         $out = [];
-        foreach (Extras::omit(get_object_vars($this), Extras::$RECORD_OMIT) as $prop => $value) {
+        foreach ($this as $prop => $value) {
+            if ($value instanceof Engine) {
+                continue;
+            }
             if ($value instanceof Record) {
                 $out[$prop] = $value->__toArray();
             } elseif (is_array($value)) {
@@ -137,11 +102,11 @@ class Record extends stdClass
     }
 
     /**
-     * @return string
+     * @return mixed
      */
     public function __toString()
     {
-        return json_encode($this->__toArray(), JSON_UNESCAPED_UNICODE, JSON_UNESCAPED_SLASHES);
+        return json_encode($this->__toArray(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
-} // end of class
+}

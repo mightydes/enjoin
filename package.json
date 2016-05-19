@@ -1,0 +1,14 @@
+{
+  "dependencies": {},
+  "devDependencies": {
+    "async": "^1.5.2",
+    "debug": "^2.2.0",
+    "dotenv": "^2.0.0",
+    "gulp": "^3.9.1",
+    "gulp-phpunit": "^0.14.0",
+    "gulp-util": "^3.0.7",
+    "mysql": "^2.10.2",
+    "sequelize": "^3.19.3",
+    "underscore": "^1.8.3"
+  }
+}

@@ -1,4 +1,5 @@
 .idea
+node_modules
+srcOld
 vendor
 composer.lock
-test

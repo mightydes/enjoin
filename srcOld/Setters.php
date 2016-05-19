@@ -4,7 +4,7 @@ namespace Enjoin;
 
 use Carbon\Carbon;
 
-class Setters
+class SettersOld
 {
 
     /**
