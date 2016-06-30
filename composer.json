@@ -1,7 +1,7 @@
 {
   "name": "mightydes/enjoin",
-  "description": "Php ORM inspired by Sequelize.js",
-  "license": "CNU",
+  "description": "PHP ORM inspired by Sequelize.js",
+  "license": "GNU",
   "keywords": [
     "enjoin",
     "laravel",

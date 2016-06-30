@@ -674,6 +674,14 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->assertTrue(is_null($it));
     }
 
+    /**
+     * @depends testBootstrap
+     */
+    public function testExpanseModel()
+    {
+        $this->assertEquals('OK', Enjoin::get('Authors')->ping());
+    }
+
     // TODO: test model description getter/setter...
     // TODO: test `hasOne` relation...
     // TODO: test `as` relation...

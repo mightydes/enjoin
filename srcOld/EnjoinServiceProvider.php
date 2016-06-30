@@ -1,6 +1,6 @@
 <?php
 
-namespace Enjoin;
+namespace Enjoin1;
 
 use Illuminate\Support\ServiceProvider;
 

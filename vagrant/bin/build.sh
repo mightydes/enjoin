@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -v
-
 # Go to script directory
 BASE_DIR=$(dirname $0)
 cd $BASE_DIR

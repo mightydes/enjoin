@@ -8,6 +8,8 @@ use Enjoin\Enjoin;
 class Authors extends Definition
 {
 
+    public $expanseModel = Expanse\AuthorsModel::class;
+
     public function getAttributes()
     {
         return [
