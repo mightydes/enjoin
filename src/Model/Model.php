@@ -144,6 +144,7 @@ class Model
     public function findOne(array $params, $flags = 0)
     {
         // TODO: cache...
+        // TODO: enable call without params.
         unset($params['offset']);
         $params['limit'] = 1;
         $Find = new Find($this, $params);
@@ -182,6 +183,28 @@ class Model
             $params = ['where' => ['id' => $params]];
         }
         return $this->findOne($params);
+    }
+
+    /**
+     * @param array|null $params
+     * @param int $flags
+     * @return array|mixed
+     */
+    public function findAll(array $params = null, $flags = 0)
+    {
+        // TODO: cache...
+        $params ?: $params = [];
+        $Find = new Find($this, $params);
+        list($query, $place) = $Find->getPrepared();
+        if ($flags & Enjoin::SQL) {
+            return PdoDebugger::show($query, $place);
+        }
+        $rows = $this->connection()->select($query, $place);
+        if ($rows) {
+            $Records = new Records($Find->Tree);
+            return $Records->handleRows($rows);
+        }
+        return [];
     }
 
     /**

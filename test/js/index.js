@@ -32,7 +32,9 @@ module.exports = {
     testFindOneEagerNested: testFindOneEagerNested,
     testFindOneEagerNestedById: testFindOneEagerNestedById,
     testFindOneEagerNestedMean: testFindOneEagerNestedMean,
-    testFindOneEagerNestedDeep: testFindOneEagerNestedDeep
+    testFindOneEagerNestedDeep: testFindOneEagerNestedDeep,
+
+    testFindAll: testFindAll
 };
 
 function camelize(str) {
@@ -552,4 +554,8 @@ function testFindOneEagerNestedDeep() {
     };
     models.Authors.findOne(params);
     toPhpParams(params);
+}
+
+function testFindAll() {
+    models.Authors.findAll();
 }

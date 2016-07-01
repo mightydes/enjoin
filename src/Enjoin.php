@@ -120,4 +120,22 @@ class Enjoin
         return $relation;
     }
 
+    /**
+     * @deprecated use `'and' => [...]` instead.
+     * @return array
+     */
+    public static function sqlAnd()
+    {
+        return ['and' => func_get_args()];
+    }
+
+    /**
+     * @deprecated use `'or' => [...]` instead.
+     * @return array
+     */
+    public static function sqlOr()
+    {
+        return ['or' => func_get_args()];
+    }
+
 }

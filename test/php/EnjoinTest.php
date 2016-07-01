@@ -682,6 +682,25 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('OK', Enjoin::get('Authors')->ping());
     }
 
+    /**
+     * SELECT `id`, `name`, `created_at`, `updated_at` FROM `authors` AS `authors`
+     * @depends testMockDataA
+     */
+    public function testFindAll()
+    {
+        $sql = Enjoin::get('Authors')->findAll(null, Enjoin::SQL);
+        $this->assertEquals(
+            "SELECT `id`, `name`, `created_at`, `updated_at` FROM `authors` AS `authors`",
+            $sql
+        );
+
+        $r = Enjoin::get('Authors')->findAll();
+        $this->assertEquals(
+            [2, 'J. R. R. Tolkien', 2],
+            [count($r), $r[0]->name, $r[1]->id]
+        );
+    }
+
     // TODO: test model description getter/setter...
     // TODO: test `hasOne` relation...
     // TODO: test `as` relation...

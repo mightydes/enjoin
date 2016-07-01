@@ -36,7 +36,9 @@ gulp.task('create-tables', function (callback) {
     'testFindOneEagerNested',
     'testFindOneEagerNestedById',
     'testFindOneEagerNestedMean',
-    'testFindOneEagerNestedDeep'
+    'testFindOneEagerNestedDeep',
+
+    'testFindAll'
 ].forEach(function (task) {
     gulp.task(task, ['create-tables'], lib[task]);
 });
