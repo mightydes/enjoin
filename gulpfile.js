@@ -41,7 +41,8 @@ gulp.task('create-compare-trait', lib.createCompareTrait);
     'testFindOneEagerNestedDeep',
 
     'testFindAll',
-    'testFindAllEagerOneThenMany'
+    'testFindAllEagerOneThenMany',
+    'testFindAllEagerOneThenManyMean'
 ].forEach(function (task) {
     gulp.task(task, ['create-tables'], lib[task]);
 });

@@ -14,7 +14,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testFindOneEagerNested';
+    private $debugFunction = 'testFindAllEagerOneThenManyMean';
 
     public function testBootstrap()
     {
@@ -641,6 +641,23 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $r = Enjoin::get('Books')->findAll($params);
         $this->assertEquals(
             [22, 1, 2, 12],
+            [count($r), $r[0]->id, $r[0]->author->id, count($r[0]->author->articles)]
+        );
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testFindAllEagerOneThenManyMean()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $params = $this->params_testFindAllEagerOneThenManyMean();
+        $sql = Enjoin::get('Books')->findAll($params, Enjoin::SQL);
+        $this->assertEquals($this->sql_testFindAllEagerOneThenManyMean(), $sql);
+
+        $r = Enjoin::get('Books')->findAll($params);
+        $this->assertEquals(
+            [1, 1, 2, 12],
             [count($r), $r[0]->id, $r[0]->author->id, count($r[0]->author->articles)]
         );
     }

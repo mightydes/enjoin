@@ -113,16 +113,10 @@ class Find
     {
         $parent = $path[$depth - 1];
         $parentPrefix = $parent->prefix ?: $this->Model->Definition->table;
-//        $on = $node->relation->type === Extras::BELONGS_TO
-//            ? ["`$parentPrefix`.`{$node->relation->foreignKey}`",
-//                "`{$node->prefix}`.`id`"]
-//            : ["`$parentPrefix`.`id`",
-//                "`{$node->prefix}`.`{$node->relation->foreignKey}`"];
         $on = $node->relation->type === Extras::BELONGS_TO
             ? "`$parentPrefix`.`{$node->relation->foreignKey}` = `{$node->prefix}`.`id`"
             : "`$parentPrefix`.`id` = `{$node->prefix}`.`{$node->relation->foreignKey}`";
         $junction = $node->required ? 'INNER' : 'LEFT OUTER';
-//        $query = "$junction JOIN `{$node->Model->Definition->table}` AS `{$node->prefix}` ON " . join(' = ', $on);
         $query = "$junction JOIN `{$node->Model->Definition->table}` AS `{$node->prefix}` ON $on";
 
         $where = '';
@@ -146,7 +140,6 @@ class Find
                 }
                 $subWhere = "SELECT `{$node->relation->foreignKey}` " .
                     "FROM `{$node->Model->Definition->table}` AS `{$node->prefix}` " .
-//                    "WHERE (" . join(' = ', array_reverse($on)) . "$clause)$limit";
                     "WHERE ({$on}$clause)$limit";
                 $this->subWhere [] = "($subWhere) IS NOT NULL";
                 $this->join [] = $query;
@@ -215,7 +208,12 @@ class Find
             $query .= ' ' . $this->prepLimit;
         }
 
-        $place = $this->placeWhere;
+//        !Enjoin::debug() ?: sd($this->placeSubJoin, $this->placeSubWhere, $this->placeWhere, $this->placeJoin);
+        $place = array_merge(
+            $this->placeJoin,
+            $this->placeWhere
+        );
+
         return [$query, $place];
     }
 
