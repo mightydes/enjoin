@@ -53,7 +53,8 @@ class Find
         $this->Tree = new Tree($this->Model, $params);
 //        !Enjoin::debug() ?: sd($this->Tree);
         $this->isById = isset($params['where']['id']) && is_numeric($params['where']['id']);
-        $this->isSubquery = $this->Tree->hasMany && !$this->isById;
+//        $this->isSubquery = $this->Tree->hasMany && !$this->isById;
+        $this->isSubquery = $this->Tree->hasMany && $this->Tree->hasLimit && !$this->isById;
     }
 
     /**
@@ -111,22 +112,25 @@ class Find
     private function handleNodeJoin(stdClass $node, array $path, $depth)
     {
         $parent = $path[$depth - 1];
-//        $parentAs = $parent->as ?: $this->Model->Definition->table;
-//        $on = $node->relation->type === Extras::BELONGS_TO
-//            ? "`$parentAs`.`{$node->relation->foreignKey}` = `{$node->prefix}`.`id`"
-//            : "`$parentAs`.`id` = `{$node->prefix}`.`{$node->relation->foreignKey}`";
         $parentPrefix = $parent->prefix ?: $this->Model->Definition->table;
+//        $on = $node->relation->type === Extras::BELONGS_TO
+//            ? ["`$parentPrefix`.`{$node->relation->foreignKey}`",
+//                "`{$node->prefix}`.`id`"]
+//            : ["`$parentPrefix`.`id`",
+//                "`{$node->prefix}`.`{$node->relation->foreignKey}`"];
         $on = $node->relation->type === Extras::BELONGS_TO
             ? "`$parentPrefix`.`{$node->relation->foreignKey}` = `{$node->prefix}`.`id`"
             : "`$parentPrefix`.`id` = `{$node->prefix}`.`{$node->relation->foreignKey}`";
         $junction = $node->required ? 'INNER' : 'LEFT OUTER';
+//        $query = "$junction JOIN `{$node->Model->Definition->table}` AS `{$node->prefix}` ON " . join(' = ', $on);
         $query = "$junction JOIN `{$node->Model->Definition->table}` AS `{$node->prefix}` ON $on";
 
         $where = '';
         $place = [];
         if ($node->where) {
-            list($where, $place) = (new Where($node->where, $node->prefix))->getPrepared();
-            $query .= ' AND ' . $where;
+            $WhereBuilder = new Where($node->where, $node->prefix);
+            list($where, $place) = $WhereBuilder->getPrepared();
+            $query .= " AND $where";
         }
 
         if ($this->isSubquery && $node->required && $depth === 1) {
@@ -135,10 +139,15 @@ class Find
                 $this->placeSubJoin = array_merge($this->placeSubJoin, $place);
             } else {
                 $limit = $this->prepLimit ? ' ' . $this->prepLimit : '';
-                $clause = $where ? ' AND ' . $where : '';
+                $clause = '';
+                if ($where) {
+                    !$WhereBuilder->isComposite() ?: $where = "($where)";
+                    $clause = " AND $where";
+                }
                 $subWhere = "SELECT `{$node->relation->foreignKey}` " .
                     "FROM `{$node->Model->Definition->table}` AS `{$node->prefix}` " .
-                    "WHERE ($on$clause)$limit";
+//                    "WHERE (" . join(' = ', array_reverse($on)) . "$clause)$limit";
+                    "WHERE ({$on}$clause)$limit";
                 $this->subWhere [] = "($subWhere) IS NOT NULL";
                 $this->join [] = $query;
                 $this->placeSubWhere = array_merge($this->placeSubWhere, $place);

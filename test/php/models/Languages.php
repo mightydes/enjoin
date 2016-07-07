@@ -5,10 +5,8 @@ namespace Models;
 use Enjoin\Model\Definition;
 use Enjoin\Enjoin;
 
-class Authors extends Definition
+class Languages extends Definition
 {
-
-    public $expanseModel = Expanse\AuthorsModel::class;
 
     public function getAttributes()
     {
@@ -21,8 +19,7 @@ class Authors extends Definition
     public function getRelations()
     {
         return [
-            Enjoin::hasMany(Enjoin::get('Articles'), ['foreignKey' => 'authors_id']),
-            Enjoin::hasMany(Enjoin::get('Books'), ['foreignKey' => 'authors_id'])
+            Enjoin::hasMany(Enjoin::get('Books'), ['foreignKey' => 'languages_id'])
         ];
     }
 

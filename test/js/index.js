@@ -1,9 +1,11 @@
 var models = require('./models');
 var debug = require('debug')('phpunit');
 var _ = require('underscore');
+var fs = require('fs');
 
 module.exports = {
     createTables: require('./create-tables'),
+    createCompareTrait: require('./create-compare-trait'),
     testFindById: testFindById,
 
     testFindOneEager: testFindOneEager,
@@ -34,7 +36,8 @@ module.exports = {
     testFindOneEagerNestedMean: testFindOneEagerNestedMean,
     testFindOneEagerNestedDeep: testFindOneEagerNestedDeep,
 
-    testFindAll: testFindAll
+    testFindAll: testFindAll,
+    testFindAllEagerOneThenMany: testFindAllEagerOneThenMany
 };
 
 function camelize(str) {
@@ -44,7 +47,9 @@ function camelize(str) {
 }
 
 function toPhpParams(params) {
-    debug('Php params: ' + handle(params));
+    var out = handle(params);
+    debug('Php params: ' + out);
+    return out;
 
     function handle(params) {
         var r = '[';
@@ -79,76 +84,78 @@ function toPhpParams(params) {
     }
 }
 
+function saveCompare(name, model, method, params) {
+    var phpParams = toPhpParams(params);
+    params || (params = {});
+    params.logging = function (sql) {
+        var filename = __dirname + '/../php/compare/' + name + '.json';
+        var data = {
+            params: phpParams,
+            sql: sql.replace(/Executing \(default\):\s*(.+);$/, '$1')
+        };
+        fs.writeFile(filename, JSON.stringify(data));
+    };
+    model[method](params);
+}
+
 function testFindById() {
     models.Authors.findById(1);
 }
 
 function testFindOneEager() {
-    var params = {
+    saveCompare('testFindOneEager', models.Authors, 'findOne', {
         include: models.Books
-    };
-    toPhpParams(params);
-    models.Authors.findOne(params);
+    });
 }
 
 function testFindOneEagerRequired() {
-    var params = {
+    saveCompare('testFindOneEagerRequired', models.Authors, 'findOne', {
         include: {
             model: models.Books,
             required: true
         }
-    };
-    toPhpParams(params);
-    models.Authors.findOne(params);
+    });
 }
 
 function testFindOneEagerById() {
-    var params = {
+    saveCompare('testFindOneEagerById', models.Authors, 'findOne', {
         where: {id: 1},
         include: models.Books
-    };
-    toPhpParams(params);
-    models.Authors.findOne(params);
+    });
 }
 
 function testFindOneEagerByIdRequired() {
-    var params = {
+    saveCompare('testFindOneEagerByIdRequired', models.Authors, 'findOne', {
         where: {id: 1},
         include: {
             model: models.Books,
             required: true
         }
-    };
-    toPhpParams(params);
-    models.Authors.findOne(params);
+    });
 }
 
 function testFindOneEagerByIdMean() {
-    var params = {
+    saveCompare('testFindOneEagerByIdMean', models.Authors, 'findOne', {
         where: {
             id: 1,
             name: ['Alice', 'Bob']
         },
         include: models.Books
-    };
-    toPhpParams(params);
-    models.Authors.findOne(params);
+    });
 }
 
 function testFindOneEagerMean() {
-    var params = {
+    saveCompare('testFindOneEagerMean', models.Authors, 'findOne', {
         where: {
             id: [1, 2, 3],
             name: ['Alice', 'Bob']
         },
         include: models.Books
-    };
-    toPhpParams(params);
-    models.Authors.findOne(params);
+    });
 }
 
 function testFindOneEagerMeanRequired() {
-    var params = {
+    saveCompare('testFindOneEagerMeanRequired', models.Authors, 'findOne', {
         where: {
             id: [1, 2, 3],
             name: ['Alice', 'Bob']
@@ -157,65 +164,53 @@ function testFindOneEagerMeanRequired() {
             model: models.Books,
             required: true
         }
-    };
-    toPhpParams(params);
-    models.Authors.findOne(params);
+    });
 }
 
 function testFindOneEagerReversed() {
-    var params = {
+    saveCompare('testFindOneEagerReversed', models.Books, 'findOne', {
         include: models.Authors
-    };
-    toPhpParams(params);
-    models.Books.findOne(params);
+    });
 }
 
 function testFindOneEagerReversedRequired() {
-    var params = {
+    saveCompare('testFindOneEagerReversedRequired', models.Books, 'findOne', {
         include: {
             model: models.Authors,
             required: true
         }
-    };
-    toPhpParams(params);
-    models.Books.findOne(params);
+    });
 }
 
 function testFindOneEagerReversedById() {
-    var params = {
+    saveCompare('testFindOneEagerReversedById', models.Books, 'findOne', {
         where: {id: 1},
         include: models.Authors
-    };
-    toPhpParams(params);
-    models.Books.findOne(params);
+    });
 }
 
 function testFindOneEagerReversedByIdRequired() {
-    var params = {
+    saveCompare('testFindOneEagerReversedByIdRequired', models.Books, 'findOne', {
         where: {id: 1},
         include: {
             model: models.Authors,
             required: true
         }
-    };
-    toPhpParams(params);
-    models.Books.findOne(params);
+    });
 }
 
 function testFindOneEagerReversedByIdMean() {
-    var params = {
+    saveCompare('testFindOneEagerReversedByIdMean', models.Books, 'findOne', {
         where: {
             id: [1, 2, 3],
             title: ['Alice', 'Bob']
         },
         include: models.Authors
-    };
-    toPhpParams(params);
-    models.Books.findOne(params);
+    });
 }
 
 function testFindOneEagerReversedMean() {
-    var params = {
+    saveCompare('testFindOneEagerReversedMean', models.Books, 'findOne', {
         where: {
             id: {
                 $in: [1, 2, 3],
@@ -225,13 +220,11 @@ function testFindOneEagerReversedMean() {
             title: ['Alice', 'Bob']
         },
         include: models.Authors
-    };
-    toPhpParams(params);
-    models.Books.findOne(params);
+    });
 }
 
 function testFindOneEagerReversedMeanRequired() {
-    var params = {
+    saveCompare('testFindOneEagerReversedMeanRequired', models.Books, 'findOne', {
         where: {
             id: {
                 $in: [1, 2, 3],
@@ -244,13 +237,11 @@ function testFindOneEagerReversedMeanRequired() {
             model: models.Authors,
             required: true
         }
-    };
-    toPhpParams(params);
-    models.Books.findOne(params);
+    });
 }
 
 function testFindOneComplex() {
-    var params = {
+    saveCompare('testFindOneComplex', models.Authors, 'findOne', {
         where: {
             id: {
                 $in: [1, 2, 3],
@@ -262,13 +253,11 @@ function testFindOneComplex() {
                 $ne: null
             }
         }
-    };
-    models.Authors.findOne(params);
-    toPhpParams(params);
+    });
 }
 
 function testFindOneAndOr() {
-    var params = {
+    saveCompare('testFindOneAndOr', models.Authors, 'findOne', {
         where: {
             $or: [
                 {
@@ -301,25 +290,21 @@ function testFindOneAndOr() {
                 }
             ]
         }
-    };
-    models.Authors.findOne(params);
-    toPhpParams(params);
+    });
 }
 
 function testFindOneEagerMulti() {
-    var params = {
+    saveCompare('testFindOneEagerMulti', models.Books, 'findOne', {
         include: [
             models.Authors,
             models.Reviews,
             models.PublishersBooks
         ]
-    };
-    models.Books.findOne(params);
-    toPhpParams(params);
+    });
 }
 
 function testFindOneEagerMultiRequired() {
-    var params = {
+    saveCompare('testFindOneEagerMultiRequired', models.Books, 'findOne', {
         include: [
             {
                 model: models.Authors,
@@ -331,16 +316,14 @@ function testFindOneEagerMultiRequired() {
             },
             models.PublishersBooks
         ]
-    };
-    models.Books.findOne(params);
-    toPhpParams(params);
+    });
 }
 
 /**
  * Note: when an eager loaded model is filtered using include.where then include.required is implicitly set to true.
  */
 function testFindOneEagerMultiWhere() {
-    var params = {
+    saveCompare('testFindOneEagerMultiWhere', models.Books, 'findOne', {
         include: [
             {
                 model: models.Authors,
@@ -361,13 +344,11 @@ function testFindOneEagerMultiWhere() {
                 }
             }
         ]
-    };
-    models.Books.findOne(params);
-    toPhpParams(params);
+    });
 }
 
 function testFindOneEagerNested() {
-    var params = {
+    saveCompare('testFindOneEagerNested', models.Authors, 'findOne', {
         include: {
             model: models.Books,
             where: {
@@ -397,13 +378,11 @@ function testFindOneEagerNested() {
                 }
             ]
         }
-    };
-    models.Authors.findOne(params);
-    toPhpParams(params);
+    });
 }
 
 function testFindOneEagerNestedById() {
-    var params = {
+    saveCompare('testFindOneEagerNestedById', models.Authors, 'findOne', {
         where: {
             id: {
                 $in: [1, 2, 3],
@@ -440,13 +419,11 @@ function testFindOneEagerNestedById() {
                 }
             ]
         }
-    };
-    models.Authors.findOne(params);
-    toPhpParams(params);
+    });
 }
 
 function testFindOneEagerNestedMean() {
-    var params = {
+    saveCompare('testFindOneEagerNestedMean', models.Authors, 'findOne', {
         where: {
             id: {
                 $gte: 0,
@@ -488,13 +465,11 @@ function testFindOneEagerNestedMean() {
                 }
             ]
         }
-    };
-    models.Authors.findOne(params);
-    toPhpParams(params);
+    });
 }
 
 function testFindOneEagerNestedDeep() {
-    var params = {
+    saveCompare('testFindOneEagerNestedDeep', models.Authors, 'findOne', {
         where: {
             id: {
                 $gte: 0,
@@ -551,11 +526,18 @@ function testFindOneEagerNestedDeep() {
                 }
             ]
         }
-    };
-    models.Authors.findOne(params);
-    toPhpParams(params);
+    });
 }
 
 function testFindAll() {
     models.Authors.findAll();
+}
+
+function testFindAllEagerOneThenMany() {
+    saveCompare('testFindAllEagerOneThenMany', models.Books, 'findAll', {
+        include: {
+            model: models.Authors,
+            include: models.Articles
+        }
+    });
 }

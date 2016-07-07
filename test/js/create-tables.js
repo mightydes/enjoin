@@ -4,6 +4,7 @@ var models = require('./models');
 
 var order = [
     models.Authors,
+    models.Articles,
     models.Languages,
     models.Books,
     models.Reviews,

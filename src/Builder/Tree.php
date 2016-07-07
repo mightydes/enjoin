@@ -19,6 +19,7 @@ class Tree
 
     public $hasChildren = false;
     public $hasMany = false;
+    public $hasLimit = false;
 
     /**
      * Tree constructor.
@@ -29,6 +30,7 @@ class Tree
     {
         $this->tree = $this->createNode($Model, $params);
         $this->hasChildren = count($this->tree->children) > 0;
+        $this->hasLimit = isset($params['limit']);
         if ($this->hasChildren) {
             $this->walk(function (stdClass $node, array $path) {
                 if (count($path) - 1) {

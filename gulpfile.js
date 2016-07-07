@@ -7,6 +7,8 @@ gulp.task('create-tables', function (callback) {
     return lib.createTables(callback);
 });
 
+gulp.task('create-compare-trait', lib.createCompareTrait);
+
 [
     'testFindById',
 
@@ -38,7 +40,8 @@ gulp.task('create-tables', function (callback) {
     'testFindOneEagerNestedMean',
     'testFindOneEagerNestedDeep',
 
-    'testFindAll'
+    'testFindAll',
+    'testFindAllEagerOneThenMany'
 ].forEach(function (task) {
     gulp.task(task, ['create-tables'], lib[task]);
 });

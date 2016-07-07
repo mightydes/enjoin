@@ -23,6 +23,7 @@ var sequelize = new Sequelize(DATABASE, USERNAME, PASSWORD, {
 module.exports = describeRelations({
     sequelize: sequelize,
     Authors: sequelize.import('./authors'),
+    Articles: sequelize.import('./articles'),
     Languages: sequelize.import('./languages'),
     Books: sequelize.import('./books'),
     Reviews: sequelize.import('./reviews'),
@@ -35,6 +36,9 @@ module.exports = describeRelations({
 function describeRelations(ctx) {
     ctx.Authors.hasMany(ctx.Books, {foreignKey: 'authors_id'});
     ctx.Books.belongsTo(ctx.Authors, {foreignKey: 'authors_id'});
+
+    ctx.Authors.hasMany(ctx.Articles, {foreignKey: 'authors_id'});
+    ctx.Articles.belongsTo(ctx.Authors, {foreignKey: 'authors_id'});
 
     ctx.Languages.hasMany(ctx.Books, {foreignKey: 'languages_id'});
     ctx.Books.belongsTo(ctx.Languages, {foreignKey: 'languages_id'});

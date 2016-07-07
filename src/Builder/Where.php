@@ -45,8 +45,15 @@ class Where
      */
     public function getPrepared()
     {
-//        !Enjoin::debug() ?: sd($this->query, $this->place);
         return [join('', $this->query), $this->place];
+    }
+
+    /**
+     * @return bool
+     */
+    public function isComposite()
+    {
+        return count($this->query) > 1;
     }
 
     /**
@@ -70,7 +77,17 @@ class Where
                 }
             } elseif (is_array($v) && !$this->isPlainList($v)) {
                 # Complex statement:
-                $this->handle($v, is_numeric($k) ? $attr : $k, $isOr, $pristine);
+                if (is_numeric($k)) {
+                    $this->handle($v, $attr, $isOr, $pristine);
+                } else {
+                    if (count($v) > 1) {
+                        $this->addQuery('(', $isOr, $pristine);
+                        $this->handle($v, $k, $isOr);
+                        $this->addQuery(')');
+                    } else {
+                        $this->handle($v, $k, $isOr, $pristine);
+                    }
+                }
             } else {
                 # General statement, ie 'name' => 'Alice', or 'id' => [1, 2, 3]:
                 $prep = $this->prep($k, $v);
