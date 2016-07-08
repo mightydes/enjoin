@@ -208,6 +208,20 @@ class Model
     }
 
     /**
+     * @param array $collection
+     * @param array|null $defaults
+     * @return array|Record|null
+     */
+    public function findOrCreate(array $collection, array $defaults = null)
+    {
+        $it = $this->findOne(['where' => $collection]);
+        if (!$it) {
+            $it = $this->create(array_merge($collection, $defaults));
+        }
+        return $it;
+    }
+
+    /**
      * @return bool
      */
     public function isTimestamps()

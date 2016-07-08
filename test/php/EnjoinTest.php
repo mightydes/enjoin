@@ -676,6 +676,24 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1980, $r[0]->author->articles[0]->year);
     }
 
+    /**
+     * @depends testMockDataB
+     */
+    public function testFindOrCreate()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $it = Enjoin::get('Books')->findOrCreate([
+            'title' => 'Animal Farm',
+            'year' => 1945
+        ], [
+            'authors_id' => 2
+        ]);
+        $this->assertEquals(
+            [23, 'Animal Farm', 1945],
+            [$it->id, $it->title, $it->year]
+        );
+    }
+
     // TODO: test model description getter/setter...
     // TODO: test `hasOne` relation...
     // TODO: test `as` relation...
