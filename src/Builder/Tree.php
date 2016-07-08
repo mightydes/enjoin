@@ -172,21 +172,6 @@ class Tree
             $this->hasMany = true;
         }
 
-//        # Make sure that foreign key is in attributes:
-//        if ($relation->type === Extras::BELONGS_TO) {
-//            # Key stored in parent:
-//            if (!in_array($relation->foreignKey, $parent->attributes)) {
-//                $parent->attributes [] = $relation->foreignKey;
-//                $parent->skip [] = $relation->foreignKey;
-//            }
-//        } else {
-//            # Key stored in child:
-//            if (!in_array($relation->foreignKey, $child->attributes)) {
-//                $child->attributes [] = $relation->foreignKey;
-//                $child->skip [] = $relation->foreignKey;
-//            }
-//        }
-
         # Handle child `as`:
         if (!$child->as) {
             if ($relation->type === Extras::HAS_ONE || $relation->type === Extras::BELONGS_TO) {

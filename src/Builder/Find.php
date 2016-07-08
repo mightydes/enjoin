@@ -40,6 +40,7 @@ class Find
 
     protected $prepWhere = '';
     protected $prepLimit = '';
+    protected $prepOrder = '';
 
     /**
      * Find constructor.
@@ -71,7 +72,8 @@ class Find
             !$depth ?: $this->handleNodeJoin($node, $path, $depth);
         });
 
-//        $this->handleWhere();
+        $this->handleOrder();
+
         return $this->isSubquery
             ? $this->handleSubquery()
             : $this->handle();
@@ -207,6 +209,7 @@ class Find
         if ($this->prepLimit && !$this->isById) {
             $query .= ' ' . $this->prepLimit;
         }
+        !$this->prepOrder ?: $query .= ' ' . $this->prepOrder;
 
 //        !Enjoin::debug() ?: sd($this->placeSubJoin, $this->placeSubWhere, $this->placeWhere, $this->placeJoin);
         $place = array_merge(
@@ -241,6 +244,7 @@ class Find
         $select = join(', ', $this->select);
         $query = "SELECT $select FROM ($sub) AS `$table`";
         !$this->join ?: $query .= ' ' . join(' ', $this->join);
+        !$this->prepOrder ?: $query .= ' ' . $this->prepOrder;
 
 //        !Enjoin::debug() ?: sd($this->placeSubJoin, $this->placeSubWhere, $this->placeWhere, $this->placeJoin);
         $place = array_merge(
@@ -251,6 +255,16 @@ class Find
         );
 
         return [$query, $place];
+    }
+
+    /**
+     * Handle `order` part.
+     */
+    private function handleOrder()
+    {
+        if (isset($this->params['order'])) {
+            $this->prepOrder = 'ORDER BY ' . (new Order($this->Tree, $this->params['order']))->getQuery();
+        }
     }
 
 }

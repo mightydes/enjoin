@@ -662,6 +662,20 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         );
     }
 
+    /**
+     * @depends testMockDataB
+     */
+    public function testFindAllEagerOneThenManyMeanOrdered()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $params = $this->params_testFindAllEagerOneThenManyMeanOrdered();
+        $sql = Enjoin::get('Books')->findAll($params, Enjoin::SQL);
+        $this->assertEquals($this->sql_testFindAllEagerOneThenManyMeanOrdered(), $sql);
+
+        $r = Enjoin::get('Books')->findAll($params);
+        $this->assertEquals(1980, $r[0]->author->articles[0]->year);
+    }
+
     // TODO: test model description getter/setter...
     // TODO: test `hasOne` relation...
     // TODO: test `as` relation...

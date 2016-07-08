@@ -42,7 +42,8 @@ gulp.task('create-compare-trait', lib.createCompareTrait);
 
     'testFindAll',
     'testFindAllEagerOneThenMany',
-    'testFindAllEagerOneThenManyMean'
+    'testFindAllEagerOneThenManyMean',
+    'testFindAllEagerOneThenManyMeanOrdered'
 ].forEach(function (task) {
     gulp.task(task, ['create-tables'], lib[task]);
 });

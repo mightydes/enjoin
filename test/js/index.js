@@ -38,7 +38,8 @@ module.exports = {
 
     testFindAll: testFindAll,
     testFindAllEagerOneThenMany: testFindAllEagerOneThenMany,
-    testFindAllEagerOneThenManyMean: testFindAllEagerOneThenManyMean
+    testFindAllEagerOneThenManyMean: testFindAllEagerOneThenManyMean,
+    testFindAllEagerOneThenManyMeanOrdered: testFindAllEagerOneThenManyMeanOrdered
 };
 
 function camelize(str) {
@@ -554,5 +555,23 @@ function testFindAllEagerOneThenManyMean() {
                 where: {year: {$like: '19%'}}
             }
         }
+    });
+}
+
+function testFindAllEagerOneThenManyMeanOrdered() {
+    saveCompare('testFindAllEagerOneThenManyMeanOrdered', models.Books, 'findAll', {
+        where: {id: {$lt: 5}},
+        include: {
+            model: models.Authors,
+            where: {id: {$like: '2%'}},
+            include: {
+                model: models.Articles,
+                where: {year: {$like: '19%'}}
+            }
+        },
+        order: [
+            'year',
+            [models.Authors, models.Articles, 'year', 'DESC']
+        ]
     });
 }
