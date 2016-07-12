@@ -35,26 +35,28 @@ class Record extends stdClass
 
     /**
      * @param array $collection
-     * @param array $attributes
-     * @return bool
-     * @throws \Exception
+     * @param array|null $pick
+     * @return Record
      */
-    public function updateAttributes(array $collection, array $attributes = [])
+    public function update(array $collection, array $pick = null)
     {
-        if ($attributes) {
-            $collection = Extras::pick($collection, $attributes);
-        }
+        !$pick ?: $collection = Extras::pick($collection, $pick);
         foreach ($collection as $attr => $value) {
             $this->$attr = $value;
         }
-        switch ($this->_internal['type']) {
-            case(Extras::$PERSISTENT_RECORD):
-                return PersistentRecord::save($this, $attributes);
-            case(Extras::$NON_PERSISTENT_RECORD):
-                return true;
-            default:
-                throw new Exception('Record destroyed');
-        }
+        $flags = $this->Engine->type === Engine::NON_PERSISTENT ? Engine::SOFT_SAVE : 0;
+        return $this->Engine->save($pick, $flags);
+    }
+
+    /**
+     * @deprecated use `update()` instead.
+     * @param array $collection
+     * @param array|null $pick
+     * @return Record
+     */
+    public function updateAttributes(array $collection, array $pick = null)
+    {
+        return $this->update($collection, $pick);
     }
 
     /**
@@ -63,6 +65,7 @@ class Record extends stdClass
      */
     public function destroy()
     {
+        sd('Record.destroy()');
         switch ($this->_internal['type']) {
             case(Extras::$PERSISTENT_RECORD):
                 return PersistentRecord::destroy($this);

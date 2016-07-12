@@ -14,7 +14,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testFindAllEagerOneThenManyMean';
+    private $debugFunction = 'testRecordUpdate';
 
     public function testBootstrap()
     {
@@ -692,6 +692,24 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
             [23, 'Animal Farm', 1945],
             [$it->id, $it->title, $it->year]
         );
+    }
+
+    /**
+     * @depends testFindOrCreate
+     */
+    public function testRecordUpdate()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $it = Enjoin::get('Books')->findOrCreate(['title' => 'Coming Up for'], ['authors_id' => 2]);
+        $it->update([
+            'title' => 'Coming Up for Air',
+            'year' => 1939
+        ], ['title', 'year']);
+        $this->assertEquals([
+            24, 'Coming Up for Air', 1939
+        ], [
+            $it->id, $it->title, $it->year
+        ]);
     }
 
     // TODO: test model description getter/setter...
