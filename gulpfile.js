@@ -1,15 +1,11 @@
 require('dotenv').load();
 var gulp = require('gulp');
 var phpunit = require('gulp-phpunit');
+var del = require('del');
+var path = require('path');
 var lib = require('./test/js');
 
-gulp.task('create-tables', function (callback) {
-    return lib.createTables(callback);
-});
-
-gulp.task('create-compare-trait', lib.createCompareTrait);
-
-[
+var testList = [
     'testFindById',
 
     'testFindOneEager',
@@ -39,18 +35,42 @@ gulp.task('create-compare-trait', lib.createCompareTrait);
     'testFindOneEagerNestedById',
     'testFindOneEagerNestedMean',
     'testFindOneEagerNestedDeep',
+    'testFindOneEagerSelfNestedNoSubQuery',
 
     'testFindAll',
     'testFindAllEagerOneThenMany',
     'testFindAllEagerOneThenManyMean',
     'testFindAllEagerOneThenManyMeanOrdered'
-].forEach(function (task) {
+];
+
+gulp.task('create-tables', function (callback) {
+    return lib.createTables(callback);
+});
+
+gulp.task('create-compare-trait', lib.createCompareTrait);
+
+testList.forEach(function (task) {
     gulp.task(task, ['create-tables'], lib[task]);
 });
 
-gulp.task('phpunit', ['create-tables'], function () {
-    gulp.src('phpunit.xml')
-        .pipe(phpunit());
-});
+gulp.task('phpunit', ['create-tables'], phpUnit);
+
+gulp.task('test-all', testAll);
 
 gulp.task('default', ['phpunit']);
+
+function phpUnit() {
+    gulp.src('phpunit.xml')
+        .pipe(phpunit());
+}
+
+function testAll() {
+    var dir = path.normalize(__dirname + '/test/php/compare');
+    del([dir + '/*.json']).then(function () {
+        testList.forEach(function (test) {
+            lib.createTables(function () {
+                lib[test]();
+            });
+        });
+    });
+}

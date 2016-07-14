@@ -2,6 +2,7 @@
 
 namespace Enjoin\Builder;
 
+use Carbon\Carbon;
 use Enjoin\Enjoin;
 
 class Where
@@ -130,7 +131,11 @@ class Where
             if (is_array($value)) {
                 $this->place = array_merge($this->place, $value);
             } else {
-                $this->place [] = $value;
+                if ($value instanceof Carbon) {
+                    $this->place [] = $value->toDateTimeString();
+                } else {
+                    $this->place [] = $value;
+                }
             }
         }
 

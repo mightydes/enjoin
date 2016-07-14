@@ -35,6 +35,7 @@ module.exports = {
     testFindOneEagerNestedById: testFindOneEagerNestedById,
     testFindOneEagerNestedMean: testFindOneEagerNestedMean,
     testFindOneEagerNestedDeep: testFindOneEagerNestedDeep,
+    testFindOneEagerSelfNestedNoSubQuery: testFindOneEagerSelfNestedNoSubQuery,
 
     testFindAll: testFindAll,
     testFindAllEagerOneThenMany: testFindAllEagerOneThenMany,
@@ -90,6 +91,7 @@ function saveCompare(name, model, method, params) {
     var phpParams = toPhpParams(params);
     params || (params = {});
     params.logging = function (sql) {
+        debug(sql);
         var filename = __dirname + '/../php/compare/' + name + '.json';
         var data = {
             params: phpParams,
@@ -527,6 +529,63 @@ function testFindOneEagerNestedDeep() {
                     ]
                 }
             ]
+        }
+    });
+}
+
+/**
+ * Note: https://github.com/sequelize/sequelize/issues/3917
+ */
+function testFindOneEagerSelfNestedNoSubQuery() {
+    saveCompare('testFindOneEagerSelfNestedNoSubQuery', models.Books, 'findOne', {
+        where: {
+            year: {$notIn: [1900, 1950, 2000]},
+            $or: [
+                {
+                    $and: [
+                        {id: {$lte: 5000}},
+                        {year: {$gte: 500}}
+                    ]
+                },
+                {
+                    $and: [
+                        {id: null},
+                        {year: null}
+                    ]
+                }
+            ]
+        },
+        subQuery: false,
+        attributes: ['id'],
+        include: {
+            model: models.PublishersBooks,
+            where: {
+                books_id: 77
+            },
+            attributes: ['id'],
+            include: {
+                model: models.Publishers,
+                where: {
+                    pid: 99
+                },
+                attributes: ['id'],
+                include: {
+                    model: models.Publishers,
+                    as: 'parent',
+                    where: {
+                        pid: 505
+                    },
+                    attributes: ['id'],
+                    include: {
+                        model: models.Publishers,
+                        as: 'parent',
+                        where: {
+                            pid: 3443
+                        },
+                        attributes: ['id']
+                    }
+                }
+            }
         }
     });
 }

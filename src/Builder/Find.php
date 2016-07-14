@@ -56,6 +56,10 @@ class Find
         $this->isById = isset($params['where']['id']) && is_numeric($params['where']['id']);
 //        $this->isSubquery = $this->Tree->hasMany && !$this->isById;
         $this->isSubquery = $this->Tree->hasMany && $this->Tree->hasLimit && !$this->isById;
+        if (isset($params['subQuery']) && !$params['subQuery']) {
+            $this->isSubquery = false;
+        }
+//        !Enjoin::debug() ?: sd($params);
     }
 
     /**
@@ -206,10 +210,10 @@ class Find
         !$this->join ?: $query .= ' ' . join(' ', $this->join);
         !$this->prepWhere ?: $query .= ' WHERE ' . $this->prepWhere;
 
+        !$this->prepOrder ?: $query .= ' ' . $this->prepOrder;
         if ($this->prepLimit && !$this->isById) {
             $query .= ' ' . $this->prepLimit;
         }
-        !$this->prepOrder ?: $query .= ' ' . $this->prepOrder;
 
 //        !Enjoin::debug() ?: sd($this->placeSubJoin, $this->placeSubWhere, $this->placeWhere, $this->placeJoin);
         $place = array_merge(

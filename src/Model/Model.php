@@ -174,15 +174,16 @@ class Model
     /**
      * @deprecated Use `findById()` and `findOne()` instead.
      * @param array|integer $params
+     * @param int $flags
      * @return Record|null
      */
-    public function find($params)
+    public function find($params, $flags = 0)
     {
         # Handle find by id (ie `->find(1)`):
         if (!is_array($params)) {
             $params = ['where' => ['id' => $params]];
         }
-        return $this->findOne($params);
+        return $this->findOne($params, $flags);
     }
 
     /**
@@ -214,10 +215,13 @@ class Model
      */
     public function findOrCreate(array $collection, array $defaults = null)
     {
-        $it = $this->findOne(['where' => $collection]);
-        if (!$it) {
-            $it = $this->create(array_merge($collection, $defaults));
-        }
+        $it = null;
+        $this->connection()->transaction(function () use ($collection, $defaults, &$it) {
+            $it = $this->findOne(['where' => $collection]);
+            if (!$it) {
+                $it = $this->create(array_merge($collection, $defaults ?: []));
+            }
+        });
         return $it;
     }
 

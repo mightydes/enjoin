@@ -14,7 +14,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testRecordUpdate';
+    private $debugFunction = 'testFindOneEagerSelfNestedNoSubQuery';
 
     public function testBootstrap()
     {
@@ -585,6 +585,18 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertTrue(is_null($it));
+    }
+
+    /**
+     * @todo: see https://github.com/sequelize/sequelize/issues/3917
+     * @depends testMockDataA
+     */
+    public function testFindOneEagerSelfNestedNoSubQuery()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $params = $this->params_testFindOneEagerSelfNestedNoSubQuery();
+        $sql = Enjoin::get('Books')->findOne($params, Enjoin::SQL);
+        $this->assertEquals($this->sql_testFindOneEagerSelfNestedNoSubQuery(), $sql);
     }
 
     /**
