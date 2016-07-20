@@ -50,4 +50,13 @@ class Error
         throw new ModelException($message);
     }
 
+    /**
+     * @param string $message
+     * @throws CacheException
+     */
+    public static function dropCacheException($message)
+    {
+        throw new CacheException($message);
+    }
+
 }

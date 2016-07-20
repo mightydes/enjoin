@@ -6,6 +6,8 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Translation\FileLoader;
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Factory as Validator;
+use Illuminate\Cache\CacheManager;
+use Illuminate\Redis\Database;
 use Enjoin\Record\Getters;
 use Enjoin\Record\Setters;
 
@@ -28,17 +30,19 @@ class Factory
     /**
      * @var Validator|null
      */
-    private $Validator = null;
+    protected $Validator = null;
+
+    protected $Cache = null;
 
     /**
      * @var Getters|null
      */
-    private $Getters = null;
+    protected $Getters = null;
 
     /**
      * @var Setters|null
      */
-    private $Setters = null;
+    protected $Setters = null;
 
     /**
      * @var $this
@@ -94,6 +98,25 @@ class Factory
             $Factory->Validator = new Validator($Translator, $Factory->Container);
         }
         return $Factory->Validator;
+    }
+
+    /**
+     * @return Cache|null
+     */
+    public static function getCache()
+    {
+        $Factory = self::getInstance();
+        if (!$Factory->Cache) {
+            if ($cache = $Factory->config['cache']) {
+                if ($cache['default'] === 'redis') {
+                    $Factory->Container['redis'] = new Database($Factory->config['database']['redis']);
+                }
+                $CacheManager = new CacheManager($Factory->Container);
+                $Factory->Cache = $CacheManager->store();
+
+            }
+        }
+        return $Factory->Cache;
     }
 
     /**

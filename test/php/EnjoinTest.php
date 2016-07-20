@@ -19,21 +19,41 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testBootstrap()
     {
         Factory::bootstrap([
-            'default' => 'test',
-            'connections' => [
-                'test' => [
-                    'driver' => 'mysql',
-                    'host' => 'localhost',
-                    'database' => getenv('ENJ_DATABASE'),
-                    'username' => getenv('ENJ_USERNAME'),
-                    'password' => getenv('ENJ_PASSWORD'),
-                    'charset' => 'utf8',
-                    'collation' => 'utf8_unicode_ci',
-                    'prefix' => ''
+            'database' => [
+                'default' => 'test',
+                'connections' => [
+                    'test' => [
+                        'driver' => 'mysql',
+                        'host' => 'localhost',
+                        'database' => getenv('ENJ_DATABASE'),
+                        'username' => getenv('ENJ_USERNAME'),
+                        'password' => getenv('ENJ_PASSWORD'),
+                        'charset' => 'utf8',
+                        'collation' => 'utf8_unicode_ci',
+                        'prefix' => ''
+                    ]
+                ],
+                'redis' => [
+                    'cluster' => false,
+                    'default' => [
+                        'host' => '127.0.0.1',
+                        'port' => 6379,
+                        'database' => 0,
+                    ]
                 ]
             ],
             'enjoin' => [
-                'lang_dir' => 'vendor/caouecs/laravel4-lang'
+                'lang_dir' => 'vendor/caouecs/laravel-lang'
+            ],
+            'cache' => [
+                'default' => 'redis',
+                'stores' => [
+                    'redis' => [
+                        'driver' => 'redis',
+                        'connection' => 'default'
+                    ]
+                ],
+                'prefix' => 'enjoin_test'
             ]
         ]);
     }
@@ -722,6 +742,17 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         ], [
             $it->id, $it->title, $it->year
         ]);
+    }
+
+    /**
+     * @depends testFindOrCreate
+     */
+    public function testCache()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $it = Enjoin::get('Books')->findById(1, Enjoin::WITH_CACHE);
+        $cache = Factory::getCache()->tags('Models\Books')->get('9125bfc211f5ddbce7352499c9c71973');
+        $this->assertEquals($it, $cache);
     }
 
     // TODO: test model description getter/setter...

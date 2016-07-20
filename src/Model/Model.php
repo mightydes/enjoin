@@ -20,9 +20,15 @@ class Model
      */
     public $Definition;
 
+    /**
+     * @var CacheJar
+     */
+    public $CacheJar;
+
     public $unique;
 
     /**
+     * Model constructor.
      * @param Definition $Definition
      */
     public function __construct(Definition $Definition)
@@ -35,18 +41,8 @@ class Model
         }
         $this->Definition = $Definition;
         $this->unique = get_class($Definition);
-//        $this->CC = new CacheControl($this);
+        $this->CacheJar = new CacheJar($this);
     }
-
-//    /**
-//     * @return \Illuminate\Database\Query\Builder
-//     */
-//    public function connect()
-//    {
-//        $key = $this->Definition->connection;
-//        $key ?: $key = Factory::getConfig()['default'];
-//        return Capsule::connection($key)->table($this->Definition->table);
-//    }
 
     /**
      * @return \Illuminate\Database\Connection
@@ -54,7 +50,7 @@ class Model
     public function connection()
     {
         $key = $this->Definition->connection;
-        $key ?: $key = Factory::getConfig()['default'];
+        $key ?: $key = Factory::getConfig()['database']['default'];
         return Capsule::connection($key);
     }
 
@@ -143,22 +139,23 @@ class Model
      */
     public function findOne(array $params, $flags = 0)
     {
-        // TODO: cache...
-        // TODO: enable call without params.
-        unset($params['offset']);
-        $params['limit'] = 1;
-        $Find = new Find($this, $params);
-        list($query, $place) = $Find->getPrepared();
-        if ($flags & Enjoin::SQL) {
-            return PdoDebugger::show($query, $place);
-        }
-        $rows = $this->connection()->select($query, $place);
-        if ($rows) {
-            $Records = new Records($Find->Tree);
-            $out = $Records->handleRows($rows)[0];
-            return $out;
-        }
-        return null;
+        // TODO: call without params feature.
+        return $this->CacheJar->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
+            unset($params['offset']);
+            $params['limit'] = 1;
+            $Find = new Find($this, $params);
+            list($query, $place) = $Find->getPrepared();
+            if ($flags & Enjoin::SQL) {
+                return PdoDebugger::show($query, $place);
+            }
+            $rows = $this->connection()->select($query, $place);
+            if ($rows) {
+                $Records = new Records($Find->Tree);
+                $out = $Records->handleRows($rows)[0];
+                return $out;
+            }
+            return null;
+        }, $flags);
     }
 
     /**
