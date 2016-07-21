@@ -96,4 +96,34 @@ class CacheJar
             ->forever($key, $data);
     }
 
+    /**
+     * Flush cache.
+     */
+    public function flush()
+    {
+        if ($Cache = Factory::getCache()) {
+            $tags = [];
+            $this->getFlushTags($tags);
+            if ($tags) {
+                $Cache->tags($tags)->flush();
+            }
+        }
+    }
+
+    /**
+     * @param array $tags
+     * @return null
+     */
+    public function getFlushTags(array &$tags)
+    {
+        $unique = $this->Model->unique;
+        if (in_array($unique, $tags)) {
+            return null;
+        }
+        $tags [] = $unique;
+        foreach ($this->Model->Definition->getRelations() as $relation) {
+            $relation->Model->CacheJar->getFlushTags($tags);
+        }
+    }
+
 }

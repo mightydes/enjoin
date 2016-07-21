@@ -92,6 +92,7 @@ class Engine
         if ($volume['id'] === $this->id) {
             unset($volume['id']);
         }
+        $this->Model->CacheJar->flush();
         $this->Model->queryBuilder()
             ->where('id', $this->id)// use constructed id
             ->take(1)

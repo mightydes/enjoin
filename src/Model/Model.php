@@ -87,7 +87,7 @@ class Model
      */
     public function create($collection = null, array $attributes = null)
     {
-//        $this->CC->flush();
+        $this->CacheJar->flush();
         return $this->build($collection, $attributes)->save();
     }
 
@@ -97,8 +97,6 @@ class Model
      */
     public function bulkCreate(array $collections)
     {
-//        $this->CC->flush();
-
         $bulk = [];
         $Setters = Factory::getSetters();
         $defAttributes = $this->Definition->getAttributes();
@@ -129,6 +127,7 @@ class Model
             !$validate ?: $Setters->validate($validate);
             $bulk [] = $volume;
         }
+        $this->CacheJar->flush();
         return $this->queryBuilder()->insert($bulk);
     }
 

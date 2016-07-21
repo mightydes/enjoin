@@ -755,6 +755,27 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($it, $cache);
     }
 
+    /**
+     * @depends testCache
+     */
+    public function testCacheUpdate()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $params = [
+            'where' => ['id' => 1],
+            'include' => Enjoin::get('Authors')
+        ];
+        $it = Enjoin::get('Books')->findOne($params, Enjoin::WITH_CACHE);
+        $cacheKey = Enjoin::get('Books')->CacheJar->keyify(['findOne', $params]);
+        $cache = Factory::getCache()->tags('Models\Books')->get($cacheKey);
+        $this->assertEquals($it, $cache);
+        $cache->author->update([
+            'name' => 'George Orwell'
+        ]);
+        $cache = Factory::getCache()->tags('Models\Books')->get($cacheKey);
+        $this->assertNull($cache);
+    }
+
     // TODO: test model description getter/setter...
     // TODO: test `hasOne` relation...
     // TODO: test `as` relation...

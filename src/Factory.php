@@ -101,7 +101,7 @@ class Factory
     }
 
     /**
-     * @return Cache|null
+     * @return mixed|null
      */
     public static function getCache()
     {
