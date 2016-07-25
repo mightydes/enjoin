@@ -8,6 +8,7 @@ use Illuminate\Translation\Translator;
 use Illuminate\Validation\Factory as Validator;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Redis\Database;
+use Illuminate\Cache\MemcachedConnector;
 use Enjoin\Record\Getters;
 use Enjoin\Record\Setters;
 
@@ -108,8 +109,13 @@ class Factory
         $Factory = self::getInstance();
         if (!$Factory->Cache) {
             if ($cache = $Factory->config['cache']) {
-                if ($cache['default'] === 'redis') {
-                    $Factory->Container['redis'] = new Database($Factory->config['database']['redis']);
+                switch ($cache['default']) {
+                    case 'redis':
+                        $Factory->Container['redis'] = new Database($Factory->config['database']['redis']);
+                        break;
+                    case 'memcached':
+                        $Factory->Container['memcached.connector'] = new MemcachedConnector;
+                        break;
                 }
                 $CacheManager = new CacheManager($Factory->Container);
                 $Factory->Cache = $CacheManager->store();

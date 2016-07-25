@@ -40,7 +40,9 @@ var testList = [
     'testFindAll',
     'testFindAllEagerOneThenMany',
     'testFindAllEagerOneThenManyMean',
-    'testFindAllEagerOneThenManyMeanOrdered'
+    'testFindAllEagerOneThenManyMeanOrdered',
+
+    'testDestroy'
 ];
 
 gulp.task('create-tables', function (callback) {

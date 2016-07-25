@@ -40,7 +40,9 @@ module.exports = {
     testFindAll: testFindAll,
     testFindAllEagerOneThenMany: testFindAllEagerOneThenMany,
     testFindAllEagerOneThenManyMean: testFindAllEagerOneThenManyMean,
-    testFindAllEagerOneThenManyMeanOrdered: testFindAllEagerOneThenManyMeanOrdered
+    testFindAllEagerOneThenManyMeanOrdered: testFindAllEagerOneThenManyMeanOrdered,
+
+    testDestroy: testDestroy
 };
 
 function camelize(str) {
@@ -632,5 +634,13 @@ function testFindAllEagerOneThenManyMeanOrdered() {
             'year',
             [models.Authors, models.Articles, 'year', 'DESC']
         ]
+    });
+}
+
+function testDestroy() {
+    models.Languages.destroy({
+        where: {id: {$gt: 5}}
+    }).then(function () {
+        debug(arguments);
     });
 }

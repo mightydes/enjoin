@@ -776,6 +776,19 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->assertNull($cache);
     }
 
+    /**
+     * @depends testCacheUpdate
+     */
+    public function testDestroy()
+    {
+        $this->handleDebug(__FUNCTION__);
+        Enjoin::get('Authors')->findOrCreate(['name' => 'Samuel Pepys']);
+        $sql = Enjoin::get('Authors')->destroy(['name' => ['like' => 'Samuel%']], Enjoin::SQL);
+        $this->assertEquals("DELETE FROM `authors` WHERE `authors`.`name` LIKE 'Samuel%'", $sql);
+        $affected = Enjoin::get('Authors')->destroy(['name' => ['like' => 'Samuel%']]);
+        $this->assertEquals(1, $affected);
+    }
+
     // TODO: test model description getter/setter...
     // TODO: test `hasOne` relation...
     // TODO: test `as` relation...

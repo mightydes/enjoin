@@ -8,6 +8,7 @@ use Enjoin\Factory;
 use Enjoin\Record\Record;
 use Enjoin\Record\Records;
 use Enjoin\Builder\Find;
+use Enjoin\Builder\Destroy;
 use Enjoin\Enjoin;
 use PdoDebugger;
 
@@ -132,13 +133,13 @@ class Model
     }
 
     /**
+     * @todo: call without params feature.
      * @param array $params
      * @param int $flags
      * @return Record|null|array
      */
     public function findOne(array $params, $flags = 0)
     {
-        // TODO: call without params feature.
         return $this->CacheJar->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
             unset($params['offset']);
             $params['limit'] = 1;
@@ -189,19 +190,20 @@ class Model
      */
     public function findAll(array $params = null, $flags = 0)
     {
-        // TODO: cache...
         $params ?: $params = [];
-        $Find = new Find($this, $params);
-        list($query, $place) = $Find->getPrepared();
-        if ($flags & Enjoin::SQL) {
-            return PdoDebugger::show($query, $place);
-        }
-        $rows = $this->connection()->select($query, $place);
-        if ($rows) {
-            $Records = new Records($Find->Tree);
-            return $Records->handleRows($rows);
-        }
-        return [];
+        return $this->CacheJar->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
+            $Find = new Find($this, $params);
+            list($query, $place) = $Find->getPrepared();
+            if ($flags & Enjoin::SQL) {
+                return PdoDebugger::show($query, $place);
+            }
+            $rows = $this->connection()->select($query, $place);
+            if ($rows) {
+                $Records = new Records($Find->Tree);
+                return $Records->handleRows($rows);
+            }
+            return [];
+        });
     }
 
     /**
@@ -219,6 +221,23 @@ class Model
             }
         });
         return $it;
+    }
+
+    /**
+     * @param array $where
+     * @param int $flags
+     * @return int|mixed
+     */
+    public function destroy(array $where, $flags = 0)
+    {
+        $Destroy = new Destroy($where, $this->Definition->table);
+        list($query, $place) = $Destroy->getPrepared();
+        if ($flags & Enjoin::SQL) {
+            return PdoDebugger::show($query, $place);
+        }
+        $affected = $this->connection()->update($query, $place);
+        $this->CacheJar->flush();
+        return $affected;
     }
 
     /**

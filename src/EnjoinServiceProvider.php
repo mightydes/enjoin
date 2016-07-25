@@ -8,18 +8,20 @@ use Illuminate\Contracts\Config\Repository as ConfigContract;
 class EnjoinServiceProvider extends ServiceProvider
 {
 
-    private $options = [
-        'enjoin' => [
-            'lang_dir' => 'vendor/caouecs/laravel4-lang'
-        ]
-    ];
+    private $options = [];
 
     /**
      * @param ConfigContract $config
      */
     public function boot(ConfigContract $config)
     {
-        $this->options = array_merge($config->get('database'), $this->options);
+        $this->options = [
+            'database' => $config->get('database'),
+            'enjoin' => [
+                'lang_dir' => 'vendor/caouecs/laravel4-lang'
+            ],
+            'cache' => $config->get('cache')
+        ];
     }
 
     /**
