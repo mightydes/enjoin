@@ -161,7 +161,12 @@ class Tree
      */
     private function handleRelation(stdClass $parent, stdClass $child)
     {
-        $relation = Extras::findWhere($parent->Model->Definition->getRelations(), ['relatedKey' => $child->key]);
+
+        $where = ['relatedKey' => $child->key];
+        if ($child->as) {
+            $where['as'] = $child->as;
+        }
+        $relation = Extras::findWhere($parent->Model->Definition->getRelations(), $where);
         $missedErr = "Unable to find relation between '{$parent->Model->unique}' " .
             "and '{$child->Model->unique}', foreign key: '{$child->key}'.";
         $relation ?: Error::dropModelException($missedErr);

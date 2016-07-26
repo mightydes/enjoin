@@ -204,8 +204,7 @@ class Find
     private function handle()
     {
         $table = $this->Model->Definition->table;
-        $select = join(', ', $this->select);
-        $query = "SELECT $select FROM `$table` AS `$table`";
+        $query = "SELECT {$this->resolveSelect()} FROM `$table` AS `$table`";
 
         !$this->join ?: $query .= ' ' . join(' ', $this->join);
         !$this->prepWhere ?: $query .= ' WHERE ' . $this->prepWhere;
@@ -222,6 +221,14 @@ class Find
         );
 
         return [$query, $place];
+    }
+
+    /**
+     * @return string
+     */
+    protected function resolveSelect()
+    {
+        return join(', ', $this->select);
     }
 
     /**

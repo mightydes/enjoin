@@ -42,6 +42,8 @@ module.exports = {
     testFindAllEagerOneThenManyMean: testFindAllEagerOneThenManyMean,
     testFindAllEagerOneThenManyMeanOrdered: testFindAllEagerOneThenManyMeanOrdered,
 
+    testFindAndCountAll: testFindAndCountAll,
+
     testDestroy: testDestroy
 };
 
@@ -635,6 +637,10 @@ function testFindAllEagerOneThenManyMeanOrdered() {
             [models.Authors, models.Articles, 'year', 'DESC']
         ]
     });
+}
+
+function testFindAndCountAll() {
+    models.Authors.findAndCountAll();
 }
 
 function testDestroy() {

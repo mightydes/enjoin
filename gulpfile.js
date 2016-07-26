@@ -42,6 +42,8 @@ var testList = [
     'testFindAllEagerOneThenManyMean',
     'testFindAllEagerOneThenManyMeanOrdered',
 
+    'testFindAndCountAll',
+
     'testDestroy'
 ];
 

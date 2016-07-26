@@ -8,6 +8,7 @@ use Enjoin\Factory;
 use Enjoin\Record\Record;
 use Enjoin\Record\Records;
 use Enjoin\Builder\Find;
+use Enjoin\Builder\Count;
 use Enjoin\Builder\Destroy;
 use Enjoin\Enjoin;
 use PdoDebugger;
@@ -197,8 +198,7 @@ class Model
             if ($flags & Enjoin::SQL) {
                 return PdoDebugger::show($query, $place);
             }
-            $rows = $this->connection()->select($query, $place);
-            if ($rows) {
+            if ($rows = $this->connection()->select($query, $place)) {
                 $Records = new Records($Find->Tree);
                 return $Records->handleRows($rows);
             }
@@ -221,6 +221,38 @@ class Model
             }
         });
         return $it;
+    }
+
+    /**
+     * @param array|null $params
+     * @param int $flags
+     * @return array
+     */
+    public function findAndCountAll(array $params = null, $flags = 0)
+    {
+        $params ?: $params = [];
+        $count = $this->CacheJar->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
+            $Count = new Count($this, $params);
+            list($query, $place) = $Count->getPrepared();
+            if ($flags & Enjoin::SQL) {
+                return PdoDebugger::show($query, $place);
+            }
+            return (int)$this->connection()->select($query, $place)[0]->count;
+        });
+        if ($flags & Enjoin::SQL) {
+            return [
+                'count' => $count,
+                'rows' => $this->findAll($params, $flags)
+            ];
+        }
+        $rows = [];
+        if ($count) {
+            $rows = $this->findAll($params, $flags);
+        }
+        return [
+            'count' => $count,
+            'rows' => $rows
+        ];
     }
 
     /**

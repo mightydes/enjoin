@@ -711,6 +711,22 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
+    public function testFindAndCountAll()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Authors')->findAndCountAll(null, Enjoin::SQL);
+        $this->assertEquals("SELECT count(*) AS `count` FROM `authors` AS `authors`", $sql['count']);
+
+        $r = Enjoin::get('Authors')->findAndCountAll();
+        $this->assertEquals(
+            [2, 'G. Orwell'],
+            [$r['count'], $r['rows'][1]->name]
+        );
+    }
+
+    /**
+     * @depends testMockDataB
+     */
     public function testFindOrCreate()
     {
         $this->handleDebug(__FUNCTION__);
