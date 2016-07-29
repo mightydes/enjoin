@@ -14,7 +14,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testFindOneEagerSelfNestedNoSubQuery';
+    private $debugFunction = 'testFindAndCountAllEagerOneThenManyMean';
 
     public function testBootstrap()
     {
@@ -711,6 +711,17 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
+    public function testFindAllEagerNestedDeep()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $params = $this->params_testFindAllEagerNestedDeep();
+        $sql = Enjoin::get('Authors')->findAll($params, Enjoin::SQL);
+        $this->assertTrue(CompareQueries::isSame($this->sql_testFindAllEagerNestedDeep(), $sql));
+    }
+
+    /**
+     * @depends testMockDataB
+     */
     public function testFindAndCountAll()
     {
         $this->handleDebug(__FUNCTION__);
@@ -722,6 +733,46 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
             [2, 'G. Orwell'],
             [$r['count'], $r['rows'][1]->name]
         );
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testFindAndCountAllConditional()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Books')->findAndCountAll($this->params_testFindAndCountAllConditional(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testFindAndCountAllConditional(), $sql['count']);
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testFindAndCountAllEagerOneThenMany()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Books')->findAndCountAll($this->params_testFindAndCountAllEagerOneThenMany(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testFindAndCountAllEagerOneThenMany(), $sql['count']);
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testFindAndCountAllEagerOneThenManyMean()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Books')->findAndCountAll($this->params_testFindAndCountAllEagerOneThenManyMean(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testFindAndCountAllEagerOneThenManyMean(), $sql['count']);
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testFindAndCountAllEagerRequired()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Authors')->findAndCountAll($this->params_testFindAndCountAllEagerRequired(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testFindAndCountAllEagerRequired(), $sql['count']);
     }
 
     /**

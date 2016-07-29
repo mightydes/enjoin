@@ -1,0 +1,1 @@
+{"params":"['include'=>['model'=>Enjoin::get('Authors'),'include'=>Enjoin::get('Articles')]]","sql":"SELECT count(*) AS `count` FROM `books` AS `books`"}

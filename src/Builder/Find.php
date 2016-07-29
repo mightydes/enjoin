@@ -115,7 +115,7 @@ class Find
      * @param array $path
      * @param int $depth
      */
-    private function handleNodeJoin(stdClass $node, array $path, $depth)
+    protected function handleNodeJoin(stdClass $node, array $path, $depth)
     {
         $parent = $path[$depth - 1];
         $parentPrefix = $parent->prefix ?: $this->Model->Definition->table;
@@ -161,7 +161,7 @@ class Find
     /**
      * Handle `where` part.
      */
-    private function handleWhere()
+    protected function handleWhere()
     {
         $node = $this->Tree->get();
         if (isset($node->where)) {
@@ -204,7 +204,8 @@ class Find
     private function handle()
     {
         $table = $this->Model->Definition->table;
-        $query = "SELECT {$this->resolveSelect()} FROM `$table` AS `$table`";
+        $select = join(', ', $this->select);
+        $query = "SELECT $select FROM `$table` AS `$table`";
 
         !$this->join ?: $query .= ' ' . join(' ', $this->join);
         !$this->prepWhere ?: $query .= ' WHERE ' . $this->prepWhere;
@@ -221,14 +222,6 @@ class Find
         );
 
         return [$query, $place];
-    }
-
-    /**
-     * @return string
-     */
-    protected function resolveSelect()
-    {
-        return join(', ', $this->select);
     }
 
     /**

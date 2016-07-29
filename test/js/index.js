@@ -41,8 +41,13 @@ module.exports = {
     testFindAllEagerOneThenMany: testFindAllEagerOneThenMany,
     testFindAllEagerOneThenManyMean: testFindAllEagerOneThenManyMean,
     testFindAllEagerOneThenManyMeanOrdered: testFindAllEagerOneThenManyMeanOrdered,
+    testFindAllEagerNestedDeep: testFindAllEagerNestedDeep,
 
     testFindAndCountAll: testFindAndCountAll,
+    testFindAndCountAllConditional: testFindAndCountAllConditional,
+    testFindAndCountAllEagerOneThenMany: testFindAndCountAllEagerOneThenMany,
+    testFindAndCountAllEagerOneThenManyMean: testFindAndCountAllEagerOneThenManyMean,
+    testFindAndCountAllEagerRequired: testFindAndCountAllEagerRequired,
 
     testDestroy: testDestroy
 };
@@ -639,9 +644,131 @@ function testFindAllEagerOneThenManyMeanOrdered() {
     });
 }
 
+function testFindAllEagerNestedDeep() {
+    saveCompare('testFindAllEagerNestedDeep', models.Authors, 'findAll', {
+        where: {
+            id: {
+                $gte: 0,
+                $lt: 10
+            },
+            name: {
+                $or: [
+                    {ne: 'Bob'},
+                    {ne: 'Alice'}
+                ]
+            }
+        },
+        include: {
+            model: models.Books,
+            where: {
+                title: {$notLike: 'sad'},
+                $or: [
+                    {year: {$lt: 1920}},
+                    {year: {$gt: 1930}}
+                ]
+            },
+            attributes: ['year', 'title'],
+            include: [
+                models.Reviews,
+                {
+                    model: models.PublishersBooks,
+                    where: {
+                        $or: [
+                            {
+                                $and: [
+                                    {mistakes: {$ne: ''}},
+                                    {pressrun: {$gte: 5000}}
+                                ]
+                            },
+                            {year: 1855}
+                        ]
+                    },
+                    attributes: ['year', 'pressrun', 'mistakes'],
+                    include: [
+                        {
+                            model: models.Shipped,
+                            where: {
+                                quantity: {$gt: 300}
+                            }
+                        },
+                        {
+                            model: models.Preorders,
+                            where: {
+                                quantity: {$lt: 155000}
+                            },
+                            required: false
+                        }
+                    ]
+                }
+            ]
+        }
+    });
+}
+
 function testFindAndCountAll() {
     models.Authors.findAndCountAll();
 }
+
+function testFindAndCountAllConditional() {
+    saveCompare('testFindAndCountAllConditional', models.Books, 'findAndCountAll', {
+        where: {
+            id: {$lt: 5},
+            title: {$like: 'My%'}
+        }
+    });
+}
+
+function testFindAndCountAllEagerOneThenMany() {
+    saveCompare('testFindAndCountAllEagerOneThenMany', models.Books, 'findAndCountAll', {
+        include: {
+            model: models.Authors,
+            include: models.Articles
+        }
+    });
+}
+
+function testFindAndCountAllEagerOneThenManyMean() {
+    saveCompare('testFindAndCountAllEagerOneThenManyMean', models.Books, 'findAndCountAll', {
+        where: {id: {$lt: 5}},
+        include: {
+            model: models.Authors,
+            where: {id: {$like: '2%'}},
+            include: {
+                model: models.Articles,
+                where: {year: {$like: '19%'}}
+            }
+        }
+    });
+}
+
+function testFindAndCountAllEagerRequired() {
+    saveCompare('testFindAndCountAllEagerRequired', models.Authors, 'findAndCountAll', {
+        where: {
+            id: {
+                $gte: 0,
+                $lt: 10
+            },
+            name: {
+                $or: [
+                    {ne: 'Bob'},
+                    {ne: 'Alice'}
+                ]
+            }
+        },
+        include: {
+            model: models.Books,
+            include: [
+                models.Reviews,
+                {
+                    model: models.PublishersBooks,
+                    required: true
+                }
+            ]
+        }
+    });
+}
+
+// TODO: limit, order
 
 function testDestroy() {
     models.Languages.destroy({

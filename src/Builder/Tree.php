@@ -20,6 +20,7 @@ class Tree
     public $hasChildren = false;
     public $hasMany = false;
     public $hasLimit = false;
+    public $hasRequiredInclude = false; // Required for `Count`.
 
     /**
      * Tree constructor.
@@ -36,6 +37,9 @@ class Tree
                 if (count($path) - 1) {
                     if ($node->where && is_null($node->required)) {
                         $node->required = true;
+                    }
+                    if ($node->required) {
+                        $this->hasRequiredInclude = true;
                     }
                 }
             });
