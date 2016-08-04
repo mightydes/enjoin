@@ -42,6 +42,7 @@ var testList = [
     'testFindAllEagerOneThenManyMean',
     'testFindAllEagerOneThenManyMeanOrdered',
     'testFindAllEagerNestedDeep',
+    'testFindAllEagerNestedDeepLimited',
 
     'testFindAndCountAll',
     'testFindAndCountAllConditional',

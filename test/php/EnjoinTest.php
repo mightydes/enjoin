@@ -14,7 +14,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testFindAndCountAllEagerOneThenManyMean';
+    private $debugFunction = 'testFindAllEagerNestedDeepLimited';
 
     public function testBootstrap()
     {
@@ -717,6 +717,17 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $params = $this->params_testFindAllEagerNestedDeep();
         $sql = Enjoin::get('Authors')->findAll($params, Enjoin::SQL);
         $this->assertTrue(CompareQueries::isSame($this->sql_testFindAllEagerNestedDeep(), $sql));
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testFindAllEagerNestedDeepLimited()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $params = $this->params_testFindAllEagerNestedDeepLimited();
+        $sql = Enjoin::get('Authors')->findAll($params, Enjoin::SQL);
+        $this->assertTrue(CompareQueries::isSame($this->sql_testFindAllEagerNestedDeepLimited(), $sql));
     }
 
     /**

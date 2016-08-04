@@ -42,6 +42,7 @@ module.exports = {
     testFindAllEagerOneThenManyMean: testFindAllEagerOneThenManyMean,
     testFindAllEagerOneThenManyMeanOrdered: testFindAllEagerOneThenManyMeanOrdered,
     testFindAllEagerNestedDeep: testFindAllEagerNestedDeep,
+    testFindAllEagerNestedDeepLimited: testFindAllEagerNestedDeepLimited,
 
     testFindAndCountAll: testFindAndCountAll,
     testFindAndCountAllConditional: testFindAndCountAllConditional,
@@ -702,6 +703,69 @@ function testFindAllEagerNestedDeep() {
                 }
             ]
         }
+    });
+}
+
+function testFindAllEagerNestedDeepLimited() {
+    saveCompare('testFindAllEagerNestedDeepLimited', models.Authors, 'findAll', {
+        where: {
+            id: {
+                $gte: 0,
+                $lt: 10
+            },
+            name: {
+                $or: [
+                    {ne: 'Bob'},
+                    {ne: 'Alice'}
+                ]
+            }
+        },
+        include: {
+            model: models.Books,
+            where: {
+                title: {$notLike: 'sad'},
+                $or: [
+                    {year: {$lt: 1920}},
+                    {year: {$gt: 1930}}
+                ]
+            },
+            attributes: ['year', 'title'],
+            include: [
+                models.Reviews,
+                {
+                    model: models.PublishersBooks,
+                    where: {
+                        $or: [
+                            {
+                                $and: [
+                                    {mistakes: {$ne: ''}},
+                                    {pressrun: {$gte: 5000}}
+                                ]
+                            },
+                            {year: 1855}
+                        ]
+                    },
+                    attributes: ['year', 'pressrun', 'mistakes'],
+                    include: [
+                        {
+                            model: models.Shipped,
+                            where: {
+                                quantity: {$gt: 300}
+                            }
+                        },
+                        {
+                            model: models.Preorders,
+                            where: {
+                                quantity: {$lt: 155000}
+                            },
+                            required: false
+                        }
+                    ]
+                }
+            ]
+        },
+        offset: 0,
+        limit: 50
     });
 }
 

@@ -138,7 +138,6 @@ class Find
                 $this->subJoin [] = $query;
                 $this->placeSubJoin = array_merge($this->placeSubJoin, $place);
             } else {
-                $limit = $this->prepLimit ? ' ' . $this->prepLimit : '';
                 $clause = '';
                 if ($where) {
                     !$WhereBuilder->isComposite() ?: $where = "($where)";
@@ -146,7 +145,7 @@ class Find
                 }
                 $subWhere = "SELECT `{$node->relation->foreignKey}` " .
                     "FROM `{$node->Model->Definition->table}` AS `{$node->prefix}` " .
-                    "WHERE ({$on}$clause)$limit";
+                    "WHERE ({$on}$clause) LIMIT 1";
                 $this->subWhere [] = "($subWhere) IS NOT NULL";
                 $this->join [] = $query;
                 $this->placeSubWhere = array_merge($this->placeSubWhere, $place);
@@ -187,14 +186,15 @@ class Find
     private function handleLimit()
     {
         $offset = isset($this->params['offset']) && abs($this->params['offset']) > 0
-            ? abs($this->params['offset']) : null;
+            ? abs($this->params['offset']) : 0;
         $limit = isset($this->params['limit'])
             ? abs($this->params['limit']) : null;
         if ($limit) {
-            $query = 'LIMIT ';
-            !$offset ?: $query .= $offset . ', ';
-            $query .= $limit;
-            $this->prepLimit = $query;
+            if ($offset === 0 && $limit === 1) {
+                $this->prepLimit = 'LIMIT 1';
+            } else {
+                $this->prepLimit = "LIMIT $offset, $limit";
+            }
         }
     }
 

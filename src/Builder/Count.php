@@ -15,16 +15,18 @@ class Count extends Find
     {
         $this->handleWhere();
 
-        $this->Tree->walk(function (stdClass $node, array $path) {
+        $hasRequiredInclude = false;
+        $this->Tree->walk(function (stdClass $node, array $path) use (&$hasRequiredInclude) {
             $depth = count($path) - 1;
             if ($depth && !$node->children) {
-                // Bottom reached:
+                // Branch deepest node:
                 for ($i = $depth; $i > 0; $i--) {
                     if ($path[$i]->required) {
                         break;
                     }
                 }
                 if ($i) {
+                    $hasRequiredInclude = true;
                     for ($j = 1; $j <= $i; $j++) {
                         $this->handleNodeJoin($path[$j], $path, $j);
                     }
@@ -32,7 +34,7 @@ class Count extends Find
             }
         });
 
-        return $this->Tree->hasRequiredInclude
+        return $hasRequiredInclude
             ? $this->handleDistinct()
             : $this->handle();
     }
