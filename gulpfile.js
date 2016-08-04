@@ -49,6 +49,7 @@ var testList = [
     'testFindAndCountAllEagerOneThenMany',
     'testFindAndCountAllEagerOneThenManyMean',
     'testFindAndCountAllEagerRequired',
+    'testFindAndCountAllEagerRequiredLimited',
 
     'testDestroy'
 ];

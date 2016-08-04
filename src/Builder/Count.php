@@ -62,8 +62,10 @@ class Count extends Find
 
         $place = array_merge(
             $this->placeJoin,
+            $this->placeSubWhere,
             $this->placeWhere
         );
+//        !Enjoin::debug() ?: sd($place);
 
         return [$query, $place];
     }

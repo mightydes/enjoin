@@ -14,7 +14,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testFindAllEagerNestedDeepLimited';
+    private $debugFunction = 'testFindAndCountAllEagerRequiredLimited';
 
     public function testBootstrap()
     {
@@ -784,6 +784,16 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findAndCountAll($this->params_testFindAndCountAllEagerRequired(), Enjoin::SQL);
         $this->assertEquals($this->sql_testFindAndCountAllEagerRequired(), $sql['count']);
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testFindAndCountAllEagerRequiredLimited()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Authors')->findAndCountAll($this->params_testFindAndCountAllEagerRequiredLimited(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testFindAndCountAllEagerRequiredLimited(), $sql['count']);
     }
 
     /**

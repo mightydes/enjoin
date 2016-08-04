@@ -49,6 +49,7 @@ module.exports = {
     testFindAndCountAllEagerOneThenMany: testFindAndCountAllEagerOneThenMany,
     testFindAndCountAllEagerOneThenManyMean: testFindAndCountAllEagerOneThenManyMean,
     testFindAndCountAllEagerRequired: testFindAndCountAllEagerRequired,
+    testFindAndCountAllEagerRequiredLimited: testFindAndCountAllEagerRequiredLimited,
 
     testDestroy: testDestroy
 };
@@ -832,7 +833,34 @@ function testFindAndCountAllEagerRequired() {
     });
 }
 
-// TODO: limit, order
+function testFindAndCountAllEagerRequiredLimited() {
+    saveCompare('testFindAndCountAllEagerRequiredLimited', models.Authors, 'findAndCountAll', {
+        where: {
+            id: {
+                $gte: 0,
+                $lt: 10
+            },
+            name: {
+                $or: [
+                    {ne: 'Bob'},
+                    {ne: 'Alice'}
+                ]
+            }
+        },
+        include: {
+            model: models.Books,
+            include: [
+                models.Reviews,
+                {
+                    model: models.PublishersBooks,
+                    required: true
+                }
+            ]
+        },
+        limit: 25,
+        offset: 7
+    });
+}
 
 function testDestroy() {
     models.Languages.destroy({
