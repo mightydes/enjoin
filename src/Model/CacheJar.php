@@ -38,7 +38,7 @@ class CacheJar
      */
     public function enabled($flags = 0)
     {
-        if ($flags & Enjoin::NO_CACHE) {
+        if (($flags & Enjoin::NO_CACHE) || ($flags & Enjoin::SQL)) {
             return false;
         }
         if ($flags & Enjoin::WITH_CACHE) {

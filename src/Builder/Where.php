@@ -2,17 +2,16 @@
 
 namespace Enjoin\Builder;
 
-use Carbon\Carbon;
 use Enjoin\Enjoin;
 
 class Where
 {
 
     /**
-     * List of simple `where` options.
+     * List of `where` control statements.
      * @var array
      */
-    public static $options = [
+    public static $controls = [
         'and' => 'AND',
         'or' => 'OR',
         'gt' => '>',
@@ -27,8 +26,11 @@ class Where
     ];
 
     protected $table;
-    protected $query = [];
-    protected $place = [];
+    protected $query;
+    protected $place;
+
+    private $initAndOr = null;
+    private $countAndOr = 0;
 
     /**
      * Where constructor.
@@ -38,7 +40,15 @@ class Where
     public function __construct(array $params, $table)
     {
         $this->table = $table;
-        $this->handle($params);
+
+        $handle = $this->handle($params);
+//        !Enjoin::debug() ?: +sd($params, $handle);
+        list($this->query, $this->place) = $this->resolve($handle);
+
+        # Wrap with additional braces on init and-or control:
+        if ($this->initAndOr['has'] && $this->initAndOr['isOnly']) {
+            $this->query = '(' . $this->query . ')';
+        }
     }
 
     /**
@@ -46,7 +56,7 @@ class Where
      */
     public function getPrepared()
     {
-        return [join('', $this->query), $this->place];
+        return [$this->query, $this->place];
     }
 
     /**
@@ -54,105 +64,175 @@ class Where
      */
     public function isComposite()
     {
-        return count($this->query) > 1;
+        return $this->countAndOr > 0;
     }
 
     /**
      * @param array $where
-     * @param null|string $attr
+     * @param null|string $field
      * @param bool $isOr
-     * @param bool $pristine
+     * @return array
      */
-    private function handle(array $where, $attr = null, $isOr = false, $pristine = true)
+    private function handle(array $where, $field = null, $isOr = false)
     {
-        foreach ($where as $k => $v) {
-            if (array_key_exists($k, static::$options)) {
-                # Where option found:
-                if ($k === 'and' || $k === 'or') {
-                    $this->addQuery('(', $isOr, $pristine);
-                    $this->handle($v, $attr, $k === 'or');
-                    $this->addQuery(')');
+        $stat = $this->statAndOr($where);
+        is_array($this->initAndOr) ?: $this->initAndOr = $stat; // Store init and-or stat for additional braces.
+        if ($stat['has'] && $stat['isOnly']) {
+            return $this->handle($where[$stat['only']], $field, $stat['only'] === 'or');
+        }
+
+        if ($this->isSequential($where)) {
+            $data = [];
+            foreach ($where as $it) {
+                $data [] = $this->handle($it, $field);
+            }
+            return ['isOr' => $isOr, 'data' => $data];
+        }
+
+        $data = [];
+        foreach ($where as $key => $value) {
+            if (array_key_exists($key, static::$controls)) {
+
+                # Key is CONTROL:
+                if ($key === 'and' || $key === 'or') {
+                    $data [] = $this->handle($value, $field, $key === 'or');
+                } elseif ($key === 'in' || $key === 'notIn') {
+                    $data [] = $this->prepIn($field, $value, $key === 'notIn');
                 } else {
-                    $prep = $this->prep($attr, $v, static::$options[$k]);
-                    $this->addQuery($prep, $isOr, $pristine);
+                    $data [] = $this->prepCommon($field, $value, $key);
                 }
-            } elseif (is_array($v) && !$this->isPlainList($v)) {
-                # Complex statement:
-                if (is_numeric($k)) {
-                    $this->handle($v, $attr, $isOr, $pristine);
-                } else {
-                    if (count($v) > 1) {
-                        $this->addQuery('(', $isOr, $pristine);
-                        $this->handle($v, $k, $isOr);
-                        $this->addQuery(')');
+
+            } else {
+
+                # Key is FIELD:
+                if (is_array($value)) {
+                    if ($this->isPlainList($value)) {
+                        $data [] = $this->prepIn($key, $value);
                     } else {
-                        $this->handle($v, $k, $isOr, $pristine);
+                        $data [] = $this->handle($value, $key);
                     }
-                }
-            } else {
-                # General statement, ie 'name' => 'Alice', or 'id' => [1, 2, 3]:
-                $prep = $this->prep($k, $v);
-                $this->addQuery($prep, $isOr, $pristine);
-            }
-            $pristine = false;
-        }
-    }
-
-    /**
-     * @param string $query
-     * @param bool $isOr
-     * @param bool $pristine
-     */
-    private function addQuery($query, $isOr = false, $pristine = true)
-    {
-        if (!$pristine) {
-            $add = $isOr ? 'OR' : 'AND';
-            $query = ' ' . $add . ' ' . $query;
-        }
-        $this->query [] = $query;
-    }
-
-    /**
-     * @param string $attr
-     * @param mixed $value
-     * @param null|string $operator
-     * @return string
-     */
-    private function prep($attr, $value, $operator = null)
-    {
-        $hasValue = true;
-        if (is_null($value) && (is_null($operator) || $operator === static::$options['ne'])) {
-            $not = is_null($operator) ? '' : ' NOT';
-            $operator = "IS$not NULL";
-            $hasValue = false;
-        }
-
-        if ($hasValue) {
-            if (is_array($value)) {
-                $this->place = array_merge($this->place, $value);
-            } else {
-                if ($value instanceof Carbon) {
-                    $this->place [] = $value->toDateTimeString();
                 } else {
-                    $this->place [] = $value;
+                    # Primary statement (ie 'name' => 'Bob'):
+                    $data [] = $this->prepPrimary($key, $value);
                 }
+
+            }
+        }
+        return ['isOr' => $isOr, 'data' => $data];
+    }
+
+    /**
+     * @param string $field
+     * @param mixed $value
+     * @return array
+     */
+    private function prepPrimary($field, $value)
+    {
+        $query = "`{$this->table}`.`{$field}` ";
+        $query .= is_null($value) ? 'IS NULL' : '= ?';
+        return [$query, $value];
+    }
+
+    /**
+     * @param string $field
+     * @param array $in
+     * @param bool $isNot
+     * @return array
+     */
+    private function prepIn($field, array $in, $isNot = false)
+    {
+        $operator = $isNot ? 'NOT IN' : 'IN';
+        if ($in) {
+            $prep = '(' . join(', ', array_fill(0, count($in), '?')) . ')';
+        } else {
+            $prep = '(NULL)';
+            $in = null;
+        }
+        $query = "`{$this->table}`.`$field` $operator $prep";
+        return [$query, $in];
+    }
+
+    /**
+     * @param string $field
+     * @param mixed $value
+     * @param string $control
+     * @return array
+     */
+    private function prepCommon($field, $value, $control)
+    {
+        if ($control === 'ne') {
+            $query = "`{$this->table}`.`$field` ";
+            $query .= is_null($value) ? 'IS NOT NULL' : '!= ?';
+        } else {
+            $operator = static::$controls[$control];
+            $query = "`{$this->table}`.`$field` $operator ?";
+        }
+        return [$query, $value];
+    }
+
+    /**
+     * @param array $handle
+     * @return array
+     */
+    private function resolve(array $handle)
+    {
+        $outQuery = [];
+        $outPlace = [];
+
+        foreach ($handle['data'] as $it) {
+            if (isset($it['isOr'])) {
+                list($query, $place) = $this->resolve($it);
+                if (count($it['data']) > 1) {
+                    $query = '(' . $query . ')';
+                }
+                $outQuery [] = $query;
+            } else {
+                $outQuery [] = $it[0]; // ie QUERY
+                $place = $it[1]; // ie PLACE
+            }
+
+            if (is_array($place)) {
+                $outPlace = array_merge($outPlace, $place);
+            } elseif (!is_null($place)) {
+                $outPlace [] = $place;
             }
         }
 
-        if (is_null($operator) && is_array($value)) {
-            $operator = static::$options['in'];
-        }
+        $operator = $handle['isOr'] ? 'OR' : 'AND';
+        $this->countAndOr += count($outQuery) - 1;
+        $outQuery = join(" $operator ", $outQuery);
+        return [$outQuery, $outPlace];
+    }
 
-        $prep = '';
-        if ($hasValue) {
-            $prep = ' ';
-            $prep .= $operator === static::$options['in'] || $operator === static::$options['notIn']
-                ? '(' . join(', ', array_fill(0, count($value), '?')) . ')'
-                : '?';
+    /**
+     * @param array $where
+     * @return array
+     */
+    private function statAndOr(array $where)
+    {
+        $has = isset($where['and']) || isset($where['or']);
+        $isOnly = count($where) === 1;
+        $only = null;
+        if ($isOnly) {
+            $only = isset($where['and']) ? 'and' : 'or';
         }
+        return [
+            'has' => $has,
+            'isOnly' => $isOnly,
+            'only' => $only
+        ];
+    }
 
-        !is_null($operator) ?: $operator = '=';
-        return "`{$this->table}`.`$attr` $operator" . $prep;
+    /**
+     * @param array $arr
+     * @return bool
+     */
+    private function isSequential(array $arr)
+    {
+        if ($arr) {
+            return array_keys($arr) === range(0, count($arr) - 1);
+        }
+        return false;
     }
 
     /**

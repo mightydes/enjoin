@@ -38,6 +38,7 @@ module.exports = {
     testFindOneEagerSelfNestedNoSubQuery: testFindOneEagerSelfNestedNoSubQuery,
 
     testFindAll: testFindAll,
+    testFindAllEmptyList: testFindAllEmptyList,
     testFindAllEagerOneThenMany: testFindAllEagerOneThenMany,
     testFindAllEagerOneThenManyMean: testFindAllEagerOneThenManyMean,
     testFindAllEagerOneThenManyMeanOrdered: testFindAllEagerOneThenManyMeanOrdered,
@@ -603,6 +604,16 @@ function testFindOneEagerSelfNestedNoSubQuery() {
 
 function testFindAll() {
     models.Authors.findAll();
+}
+
+function testFindAllEmptyList() {
+    saveCompare('testFindAllEmptyList', models.Books, 'findAll', {
+        where: {
+            id: [],
+            title: {$like: '%cloud%'},
+            year: {$ne: null}
+        }
+    });
 }
 
 function testFindAllEagerOneThenMany() {

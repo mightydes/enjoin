@@ -38,6 +38,7 @@ var testList = [
     'testFindOneEagerSelfNestedNoSubQuery',
 
     'testFindAll',
+    'testFindAllEmptyList',
     'testFindAllEagerOneThenMany',
     'testFindAllEagerOneThenManyMean',
     'testFindAllEagerOneThenManyMeanOrdered',

@@ -17,9 +17,7 @@ class EnjoinServiceProvider extends ServiceProvider
     {
         $this->options = [
             'database' => $config->get('database'),
-            'enjoin' => [
-                'lang_dir' => 'vendor/caouecs/laravel4-lang'
-            ],
+            'enjoin' => $config->get('enjoin'),
             'cache' => $config->get('cache')
         ];
     }

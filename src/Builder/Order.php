@@ -87,9 +87,9 @@ class Order
     {
         if (is_array($input)) {
             $len = count($input);
-            if ($len === 1 && is_string($input[0])) {
+            if ($len === 1 && isset($input[0]) && is_string($input[0])) {
                 return true;
-            } elseif ($len === 2 && is_string($input[0]) && is_string($input[1])) {
+            } elseif ($len === 2 && isset($input[0]) && is_string($input[0]) && isset($input[1]) && is_string($input[1])) {
                 $r = [];
                 preg_match("/desc|asc/i", $input[1], $r);
                 if ($r) {
@@ -125,8 +125,10 @@ class Order
         $notation = [];
         $prefix = null;
         foreach ($path as $it) {
-            if (is_string($it)) {
+            if (is_string($it)) { // ie [ ... , 'name', 'desc']
                 $notation [] = $it;
+            } elseif ($this->isArrayNotation($it)) { // ie [ ... , ['name', 'desc'] ]
+                $notation = $it;
             } else {
                 $node = $this->findNode($it, $idxList);
                 $prefix = $node->prefix;

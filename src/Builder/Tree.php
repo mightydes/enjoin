@@ -5,6 +5,7 @@ namespace Enjoin\Builder;
 use Enjoin\Enjoin;
 use Enjoin\Model\Model;
 use Enjoin\Extras;
+use Enjoin\Factory;
 use Enjoin\Exceptions\Error;
 use Doctrine\Common\Inflector\Inflector;
 use stdClass, Closure;
@@ -31,7 +32,7 @@ class Tree
         $this->tree = $this->createNode($Model, $params);
         $this->hasChildren = count($this->tree->children) > 0;
         $this->hasLimit = isset($params['limit']);
-        if ($this->hasChildren) {
+        if ($this->hasChildren && Factory::getConfig()['enjoin']['auto_require']) {
             $this->walk(function (stdClass $node, array $path) {
                 if (count($path) - 1) {
                     if ($node->where && is_null($node->required)) {

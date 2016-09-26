@@ -147,6 +147,7 @@ class Model
             $Find = new Find($this, $params);
             list($query, $place) = $Find->getPrepared();
             if ($flags & Enjoin::SQL) {
+//                !Enjoin::debug() ?: sd($query, $place);
                 return PdoDebugger::show($query, $place);
             }
             $rows = $this->connection()->select($query, $place);
@@ -203,7 +204,7 @@ class Model
                 return $Records->handleRows($rows);
             }
             return [];
-        });
+        }, $flags);
     }
 
     /**
@@ -238,7 +239,7 @@ class Model
                 return PdoDebugger::show($query, $place);
             }
             return (int)$this->connection()->select($query, $place)[0]->count;
-        });
+        }, $flags);
         if ($flags & Enjoin::SQL) {
             return [
                 'count' => $count,

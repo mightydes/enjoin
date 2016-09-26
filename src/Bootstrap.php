@@ -66,7 +66,8 @@ class Bootstrap
         $enjoin = array_merge([
             'models_namespace' => '\Models',
             'locale' => 'en',
-            'lang_dir' => 'resources/lang'
+            'lang_dir' => 'resources/lang',
+            'auto_require' => true
         ], $enjoin);
         $enjoin['models_namespace'][0] === '\\'
             ?: $enjoin['models_namespace'] = '\\' . $enjoin['models_namespace'];

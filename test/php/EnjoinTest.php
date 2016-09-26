@@ -14,7 +14,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testFindAndCountAllEagerRequiredLimited';
+    private $debugFunction = 'testFindOneEagerNestedMean';
 
     public function testBootstrap()
     {
@@ -645,6 +645,16 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
             [2, 'J. R. R. Tolkien', 2],
             [count($r), $r[0]->name, $r[1]->id]
         );
+    }
+
+    /**
+     * @depends testMockDataA
+     */
+    public function testFindAllEmptyList()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Books')->findAll($this->params_testFindAllEmptyList(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testFindAllEmptyList(), $sql);
     }
 
     /**

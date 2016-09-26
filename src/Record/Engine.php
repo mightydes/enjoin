@@ -71,6 +71,7 @@ class Engine
             $id = $this->saveEntry($volume);
             $this->id = $id;
             $this->Record->id = $id;
+            $volume['id'] = $id;
         }
 
         return $this->mapSaved($defAttributes, $volume);
@@ -89,7 +90,7 @@ class Engine
             return $this->Model->queryBuilder()->insertGetId($volume);
         }
 
-        if ($volume['id'] === $this->id) {
+        if (isset($volume['id']) && $volume['id'] === $this->id) {
             unset($volume['id']);
         }
         $this->Model->CacheJar->flush();
@@ -123,9 +124,9 @@ class Engine
                 $list[$key] = $val;
             }
         }
-        if ($this->type === self::PERSISTENT && $pick && !in_array('id', $list)) {
-            $list = array_merge(['id' => $this->Record->id], $list);
-        }
+//        if ($this->type === self::PERSISTENT && $pick && !in_array('id', $list)) {
+//            $list = array_merge(['id' => $this->Record->id], $list);
+//        }
         return $list;
     }
 
