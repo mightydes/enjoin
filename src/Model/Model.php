@@ -53,6 +53,9 @@ class Model
     {
         $key = $this->Definition->connection;
         $key ?: $key = Factory::getConfig()['database']['default'];
+        if ($app = Factory::getApp()) {
+            return $app['db']->connection($key);
+        }
         return Capsule::connection($key);
     }
 

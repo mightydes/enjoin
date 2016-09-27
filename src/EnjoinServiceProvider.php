@@ -28,8 +28,7 @@ class EnjoinServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind('enjoin', function () {
-            // TODO: pass $this->app as Container.
-            Factory::bootstrap($this->options);
+            Factory::bootstrap($this->options, $this->app);
             return new Enjoin;
         });
     }

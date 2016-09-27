@@ -9,6 +9,7 @@ use Illuminate\Validation\Factory as Validator;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Redis\Database;
 use Illuminate\Cache\MemcachedConnector;
+use Illuminate\Container\Container;
 use Enjoin\Record\Getters;
 use Enjoin\Record\Setters;
 
@@ -16,9 +17,14 @@ class Factory
 {
 
     /**
-     * @var \Illuminate\Container\Container|null
+     * @var Container|null
      */
     public $Container = null;
+
+    /**
+     * @var Container|null
+     */
+    public $App = null;
 
     public $config = [];
 
@@ -70,12 +76,13 @@ class Factory
 
     /**
      * @param array $options
-     * @return $this
+     * @param Container|null $app
+     * @return Factory
      */
-    public static function bootstrap(array $options)
+    public static function bootstrap(array $options, Container $app = null)
     {
         $Factory = self::getInstance();
-        new Bootstrap($Factory, $options);
+        new Bootstrap($Factory, $options, $app);
         return $Factory;
     }
 
@@ -94,9 +101,19 @@ class Factory
     {
         $Factory = self::getInstance();
         if (!$Factory->Validator) {
-            $FileLoader = new FileLoader(new Filesystem, $Factory->config['enjoin']['lang_dir']);
-            $Translator = new Translator($FileLoader, $Factory->config['enjoin']['locale']);
-            $Factory->Validator = new Validator($Translator, $Factory->Container);
+            if ($Factory->App) {
+
+                # Use Laravel validator:
+                $Factory->Validator = $Factory->App['validator'];
+
+            } else {
+
+                # Create validator:
+                $FileLoader = new FileLoader(new Filesystem, $Factory->config['enjoin']['lang_dir']);
+                $Translator = new Translator($FileLoader, $Factory->config['enjoin']['locale']);
+                $Factory->Validator = new Validator($Translator, $Factory->Container);
+
+            }
         }
         return $Factory->Validator;
     }
@@ -108,21 +125,38 @@ class Factory
     {
         $Factory = self::getInstance();
         if (!$Factory->Cache) {
-            if ($cache = $Factory->config['cache']) {
-                switch ($cache['default']) {
-                    case 'redis':
-                        $Factory->Container['redis'] = new Database($Factory->config['database']['redis']);
-                        break;
-                    case 'memcached':
-                        $Factory->Container['memcached.connector'] = new MemcachedConnector;
-                        break;
+            if ($Factory->App) {
+
+                # Use Laravel cache:
+                $Factory->Cache = $Factory->App['cache'];
+
+            } else {
+
+                # Create cache manager:
+                if ($cache = $Factory->config['cache']) {
+                    switch ($cache['default']) {
+                        case 'redis':
+                            $Factory->Container['redis'] = new Database($Factory->config['database']['redis']);
+                            break;
+                        case 'memcached':
+                            $Factory->Container['memcached.connector'] = new MemcachedConnector;
+                            break;
+                    }
+                    $CacheManager = new CacheManager($Factory->Container);
+                    $Factory->Cache = $CacheManager->store();
                 }
-                $CacheManager = new CacheManager($Factory->Container);
-                $Factory->Cache = $CacheManager->store();
 
             }
         }
         return $Factory->Cache;
+    }
+
+    /**
+     * @return Container|null
+     */
+    public static function getApp()
+    {
+        return self::getInstance()->App;
     }
 
     /**

@@ -14,8 +14,9 @@ class Bootstrap
      * Bootstrap constructor.
      * @param Factory $Factory
      * @param array $options
+     * @param Container|null $app
      */
-    public function __construct(Factory $Factory, array $options)
+    public function __construct(Factory $Factory, array $options, Container $app = null)
     {
         $options['database'] = $this->handleDatabaseOptions($options['database']);
 
@@ -26,9 +27,20 @@ class Bootstrap
 
         $options = array_merge($options, $this->flattenOptions($options));
         $Factory->config = $options;
-        $Factory->Container = new Container;
-        $Factory->Container['config'] = $options;
-        $this->handleDatabaseConnections($options['database']['connections']);
+
+        if ($app) {
+
+            # Use Laravel app container:
+            $Factory->App = $app;
+
+        } else {
+
+            # Create new container:
+            $Factory->Container = new Container;
+            $Factory->Container['config'] = $options;
+            $this->handleDatabaseConnections($options['database']['connections']);
+
+        }
     }
 
     /**
