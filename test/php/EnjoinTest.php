@@ -887,6 +887,20 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, $affected);
     }
 
+    /**
+     * @depends testMockDataB
+     */
+    public function testRecordDestroy()
+    {
+        $it = Enjoin::get('Authors')->create([
+            'name' => 'John Dow'
+        ]);
+        $id = $it->id;
+        $it->destroy();
+        $check = Enjoin::get('Authors')->findById($id);
+        $this->assertNull($check);
+    }
+
     // TODO: test model description getter/setter...
     // TODO: test `hasOne` relation...
     // TODO: test `as` relation...

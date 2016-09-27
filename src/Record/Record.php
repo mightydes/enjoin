@@ -61,19 +61,14 @@ class Record extends stdClass
 
     /**
      * @return bool
-     * @throws \Exception
      */
     public function destroy()
     {
-        sd('Record.destroy()');
-        switch ($this->_internal['type']) {
-            case(Extras::$PERSISTENT_RECORD):
-                return PersistentRecord::destroy($this);
-            case(Extras::$NON_PERSISTENT_RECORD):
-                return NonPersistentRecord::destroy($this);
-            default:
-                throw new Exception('Record destroyed');
+        $this->Engine->destroy();
+        foreach ($this as $prop => $v) {
+            unset($this->$prop);
         }
+        return true;
     }
 
     /**

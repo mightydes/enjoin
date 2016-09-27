@@ -78,13 +78,21 @@ class Engine
     }
 
     /**
+     * @return bool
+     */
+    public function destroy()
+    {
+        $this->Model->queryBuilder()->where('id', $this->id)->take(1)->delete();
+        $this->Model->CacheJar->flush();
+        return true;
+    }
+
+    /**
      * @param array $volume
      * @return int|mixed
      */
     private function saveEntry(array $volume)
     {
-        // TODO: flush cache...
-
         if ($this->type === self::NON_PERSISTENT) {
             $this->type = self::PERSISTENT;
             return $this->Model->queryBuilder()->insertGetId($volume);
