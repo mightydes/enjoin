@@ -6,39 +6,25 @@ use Enjoin\Model\Model;
 use Enjoin\Exceptions\Error;
 use Enjoin\Enjoin;
 
-class Order
+/**
+ * Class Order
+ *
+ * Input examples:
+ *      - string `title DESC`
+ *      - [ 'name', 'username DESC', ['username', 'desc'] ]
+ *      - [
+ *          'name',
+ *          [
+ *              ['model' => Enjoin::get('replies'), 'as' => 'comment'],
+ *              Enjoin::get('rating'),
+ *              'votes', 'desc'
+ *          ]
+ *        ]
+ *
+ * @package Enjoin\Builder
+ */
+class Order extends Group
 {
-
-    /**
-     * @var \stdClass
-     */
-    private $tree;
-
-    private $params;
-    private $query = [];
-
-    /**
-     * Input examples:
-     *      - string `title DESC`
-     *      - [ 'name', 'username DESC', ['username', 'desc'] ]
-     *      - [
-     *          'name',
-     *          [
-     *              ['model' => Enjoin::get('replies'), 'as' => 'comment'],
-     *              Enjoin::get('rating'),
-     *              'votes', 'desc'
-     *          ]
-     *        ]
-     *
-     * Order constructor.
-     * @param Tree $Tree
-     * @param string|array $params
-     */
-    public function __construct(Tree $Tree, $params)
-    {
-        $this->tree = $Tree->get();
-        $this->params = $params;
-    }
 
     /**
      * @return string
@@ -135,36 +121,6 @@ class Order
             }
         }
         $this->handleArrayNotation($notation, $prefix);
-    }
-
-    /**
-     * @param mixed $it
-     * @param array $idxList
-     * @return mixed
-     * @throws \Enjoin\Exceptions\BuilderException
-     */
-    private function findNode($it, array &$idxList)
-    {
-        $list = $this->tree->children;
-        foreach ($idxList as $idx) {
-            $list = $list[$idx]->children;
-        }
-        $as = null;
-        if (is_array($it)) {
-            $model = $it['model'];
-            !isset($it['as']) ?: $as = $it['as'];
-        } else {
-            $model = $it;
-        }
-        foreach ($list as $idx => $node) {
-            if ($node->Model->unique === $model->unique &&
-                (!$as || $node->as === $as)
-            ) {
-                $idxList [] = $idx;
-                return $node;
-            }
-        }
-        Error::dropBuilderException("Invalid ordering model: '$model->unique'");
     }
 
 }

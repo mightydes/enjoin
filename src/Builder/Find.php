@@ -40,6 +40,7 @@ class Find
 
     protected $prepWhere = '';
     protected $prepLimit = '';
+    protected $prepGroup = '';
     protected $prepOrder = '';
 
     /**
@@ -76,6 +77,7 @@ class Find
             !$depth ?: $this->handleNodeJoin($node, $path, $depth);
         });
 
+        $this->handleGroup();
         $this->handleOrder();
 
         return $this->isSubquery
@@ -210,6 +212,7 @@ class Find
         !$this->join ?: $query .= ' ' . join(' ', $this->join);
         !$this->prepWhere ?: $query .= ' WHERE ' . $this->prepWhere;
 
+        !$this->prepGroup ?: $query .= ' ' . $this->prepGroup;
         !$this->prepOrder ?: $query .= ' ' . $this->prepOrder;
         if ($this->prepLimit && !$this->isById) {
             $query .= ' ' . $this->prepLimit;
@@ -248,6 +251,7 @@ class Find
         $select = join(', ', $this->select);
         $query = "SELECT $select FROM ($sub) AS `$table`";
         !$this->join ?: $query .= ' ' . join(' ', $this->join);
+        !$this->prepGroup ?: $query .= ' ' . $this->prepGroup;
         !$this->prepOrder ?: $query .= ' ' . $this->prepOrder;
 
 //        !Enjoin::debug() ?: sd($this->placeSubJoin, $this->placeSubWhere, $this->placeWhere, $this->placeJoin);
@@ -259,6 +263,16 @@ class Find
         );
 
         return [$query, $place];
+    }
+
+    /**
+     * Handle `group` part.
+     */
+    private function handleGroup()
+    {
+        if (isset($this->params['group'])) {
+            $this->prepGroup = 'GROUP BY ' . (new Group($this->Tree, $this->params['group']))->getQuery();
+        }
     }
 
     /**

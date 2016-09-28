@@ -42,6 +42,7 @@ module.exports = {
     testFindAllEagerOneThenMany: testFindAllEagerOneThenMany,
     testFindAllEagerOneThenManyMean: testFindAllEagerOneThenManyMean,
     testFindAllEagerOneThenManyMeanOrdered: testFindAllEagerOneThenManyMeanOrdered,
+    testFindAllEagerOneThenManyMeanGrouped: testFindAllEagerOneThenManyMeanGrouped,
     testFindAllEagerNestedDeep: testFindAllEagerNestedDeep,
     testFindAllEagerNestedDeepLimited: testFindAllEagerNestedDeepLimited,
 
@@ -653,6 +654,24 @@ function testFindAllEagerOneThenManyMeanOrdered() {
         order: [
             'year',
             [models.Authors, models.Articles, 'year', 'DESC']
+        ]
+    });
+}
+
+function testFindAllEagerOneThenManyMeanGrouped() {
+    saveCompare('testFindAllEagerOneThenManyMeanGrouped', models.Books, 'findAll', {
+        where: {id: {$lt: 5}},
+        include: {
+            model: models.Authors,
+            where: {id: {$like: '2%'}},
+            include: {
+                model: models.Articles,
+                where: {year: {$like: '19%'}}
+            }
+        },
+        group: [
+            'year',
+            [models.Authors, models.Articles, 'year']
         ]
     });
 }
