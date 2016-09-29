@@ -10,9 +10,6 @@ cache:
 services:
     - redis-server
 
-env:
-  - ENJ_DATABASE=enjoin_test ENJ_USERNAME=enjoin_test ENJ_PASSWORD=enjoin_test
-
 install:
   - npm install -g gulp
   - npm install

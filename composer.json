@@ -1,13 +1,14 @@
 {
   "name": "mightydes/enjoin",
-  "description": "PHP ORM inspired by Sequelize.js",
+  "description": "Multi dialect ORM for PHP inspired by Sequelize.JS",
   "license": "GNU",
   "keywords": [
-    "enjoin",
-    "laravel",
-    "database",
     "mysql",
+    "postgresql",
+    "postgres",
     "orm",
+    "laravel",
+    "object relational mapper",
     "sequelize"
   ],
   "authors": [
