@@ -1,5 +1,5 @@
 .idea
 node_modules
-srcOld
 vendor
+.env
 composer.lock
