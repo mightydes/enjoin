@@ -14,7 +14,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testFindOneEagerNestedMean';
+    private $debugFunction = 'testCountEagerOneThenMany';
 
     public function testBootstrap()
     {
@@ -775,6 +775,46 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Books')->count($this->params_testCountConditional(), Enjoin::SQL);
         $this->assertEquals($this->sql_testCountConditional(), $sql);
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testCountEagerOneThenMany()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Books')->count($this->params_testCountEagerOneThenMany(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testCountEagerOneThenMany(), $sql);
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testCountEagerOneThenManyMean()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Books')->count($this->params_testCountEagerOneThenManyMean(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testCountEagerOneThenManyMean(), $sql);
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testCountEagerRequired()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Authors')->count($this->params_testCountEagerRequired(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testCountEagerRequired(), $sql);
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testCountEagerRequiredLimited()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Authors')->count($this->params_testCountEagerRequiredLimited(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testCountEagerRequiredLimited(), $sql);
     }
 
     /**

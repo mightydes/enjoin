@@ -15,34 +15,20 @@ class Count extends Find
     {
         $this->handleWhere();
 
-        $hasRequiredInclude = false;
         $this->Tree->walk(function (stdClass $node, array $path) use (&$hasRequiredInclude) {
             $depth = count($path) - 1;
-            if ($depth && !$node->children) {
-                // Branch deepest node:
-                for ($i = $depth; $i > 0; $i--) {
-                    if ($path[$i]->required) {
-                        break;
-                    }
-                }
-                if ($i) {
-                    $hasRequiredInclude = true;
-                    for ($j = 1; $j <= $i; $j++) {
-                        $this->handleNodeJoin($path[$j], $path, $j);
-                    }
-                }
-            }
+            !$depth ?: $this->handleNodeJoin($node, $path, $depth);
         });
 
-        return $hasRequiredInclude
-            ? $this->handleDistinct()
-            : $this->handle();
+        return $this->join
+            ? $this->handleEager()
+            : $this->handlePrimitive();
     }
 
     /**
      * @return array
      */
-    private function handle()
+    private function handlePrimitive()
     {
         $table = $this->Model->Definition->table;
         $query = "SELECT count(*) AS `count` FROM `$table` AS `$table`";
@@ -53,10 +39,10 @@ class Count extends Find
     /**
      * @return array
      */
-    private function handleDistinct()
+    private function handleEager()
     {
         $table = $this->Model->Definition->table;
-        $query = "SELECT count(DISTINCT(`$table`.`id`)) AS `count` FROM `$table` AS `$table`";
+        $query = "SELECT count(`$table`.`id`) AS `count` FROM `$table` AS `$table`";
         !$this->join ?: $query .= ' ' . join(' ', $this->join);
         !$this->prepWhere ?: $query .= ' WHERE ' . $this->prepWhere;
 
@@ -65,7 +51,6 @@ class Count extends Find
             $this->placeSubWhere,
             $this->placeWhere
         );
-//        !Enjoin::debug() ?: sd($place);
 
         return [$query, $place];
     }

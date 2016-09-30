@@ -48,6 +48,10 @@ module.exports = {
 
     testCount: testCount,
     testCountConditional: testCountConditional,
+    testCountEagerOneThenMany: testCountEagerOneThenMany,
+    testCountEagerOneThenManyMean: testCountEagerOneThenManyMean,
+    testCountEagerRequired: testCountEagerRequired,
+    testCountEagerRequiredLimited: testCountEagerRequiredLimited,
 
     testFindAndCountAll: testFindAndCountAll,
     testFindAndCountAllConditional: testFindAndCountAllConditional,
@@ -813,6 +817,85 @@ function testCountConditional() {
             id: {$lt: 5},
             title: {$like: 'My%'}
         }
+    });
+}
+
+function testCountEagerOneThenMany() {
+    saveCompare('testCountEagerOneThenMany', models.Books, 'count', {
+        include: {
+            model: models.Authors,
+            include: models.Articles
+        }
+    });
+}
+
+function testCountEagerOneThenManyMean() {
+    saveCompare('testCountEagerOneThenManyMean', models.Books, 'count', {
+        where: {id: {$lt: 5}},
+        include: {
+            model: models.Authors,
+            where: {id: {$like: '2%'}},
+            include: {
+                model: models.Articles,
+                where: {year: {$like: '19%'}}
+            }
+        }
+    });
+}
+
+function testCountEagerRequired() {
+    saveCompare('testCountEagerRequired', models.Authors, 'count', {
+        where: {
+            id: {
+                $gte: 0,
+                $lt: 10
+            },
+            name: {
+                $or: [
+                    {ne: 'Bob'},
+                    {ne: 'Alice'}
+                ]
+            }
+        },
+        include: {
+            model: models.Books,
+            include: [
+                models.Reviews,
+                {
+                    model: models.PublishersBooks,
+                    required: true
+                }
+            ]
+        }
+    });
+}
+
+function testCountEagerRequiredLimited() {
+    saveCompare('testCountEagerRequiredLimited', models.Authors, 'count', {
+        where: {
+            id: {
+                $gte: 0,
+                $lt: 10
+            },
+            name: {
+                $or: [
+                    {ne: 'Bob'},
+                    {ne: 'Alice'}
+                ]
+            }
+        },
+        include: {
+            model: models.Books,
+            include: [
+                models.Reviews,
+                {
+                    model: models.PublishersBooks,
+                    required: true
+                }
+            ]
+        },
+        limit: 25,
+        offset: 7
     });
 }
 

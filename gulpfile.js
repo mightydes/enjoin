@@ -48,6 +48,10 @@ var testList = [
 
     'testCount',
     'testCountConditional',
+    'testCountEagerOneThenMany',
+    'testCountEagerOneThenManyMean',
+    'testCountEagerRequired',
+    'testCountEagerRequiredLimited',
 
     'testFindAndCountAll',
     'testFindAndCountAllConditional',
