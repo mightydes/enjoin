@@ -47,6 +47,7 @@ var testList = [
     'testFindAllEagerNestedDeepLimited',
 
     'testCount',
+    'testCountConditional',
 
     'testFindAndCountAll',
     'testFindAndCountAllConditional',

@@ -770,6 +770,16 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
+    public function testCountConditional()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Books')->count($this->params_testCountConditional(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testCountConditional(), $sql);
+    }
+
+    /**
+     * @depends testMockDataB
+     */
     public function testFindAndCountAll()
     {
         $this->handleDebug(__FUNCTION__);

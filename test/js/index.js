@@ -47,6 +47,7 @@ module.exports = {
     testFindAllEagerNestedDeepLimited: testFindAllEagerNestedDeepLimited,
 
     testCount: testCount,
+    testCountConditional: testCountConditional,
 
     testFindAndCountAll: testFindAndCountAll,
     testFindAndCountAllConditional: testFindAndCountAllConditional,
@@ -804,6 +805,15 @@ function testFindAllEagerNestedDeepLimited() {
 
 function testCount() {
     models.Authors.count();
+}
+
+function testCountConditional() {
+    saveCompare('testCountConditional', models.Books, 'count', {
+        where: {
+            id: {$lt: 5},
+            title: {$like: 'My%'}
+        }
+    });
 }
 
 function testFindAndCountAll() {
