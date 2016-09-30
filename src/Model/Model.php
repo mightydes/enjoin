@@ -230,6 +230,24 @@ class Model
     /**
      * @param array|null $params
      * @param int $flags
+     * @return mixed
+     */
+    public function count(array $params = null, $flags = 0)
+    {
+        $params ?: $params = [];
+        return $this->CacheJar->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
+            $Count = new Count($this, $params);
+            list($query, $place) = $Count->getPrepared();
+            if ($flags & Enjoin::SQL) {
+                return PdoDebugger::show($query, $place);
+            }
+            return (int)$this->connection()->select($query, $place)[0]->count;
+        }, $flags);
+    }
+
+    /**
+     * @param array|null $params
+     * @param int $flags
      * @return array
      */
     public function findAndCountAll(array $params = null, $flags = 0)

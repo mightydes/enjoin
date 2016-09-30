@@ -46,6 +46,8 @@ module.exports = {
     testFindAllEagerNestedDeep: testFindAllEagerNestedDeep,
     testFindAllEagerNestedDeepLimited: testFindAllEagerNestedDeepLimited,
 
+    testCount: testCount,
+
     testFindAndCountAll: testFindAndCountAll,
     testFindAndCountAllConditional: testFindAndCountAllConditional,
     testFindAndCountAllEagerOneThenMany: testFindAndCountAllEagerOneThenMany,
@@ -798,6 +800,10 @@ function testFindAllEagerNestedDeepLimited() {
         offset: 0,
         limit: 50
     });
+}
+
+function testCount() {
+    models.Authors.count();
 }
 
 function testFindAndCountAll() {
