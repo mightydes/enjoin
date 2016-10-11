@@ -1,6 +1,7 @@
 var path = require('path');
 var fs = require('fs');
 var async = require('async');
+var _ = require('underscore');
 
 module.exports = createCompareTrait;
 
@@ -19,8 +20,13 @@ function createCompareTrait() {
             });
         }, function () {
             keys.sort().forEach(function (key) {
-                save.push(phpFunction('private', 'params_' + key, 'return ' + data[key].params + ';'));
-                save.push(phpFunction('private', 'sql_' + key, 'return "' + data[key].sql + '";'));
+                _.keys(data[key]).forEach(function (prop) {
+                    var r = data[key][prop];
+                    if (r.substr(0, 1) !== '[') {
+                        r = '"' + r + '"';
+                    }
+                    save.push(phpFunction('private', prop + '_' + key, 'return ' + r + ';'));
+                });
             });
             fs.writeFile(__dirname + '/../php/CompareTrait.php', '<?php\nuse Enjoin\\Enjoin;\ntrait CompareTrait\n{\n' + save.join('\n') + '\n}\n');
         });

@@ -60,7 +60,8 @@ module.exports = {
     testFindAndCountAllEagerRequired: testFindAndCountAllEagerRequired,
     testFindAndCountAllEagerRequiredLimited: testFindAndCountAllEagerRequiredLimited,
 
-    testDestroy: testDestroy
+    testDestroy: testDestroy,
+    testUpdate: testUpdate
 };
 
 function camelize(str) {
@@ -108,18 +109,35 @@ function toPhpParams(params) {
 }
 
 function saveCompare(name, model, method, params) {
+    if (method === 'update') {
+        return saveUpdateCompare(name, model, params, arguments[4]);
+    }
     var phpParams = toPhpParams(params);
     params || (params = {});
-    params.logging = function (sql) {
+    params.logging = createSaveCompareLogging(name, {
+        params: phpParams
+    });
+    model[method](params);
+}
+
+function saveUpdateCompare(name, model, collection, params) {
+    var phpParams = toPhpParams(params);
+    var phpCollection = toPhpParams(collection);
+    params.logging = createSaveCompareLogging(name, {
+        params: phpParams,
+        collection: phpCollection
+    });
+    model.update(collection, params);
+}
+
+function createSaveCompareLogging(name, data) {
+    return function (sql) {
         debug(sql);
         var filename = __dirname + '/../php/compare/' + name + '.json';
-        var data = {
-            params: phpParams,
-            sql: sql.replace(/Executing \(default\):\s*(.+);$/, '$1')
-        };
+        var re = /Executing \(default\):\s*([^;]+)/g;
+        data.sql = re.exec(sql)[1];
         fs.writeFile(filename, JSON.stringify(data));
     };
-    model[method](params);
 }
 
 function testFindById() {
@@ -996,5 +1014,13 @@ function testDestroy() {
         where: {id: {$gt: 5}}
     }).then(function () {
         debug(arguments);
+    });
+}
+
+function testUpdate() {
+    saveCompare('testUpdate', models.Languages, 'update', {
+        name: 'Korean'
+    }, {
+        where: {id: 200}
     });
 }

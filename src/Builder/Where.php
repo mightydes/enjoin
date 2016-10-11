@@ -128,7 +128,7 @@ class Where
      */
     private function prepPrimary($field, $value)
     {
-        $query = "`{$this->table}`.`{$field}` ";
+        $query = $this->getTableField($field) . ' ';
         $query .= is_null($value) ? 'IS NULL' : '= ?';
         return [$query, $value];
     }
@@ -148,7 +148,7 @@ class Where
             $prep = '(NULL)';
             $in = null;
         }
-        $query = "`{$this->table}`.`$field` $operator $prep";
+        $query = "{$this->getTableField($field)} $operator $prep";
         return [$query, $in];
     }
 
@@ -161,11 +161,11 @@ class Where
     private function prepCommon($field, $value, $control)
     {
         if ($control === 'ne') {
-            $query = "`{$this->table}`.`$field` ";
+            $query = $this->getTableField($field) . ' ';
             $query .= is_null($value) ? 'IS NOT NULL' : '!= ?';
         } else {
             $operator = static::$controls[$control];
-            $query = "`{$this->table}`.`$field` $operator ?";
+            $query = "{$this->getTableField($field)} $operator ?";
         }
         return [$query, $value];
     }
@@ -249,6 +249,19 @@ class Where
             $idx++;
         }
         return true;
+    }
+
+    /**
+     * @param string $field
+     * @return string
+     */
+    private function getTableField($field)
+    {
+        $out = "`{$field}`";
+        if ($this->table) {
+            $out = "`{$this->table}`.$out";
+        }
+        return $out;
     }
 
 }

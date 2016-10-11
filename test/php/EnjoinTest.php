@@ -14,7 +14,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testCountEagerOneThenMany';
+    private $debugFunction = 'testUpdate';
 
     public function testBootstrap()
     {
@@ -962,6 +962,16 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->assertEquals("DELETE FROM `authors` WHERE `authors`.`name` LIKE 'Samuel%'", $sql);
         $affected = Enjoin::get('Authors')->destroy(['name' => ['like' => 'Samuel%']]);
         $this->assertEquals(1, $affected);
+    }
+
+    /**
+     * @depends testCacheUpdate
+     */
+    public function testUpdate()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Languages')->update($this->collection_testUpdate(), $this->params_testUpdate(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testUpdate(), $sql);
     }
 
     /**

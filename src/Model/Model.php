@@ -10,6 +10,7 @@ use Enjoin\Record\Records;
 use Enjoin\Builder\Find;
 use Enjoin\Builder\Count;
 use Enjoin\Builder\Destroy;
+use Enjoin\Builder\Update;
 use Enjoin\Enjoin;
 use PdoDebugger;
 
@@ -286,6 +287,24 @@ class Model
     {
         $Destroy = new Destroy($where, $this->Definition->table);
         list($query, $place) = $Destroy->getPrepared();
+        if ($flags & Enjoin::SQL) {
+            return PdoDebugger::show($query, $place);
+        }
+        $affected = $this->connection()->update($query, $place);
+        $this->CacheJar->flush();
+        return $affected;
+    }
+
+    /**
+     * @param array $collection
+     * @param array $where
+     * @param int $flags
+     * @return int|mixed
+     */
+    public function update(array $collection, array $where, $flags = 0)
+    {
+        $Update = new Update($collection, $where, $this->Definition->table);
+        list($query, $place) = $Update->getPrepared();
         if ($flags & Enjoin::SQL) {
             return PdoDebugger::show($query, $place);
         }

@@ -60,7 +60,8 @@ var testList = [
     'testFindAndCountAllEagerRequired',
     'testFindAndCountAllEagerRequiredLimited',
 
-    'testDestroy'
+    'testDestroy',
+    'testUpdate'
 ];
 
 gulp.task('create-tables', function (callback) {
