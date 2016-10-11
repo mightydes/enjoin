@@ -279,13 +279,13 @@ class Model
     }
 
     /**
-     * @param array $where
+     * @param array $params
      * @param int $flags
      * @return int|mixed
      */
-    public function destroy(array $where, $flags = 0)
+    public function destroy(array $params, $flags = 0)
     {
-        $Destroy = new Destroy($where, $this->Definition->table);
+        $Destroy = new Destroy($params['where'], $this->Definition->table);
         list($query, $place) = $Destroy->getPrepared();
         if ($flags & Enjoin::SQL) {
             return PdoDebugger::show($query, $place);
@@ -297,13 +297,13 @@ class Model
 
     /**
      * @param array $collection
-     * @param array $where
+     * @param array $params
      * @param int $flags
      * @return int|mixed
      */
-    public function update(array $collection, array $where, $flags = 0)
+    public function update(array $collection, array $params, $flags = 0)
     {
-        $Update = new Update($collection, $where, $this->Definition->table);
+        $Update = new Update($collection, $params['where'], $this->Definition->table);
         list($query, $place) = $Update->getPrepared();
         if ($flags & Enjoin::SQL) {
             return PdoDebugger::show($query, $place);

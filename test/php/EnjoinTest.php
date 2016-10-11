@@ -958,9 +958,12 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     {
         $this->handleDebug(__FUNCTION__);
         Enjoin::get('Authors')->findOrCreate(['name' => 'Samuel Pepys']);
-        $sql = Enjoin::get('Authors')->destroy(['name' => ['like' => 'Samuel%']], Enjoin::SQL);
+        $params = [
+            'where' => ['name' => ['like' => 'Samuel%']]
+        ];
+        $sql = Enjoin::get('Authors')->destroy($params, Enjoin::SQL);
         $this->assertEquals("DELETE FROM `authors` WHERE `authors`.`name` LIKE 'Samuel%'", $sql);
-        $affected = Enjoin::get('Authors')->destroy(['name' => ['like' => 'Samuel%']]);
+        $affected = Enjoin::get('Authors')->destroy($params);
         $this->assertEquals(1, $affected);
     }
 
