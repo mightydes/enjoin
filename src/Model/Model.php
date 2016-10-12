@@ -254,18 +254,19 @@ class Model
     }
 
     /**
-     * @todo: Change usage like here http://docs.sequelizejs.com/en/latest/docs/models-usage/#findorcreate-search-for-a-specific-element-or-create-it-if-not-available
-     * @param array $collection
-     * @param array|null $defaults
+     * @param array $params
      * @return array|Record|null
      */
-    public function findOrCreate(array $collection, array $defaults = null)
+    public function findOrCreate(array $params)
     {
         $it = null;
-        $this->connection()->transaction(function () use ($collection, $defaults, &$it) {
-            $it = $this->findOne(['where' => $collection]);
+        $this->connection()->transaction(function () use ($params, &$it) {
+            $it = $this->findOne(['where' => $params['where']]);
             if (!$it) {
-                $it = $this->create(array_merge($collection, $defaults ?: []));
+                $collection = isset($params['defaults'])
+                    ? array_merge($params['where'], $params['defaults'])
+                    : $params['where'];
+                $it = $this->create($collection);
             }
         });
         return $it;
@@ -334,6 +335,7 @@ class Model
     }
 
     /**
+     * @todo: Rename -> getCreatedAtField.
      * @return string
      */
     public function getCreatedAtAttr()
@@ -345,6 +347,7 @@ class Model
     }
 
     /**
+     * @todo: Rename -> getUpdatedAtField.
      * @return string
      */
     public function getUpdatedAtAttr()

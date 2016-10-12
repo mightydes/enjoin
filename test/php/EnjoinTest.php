@@ -914,10 +914,11 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     {
         $this->handleDebug(__FUNCTION__);
         $it = Enjoin::get('Books')->findOrCreate([
-            'title' => 'Animal Farm',
-            'year' => 1945
-        ], [
-            'authors_id' => 2
+            'where' => [
+                'title' => 'Animal Farm',
+                'year' => 1945
+            ],
+            'defaults' => ['authors_id' => 2]
         ]);
         $this->assertEquals(
             [23, 'Animal Farm', 1945],
@@ -931,7 +932,10 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testRecordUpdate()
     {
         $this->handleDebug(__FUNCTION__);
-        $it = Enjoin::get('Books')->findOrCreate(['title' => 'Coming Up for'], ['authors_id' => 2]);
+        $it = Enjoin::get('Books')->findOrCreate([
+            'where' => ['title' => 'Coming Up for'],
+            'defaults' => ['authors_id' => 2]
+        ]);
         $it->update([
             'title' => 'Coming Up for Air',
             'year' => 1939
@@ -981,7 +985,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testModelDestroy()
     {
         $this->handleDebug(__FUNCTION__);
-        Enjoin::get('Authors')->findOrCreate(['name' => 'Samuel Pepys']);
+        Enjoin::get('Authors')->findOrCreate([
+            'where' => ['name' => 'Samuel Pepys']
+        ]);
         $params = [
             'where' => ['name' => ['like' => 'Samuel%']]
         ];
@@ -1018,6 +1024,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     // TODO: test model description getter/setter...
     // TODO: test `hasOne` relation...
     // TODO: test `as` relation...
+    // TODO: write several tests for `findOrCreate` using Sequelize.
 
     /**
      * @param $filename
