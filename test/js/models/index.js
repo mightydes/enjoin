@@ -31,7 +31,8 @@ module.exports = describeRelations({
     Publishers: sequelize.import('./publishers'),
     PublishersBooks: sequelize.import('./publishers-books'),
     Preorders: sequelize.import('./preorders'),
-    Shipped: sequelize.import('./shipped')
+    Shipped: sequelize.import('./shipped'),
+    Pile: sequelize.import('./pile')
 });
 
 function describeRelations(ctx) {

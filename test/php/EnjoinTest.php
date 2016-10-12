@@ -8,13 +8,14 @@ use Enjoin\Factory;
 use Enjoin\Enjoin;
 use Enjoin\Record\Record;
 use Enjoin\Exceptions\ValidationException;
+use Carbon\Carbon;
 
 class EnjoinTest extends PHPUnit_Framework_TestCase
 {
 
     use CompareTrait;
 
-    private $debugFunction = 'testModelCreateEmpty';
+    private $debugFunction = 'testModelCreateWithDateField';
 
     public function testBootstrap()
     {
@@ -159,6 +160,18 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $a = Enjoin::get('Languages')->create();
         $b = Enjoin::get('Languages')->create([]);
         $this->assertEquals([1, 2], [$a->id, $b->id]);
+    }
+
+    /**
+     * @depends testBootstrap
+     */
+    public function testModelCreateWithDateField()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $collection = ['date_till' => new Carbon];
+        $created = Enjoin::get('Pile')->create($collection);
+        $it = Enjoin::get('Pile')->findById($created->id);
+        $this->assertTrue($created->date_till->eq($it->date_till));
     }
 
     /**

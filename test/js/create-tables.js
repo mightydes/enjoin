@@ -11,7 +11,8 @@ var order = [
     models.Publishers,
     models.PublishersBooks,
     models.Preorders,
-    models.Shipped
+    models.Shipped,
+    models.Pile
 ];
 
 module.exports = function (callback) {

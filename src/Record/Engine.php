@@ -122,7 +122,7 @@ class Engine
             }
             if ($val instanceof Record) {
                 $val->save();
-            } elseif (is_array($val) || is_object($val)) {
+            } elseif (is_array($val)) {
                 foreach ($val as $k => $v) {
                     if ($v instanceof Record) {
                         $v->save();
@@ -132,9 +132,6 @@ class Engine
                 $list[$key] = $val;
             }
         }
-//        if ($this->type === self::PERSISTENT && $pick && !in_array('id', $list)) {
-//            $list = array_merge(['id' => $this->Record->id], $list);
-//        }
         return $list;
     }
 
