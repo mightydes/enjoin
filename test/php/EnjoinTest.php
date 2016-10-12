@@ -939,7 +939,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $it->update([
             'title' => 'Coming Up for Air',
             'year' => 1939
-        ], ['title', 'year']);
+        ], [
+            'fields' => ['title', 'year']
+        ]);
         $this->assertEquals([
             24, 'Coming Up for Air', 1939
         ], [
@@ -972,9 +974,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $cacheKey = Enjoin::get('Books')->CacheJar->keyify(['findOne', $params]);
         $cache = Factory::getCache()->tags('Models\Books')->get($cacheKey);
         $this->assertEquals($it, $cache);
-        $cache->author->update([
-            'name' => 'George Orwell'
-        ]);
+        $cache->author->update(['name' => 'George Orwell']);
         $cache = Factory::getCache()->tags('Models\Books')->get($cacheKey);
         $this->assertNull($cache);
     }

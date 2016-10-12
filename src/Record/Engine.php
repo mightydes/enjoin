@@ -44,10 +44,15 @@ class Engine
         $this->id = $id;
     }
 
-    public function save(array $pick = null, $flags = 0)
+    /**
+     * @param array|null $params
+     * @param int $flags
+     * @return Record
+     */
+    public function save(array $params = null, $flags = 0)
     {
         $defAttributes = $this->Model->Definition->getAttributes();
-        $list = $this->prepSaveList($pick);
+        $list = $this->prepSaveList(isset($params['fields']) ? $params['fields'] : null);
         $volume = [];
 
         if ($this->Model->isTimestamps()) {

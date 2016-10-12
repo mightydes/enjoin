@@ -40,6 +40,7 @@ abstract class Definition
     public $expanseRecord = null;
 
     /**
+     * @todo: Rename to `getFields`.
      * @return array
      */
     public function getAttributes()

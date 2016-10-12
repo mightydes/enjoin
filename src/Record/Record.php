@@ -25,27 +25,29 @@ class Record extends stdClass
     }
 
     /**
-     * @param array|null $attributes
+     * @param array|null $params
      * @return Record
      */
-    public function save(array $attributes = null)
+    public function save(array $params = null)
     {
-        return $this->Engine->save($attributes);
+        return $this->Engine->save($params);
     }
 
     /**
      * @param array $collection
-     * @param array|null $pick
+     * @param array|null $params
      * @return Record
      */
-    public function update(array $collection, array $pick = null)
+    public function update(array $collection, array $params = null)
     {
-        !$pick ?: $collection = Extras::pick($collection, $pick);
-        foreach ($collection as $attr => $value) {
-            $this->$attr = $value;
+        if (isset($params['fields'])) {
+            $collection = Extras::pick($collection, $params['fields']);
+        }
+        foreach ($collection as $field => $value) {
+            $this->$field = $value;
         }
         $flags = $this->Engine->type === Engine::NON_PERSISTENT ? Engine::SOFT_SAVE : 0;
-        return $this->Engine->save($pick, $flags);
+        return $this->Engine->save($params, $flags);
     }
 
     /**
