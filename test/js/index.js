@@ -60,8 +60,9 @@ module.exports = {
     testFindAndCountAllEagerRequired: testFindAndCountAllEagerRequired,
     testFindAndCountAllEagerRequiredLimited: testFindAndCountAllEagerRequiredLimited,
 
-    testDestroy: testDestroy,
-    testUpdate: testUpdate
+    testModelDestroy: testModelDestroy,
+    testModelUpdate: testModelUpdate,
+    testModelCreateEmpty: testModelCreateEmpty
 };
 
 function camelize(str) {
@@ -1009,7 +1010,7 @@ function testFindAndCountAllEagerRequiredLimited() {
     });
 }
 
-function testDestroy() {
+function testModelDestroy() {
     models.Languages.destroy({
         where: {id: {$gt: 5}}
     }).then(function () {
@@ -1017,10 +1018,20 @@ function testDestroy() {
     });
 }
 
-function testUpdate() {
-    saveCompare('testUpdate', models.Languages, 'update', {
+function testModelUpdate() {
+    saveCompare('testModelUpdate', models.Languages, 'update', {
         name: 'Korean'
     }, {
         where: {id: 200}
     });
+}
+
+/**
+ * Same result for `create({})`.
+ */
+function testModelCreateEmpty() {
+    models.Languages.create().then(function () {
+        debug(arguments);
+    });
+    // INSERT INTO `languages` (`id`) VALUES (DEFAULT)
 }

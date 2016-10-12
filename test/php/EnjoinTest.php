@@ -14,7 +14,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testUpdate';
+    private $debugFunction = 'testModelCreateEmpty';
 
     public function testBootstrap()
     {
@@ -148,6 +148,17 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $it = Enjoin::get('Publishers')->create(['name' => 'Good Books!']);
         $this->assertEquals(1, $it->id);
         return $it;
+    }
+
+    /**
+     * @depends testBootstrap
+     */
+    public function testModelCreateEmpty()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $a = Enjoin::get('Languages')->create();
+        $b = Enjoin::get('Languages')->create([]);
+        $this->assertEquals([1, 2], [$a->id, $b->id]);
     }
 
     /**
@@ -954,7 +965,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testCacheUpdate
      */
-    public function testDestroy()
+    public function testModelDestroy()
     {
         $this->handleDebug(__FUNCTION__);
         Enjoin::get('Authors')->findOrCreate(['name' => 'Samuel Pepys']);
@@ -970,11 +981,11 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testCacheUpdate
      */
-    public function testUpdate()
+    public function testModelUpdate()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Languages')->update($this->collection_testUpdate(), $this->params_testUpdate(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testUpdate(), $sql);
+        $sql = Enjoin::get('Languages')->update($this->collection_testModelUpdate(), $this->params_testModelUpdate(), Enjoin::SQL);
+        $this->assertEquals($this->sql_testModelUpdate(), $sql);
     }
 
     /**

@@ -60,8 +60,9 @@ var testList = [
     'testFindAndCountAllEagerRequired',
     'testFindAndCountAllEagerRequiredLimited',
 
-    'testDestroy',
-    'testUpdate'
+    'testModelDestroy',
+    'testModelUpdate',
+    'testModelCreateEmpty'
 ];
 
 gulp.task('create-tables', function (callback) {
@@ -87,7 +88,8 @@ function phpUnit() {
 
 function testAll() {
     var dir = path.normalize(__dirname + '/test/php/compare');
-    del([dir + '/*.json']).then(function () {
+    var compareTrait = path.normalize(__dirname + '/test/php/CompareTrait.php');
+    del([dir + '/*.json', compareTrait]).then(function () {
         testList.forEach(function (test) {
             lib.createTables(function () {
                 lib[test]();

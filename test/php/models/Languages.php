@@ -8,6 +8,8 @@ use Enjoin\Enjoin;
 class Languages extends Definition
 {
 
+    public $timestamps = false;
+
     public function getAttributes()
     {
         return [

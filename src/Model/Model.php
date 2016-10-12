@@ -3,6 +3,7 @@
 namespace Enjoin\Model;
 
 use Doctrine\Common\Inflector\Inflector;
+use Enjoin\Extras;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Enjoin\Factory;
 use Enjoin\Record\Record;
@@ -14,6 +15,11 @@ use Enjoin\Builder\Update;
 use Enjoin\Enjoin;
 use PdoDebugger;
 
+/**
+ * Class Model
+ * @todo: Add `getTableName` method (see http://docs.sequelizejs.com/en/v3/api/model/)
+ * @package Enjoin\Model
+ */
 class Model
 {
 
@@ -70,34 +76,35 @@ class Model
 
     /**
      * @param array|object|null $collection
-     * @param array|null $attributes
      * @return Record
      */
-    public function build($collection = null, array $attributes = null)
+    public function build($collection = null)
     {
         $collection ?: $collection = [];
         $recordClass = $this->Definition->expanseRecord ?: Record::class;
         $Record = new $recordClass($this);
         foreach ($collection as $k => $v) {
-            if (!$attributes || in_array($k, $attributes)) {
-                $Record->$k = $v;
-            }
+            $Record->$k = $v;
         }
         return $Record;
     }
 
     /**
      * @param array|object|null $collection
-     * @param array|null $attributes
+     * @param array|null $params
      * @return Record
      */
-    public function create($collection = null, array $attributes = null)
+    public function create($collection = null, array $params = null)
     {
+        if (isset($params['fields'])) {
+            $collection = Extras::pick($collection, $params['fields']);
+        }
         $this->CacheJar->flush();
-        return $this->build($collection, $attributes)->save();
+        return $this->build($collection)->save();
     }
 
     /**
+     * @todo: Add second argument: array|null $params (see http://docs.sequelizejs.com/en/v3/api/model/).
      * @param array $collections
      * @return bool
      */
@@ -135,6 +142,41 @@ class Model
         }
         $this->CacheJar->flush();
         return $this->queryBuilder()->insert($bulk);
+    }
+
+    /**
+     * @param array $collection
+     * @param array $params
+     * @param int $flags
+     * @return int|mixed
+     */
+    public function update(array $collection, array $params, $flags = 0)
+    {
+        $Update = new Update($collection, $params['where'], $this->Definition->table);
+        list($query, $place) = $Update->getPrepared();
+        if ($flags & Enjoin::SQL) {
+            return PdoDebugger::show($query, $place);
+        }
+        $affected = $this->connection()->update($query, $place);
+        $this->CacheJar->flush();
+        return $affected;
+    }
+
+    /**
+     * @param array $params
+     * @param int $flags
+     * @return int|mixed
+     */
+    public function destroy(array $params, $flags = 0)
+    {
+        $Destroy = new Destroy($params['where'], $this->Definition->table);
+        list($query, $place) = $Destroy->getPrepared();
+        if ($flags & Enjoin::SQL) {
+            return PdoDebugger::show($query, $place);
+        }
+        $affected = $this->connection()->update($query, $place);
+        $this->CacheJar->flush();
+        return $affected;
     }
 
     /**
@@ -212,6 +254,7 @@ class Model
     }
 
     /**
+     * @todo: Change usage like here http://docs.sequelizejs.com/en/latest/docs/models-usage/#findorcreate-search-for-a-specific-element-or-create-it-if-not-available
      * @param array $collection
      * @param array|null $defaults
      * @return array|Record|null
@@ -247,6 +290,7 @@ class Model
     }
 
     /**
+     * @todo: Create `findAndCount` alias.
      * @param array|null $params
      * @param int $flags
      * @return array
@@ -276,41 +320,6 @@ class Model
             'count' => $count,
             'rows' => $rows
         ];
-    }
-
-    /**
-     * @param array $params
-     * @param int $flags
-     * @return int|mixed
-     */
-    public function destroy(array $params, $flags = 0)
-    {
-        $Destroy = new Destroy($params['where'], $this->Definition->table);
-        list($query, $place) = $Destroy->getPrepared();
-        if ($flags & Enjoin::SQL) {
-            return PdoDebugger::show($query, $place);
-        }
-        $affected = $this->connection()->update($query, $place);
-        $this->CacheJar->flush();
-        return $affected;
-    }
-
-    /**
-     * @param array $collection
-     * @param array $params
-     * @param int $flags
-     * @return int|mixed
-     */
-    public function update(array $collection, array $params, $flags = 0)
-    {
-        $Update = new Update($collection, $params['where'], $this->Definition->table);
-        list($query, $place) = $Update->getPrepared();
-        if ($flags & Enjoin::SQL) {
-            return PdoDebugger::show($query, $place);
-        }
-        $affected = $this->connection()->update($query, $place);
-        $this->CacheJar->flush();
-        return $affected;
     }
 
     /**
