@@ -10,12 +10,12 @@ class Record extends stdClass
 {
 
     /**
-     * @var Engine|null
+     * @var \Enjoin\Record\Engine|null
      */
     private $Engine = null;
 
     /**
-     * @param Model $Model
+     * @param \Enjoin\Model\Model $Model
      * @param string $type
      * @param null|int $id
      */
@@ -26,7 +26,7 @@ class Record extends stdClass
 
     /**
      * @param array|null $params
-     * @return Record
+     * @return \Enjoin\Record\Record
      */
     public function save(array $params = null)
     {
@@ -36,7 +36,7 @@ class Record extends stdClass
     /**
      * @param array $collection
      * @param array|null $params
-     * @return Record
+     * @return \Enjoin\Record\Record
      */
     public function update(array $collection, array $params = null)
     {
@@ -54,7 +54,7 @@ class Record extends stdClass
      * @deprecated use `update()` instead.
      * @param array $collection
      * @param array|null $pick
-     * @return Record
+     * @return \Enjoin\Record\Record
      */
     public function updateAttributes(array $collection, array $pick = null)
     {

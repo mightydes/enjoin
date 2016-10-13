@@ -24,12 +24,12 @@ class Model
 
     /**
      * Model definition instance.
-     * @var Definition
+     * @var \Enjoin\Model\Definition
      */
     public $Definition;
 
     /**
-     * @var CacheJar
+     * @var \Enjoin\Model\CacheJar
      */
     public $CacheJar;
 
@@ -37,7 +37,7 @@ class Model
 
     /**
      * Model constructor.
-     * @param Definition $Definition
+     * @param \Enjoin\Model\Definition $Definition
      */
     public function __construct(Definition $Definition)
     {
@@ -214,7 +214,7 @@ class Model
     /**
      * @param int $id
      * @param int $flags
-     * @return array|Record|null
+     * @return \Enjoin\Record\Record|null
      */
     public function findById($id, $flags = 0)
     {
@@ -239,7 +239,7 @@ class Model
     /**
      * @param array|null $params
      * @param int $flags
-     * @return array|mixed
+     * @return \Enjoin\Record\Record[]
      */
     public function findAll(array $params = null, $flags = 0)
     {
@@ -260,7 +260,7 @@ class Model
 
     /**
      * @param array $params
-     * @return array|Record|null
+     * @return \Enjoin\Record\Record
      */
     public function findOrCreate(array $params)
     {
@@ -280,7 +280,7 @@ class Model
     /**
      * @param array|null $params
      * @param int $flags
-     * @return mixed
+     * @return int
      */
     public function count(array $params = null, $flags = 0)
     {

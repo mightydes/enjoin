@@ -60,31 +60,31 @@ class Enjoin
     }
 
     /**
-     * @param Model $Model
+     * @param \Enjoin\Model\Model $Model
      * @param array $options
      * @return array
      */
-    public static function belongsTo($Model, array $options = [])
+    public static function belongsTo(Model $Model, array $options = [])
     {
         return static::performRelation(Extras::BELONGS_TO, $Model, $options);
     }
 
     /**
-     * @param Model $Model
+     * @param \Enjoin\Model\Model $Model
      * @param array $options
      * @return array
      */
-    public static function hasOne($Model, array $options = [])
+    public static function hasOne(Model $Model, array $options = [])
     {
         return static::performRelation(Extras::HAS_ONE, $Model, $options);
     }
 
     /**
-     * @param Model $Model
+     * @param \Enjoin\Model\Model $Model
      * @param array $options
      * @return array
      */
-    public static function hasMany($Model, array $options = [])
+    public static function hasMany(Model $Model, array $options = [])
     {
         return static::performRelation(Extras::HAS_MANY, $Model, $options);
     }
