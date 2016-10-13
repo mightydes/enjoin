@@ -145,13 +145,14 @@ class Model
 
     /**
      * @param array $collection
-     * @param array $params
+     * @param array|null $params
      * @param int $flags
      * @return int|mixed
      */
-    public function update(array $collection, array $params, $flags = 0)
+    public function update(array $collection, array $params = null, $flags = 0)
     {
-        $Update = new Update($collection, $params['where'], $this->getTableName());
+        $where = isset($params['where']) ? $params['where'] : null;
+        $Update = new Update($collection, $where, $this->getTableName());
         list($query, $place) = $Update->getPrepared();
         if ($flags & Enjoin::SQL) {
             return PdoDebugger::show($query, $place);

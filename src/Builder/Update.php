@@ -12,10 +12,10 @@ class Update
     /**
      * Update constructor.
      * @param array $collection
-     * @param array $where
+     * @param array|null $where
      * @param string $table
      */
-    public function __construct(array $collection, array $where, $table)
+    public function __construct(array $collection, array $where = null, $table)
     {
         $this->collection = $collection;
         $this->where = $where;
@@ -28,8 +28,14 @@ class Update
     public function getPrepared()
     {
         list($setQuery, $setPlace) = $this->handleSet();
-        list($whereQuery, $wherePlace) = (new Where($this->where, null))->getPrepared();
-        $query = "UPDATE `$this->table` SET $setQuery WHERE $whereQuery";
+        $query = "UPDATE `$this->table` SET $setQuery";
+
+        $wherePlace = [];
+        if ($this->where) {
+            list($whereQuery, $wherePlace) = (new Where($this->where, null))->getPrepared();
+            $query .= " WHERE $whereQuery";
+        }
+
         return [$query, array_merge($setPlace, $wherePlace)];
     }
 

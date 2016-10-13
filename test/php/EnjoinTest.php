@@ -15,7 +15,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testFindAllEqArray';
+    private $debugFunction = 'testModelUpdateWithoutWhere';
 
     public function testBootstrap()
     {
@@ -1030,6 +1030,16 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Languages')->update($this->collection_testModelUpdate(), $this->params_testModelUpdate(), Enjoin::SQL);
         $this->assertEquals($this->sql_testModelUpdate(), $sql);
+    }
+
+    /**
+     * @depends testCacheUpdate
+     */
+    public function testModelUpdateWithoutWhere()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Languages')->update($this->collection_testModelUpdate(), null, Enjoin::SQL);
+        $this->assertEquals("UPDATE `languages` SET `name`='Korean'", $sql);
     }
 
     /**
