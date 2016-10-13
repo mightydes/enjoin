@@ -21,7 +21,7 @@ class Enjoin
 
     /**
      * @param string $modelName
-     * @return Model
+     * @return \Enjoin\Model\Model
      */
     public static function get($modelName)
     {

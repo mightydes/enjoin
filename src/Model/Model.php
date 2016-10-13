@@ -76,7 +76,7 @@ class Model
 
     /**
      * @param array|object|null $collection
-     * @return Record
+     * @return \Enjoin\Record\Record
      */
     public function build($collection = null)
     {
@@ -92,7 +92,7 @@ class Model
     /**
      * @param array|object|null $collection
      * @param array|null $params
-     * @return Record
+     * @return \Enjoin\Record\Record
      */
     public function create($collection = null, array $params = null)
     {
@@ -183,7 +183,7 @@ class Model
      * @todo: call without params feature.
      * @param array $params
      * @param int $flags
-     * @return Record|null|array
+     * @return \Enjoin\Record\Record|null|array
      */
     public function findOne(array $params, $flags = 0)
     {
@@ -220,7 +220,7 @@ class Model
      * @deprecated Use `findById()` and `findOne()` instead.
      * @param array|integer $params
      * @param int $flags
-     * @return Record|null
+     * @return \Enjoin\Record\Record|null
      */
     public function find($params, $flags = 0)
     {

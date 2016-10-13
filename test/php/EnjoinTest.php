@@ -15,7 +15,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testModelCreateWithDateField';
+    private $debugFunction = 'testFindAllEqArray';
 
     public function testBootstrap()
     {
@@ -776,6 +776,21 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $params = $this->params_testFindAllEagerNestedDeepLimited();
         $sql = Enjoin::get('Authors')->findAll($params, Enjoin::SQL);
         $this->assertTrue(CompareQueries::isSame($this->sql_testFindAllEagerNestedDeepLimited(), $sql));
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testFindAllEqArray()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sqlEq = Enjoin::get('Books')->findAll([
+            'where' => ['id' => [1, 2, 3]]
+        ], Enjoin::SQL);
+        $sqlIn = Enjoin::get('Books')->findAll([
+            'where' => ['id' => ['in' => [1, 2, 3]]]
+        ], Enjoin::SQL);
+        $this->assertEquals($sqlEq, $sqlIn);
     }
 
     /**
