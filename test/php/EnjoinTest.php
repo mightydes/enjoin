@@ -1015,6 +1015,16 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testCacheUpdate
      */
+    public function testModelDestroyWithoutWhere()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Languages')->destroy(null, Enjoin::SQL);
+        $this->assertEquals("DELETE FROM `languages`", $sql);
+    }
+
+    /**
+     * @depends testCacheUpdate
+     */
     public function testModelUpdate()
     {
         $this->handleDebug(__FUNCTION__);

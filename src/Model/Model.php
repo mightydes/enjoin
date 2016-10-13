@@ -17,7 +17,6 @@ use PdoDebugger;
 
 /**
  * Class Model
- * @todo: Add `getTableName` method (see http://docs.sequelizejs.com/en/v3/api/model/)
  * @package Enjoin\Model
  */
 class Model
@@ -71,7 +70,7 @@ class Model
      */
     public function queryBuilder()
     {
-        return $this->connection()->table($this->Definition->table);
+        return $this->connection()->table($this->getTableName());
     }
 
     /**
@@ -152,7 +151,7 @@ class Model
      */
     public function update(array $collection, array $params, $flags = 0)
     {
-        $Update = new Update($collection, $params['where'], $this->Definition->table);
+        $Update = new Update($collection, $params['where'], $this->getTableName());
         list($query, $place) = $Update->getPrepared();
         if ($flags & Enjoin::SQL) {
             return PdoDebugger::show($query, $place);
@@ -163,13 +162,18 @@ class Model
     }
 
     /**
-     * @param array $params
+     * @param array|null $params
      * @param int $flags
      * @return int|mixed
      */
-    public function destroy(array $params, $flags = 0)
+    public function destroy(array $params = null, $flags = 0)
     {
-        $Destroy = new Destroy($params['where'], $this->Definition->table);
+        if (!isset($params['where'])) {
+            $query = "DELETE FROM `{$this->getTableName()}`";
+            return $flags & Enjoin::SQL ? $query : $this->connection()->update($query);
+        }
+
+        $Destroy = new Destroy($params['where'], $this->getTableName());
         list($query, $place) = $Destroy->getPrepared();
         if ($flags & Enjoin::SQL) {
             return PdoDebugger::show($query, $place);
@@ -356,6 +360,14 @@ class Model
             return $this->Definition->updatedAt;
         }
         return 'updated_at';
+    }
+
+    /**
+     * @return string
+     */
+    public function getTableName()
+    {
+        return $this->Definition->table;
     }
 
 }
