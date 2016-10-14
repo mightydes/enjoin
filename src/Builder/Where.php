@@ -241,14 +241,11 @@ class Where
      */
     private function isPlainList(array $arr)
     {
-        $idx = 0;
-        foreach ($arr as $k => $v) {
-            if (is_array($v) || $k !== $idx) {
-                return false;
-            }
-            $idx++;
+        if (!$arr) {
+            return true;
         }
-        return true;
+        reset($arr);
+        return is_numeric(key($arr));
     }
 
     /**
