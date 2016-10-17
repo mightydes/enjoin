@@ -965,6 +965,25 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @depends testRecordUpdate
+     */
+    public function testFindCreateFind()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $it = Enjoin::get('Books')->findCreateFind([
+            'where' => [
+                'title' => 'Keep the Aspidistra Flying',
+                'year' => 1936
+            ],
+            'defaults' => ['authors_id' => 2]
+        ]);
+        $this->assertEquals(
+            [25, 'Keep the Aspidistra Flying', 1936],
+            [$it->id, $it->title, $it->year]
+        );
+    }
+
+    /**
      * @depends testFindOrCreate
      */
     public function testCache()

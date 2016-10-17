@@ -278,6 +278,22 @@ class Model
     }
 
     /**
+     * @param array $params
+     * @return \Enjoin\Record\Record
+     */
+    public function findCreateFind(array $params)
+    {
+        $it = $this->findOne(['where' => $params['where']]);
+        if (!$it) {
+            $collection = isset($params['defaults'])
+                ? array_merge($params['where'], $params['defaults'])
+                : $params['where'];
+            $this->create($collection);
+        }
+        return $this->findOne(['where' => $params['where']]);
+    }
+
+    /**
      * @param array|null $params
      * @param int $flags
      * @return int
