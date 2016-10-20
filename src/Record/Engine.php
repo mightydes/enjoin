@@ -127,12 +127,6 @@ class Engine
             }
             if ($val instanceof Record) {
                 $val->save();
-            } elseif (is_array($val)) {
-                foreach ($val as $k => $v) {
-                    if ($v instanceof Record) {
-                        $v->save();
-                    }
-                }
             } else {
                 $list[$key] = $val;
             }
