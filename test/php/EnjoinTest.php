@@ -105,6 +105,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
             ])
         ]);
         $it->save();
+        $it->book->save();
         $this->assertEquals([2, 1], [$it->id, $it->book->id]);
         return $it;
     }
@@ -121,6 +122,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $it->name = $authorName;
         $it->book->authors_id = $bookAuthorId;
         $it->save();
+        $it->book->save();
         $this->assertEquals([$authorName, $bookAuthorId], [$it->name, $it->book->authors_id]);
     }
 

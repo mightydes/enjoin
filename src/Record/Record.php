@@ -74,6 +74,14 @@ class Record extends stdClass
     }
 
     /**
+     * @return bool
+     */
+    public function isNewRecord()
+    {
+        return $this->Engine->type === Engine::NON_PERSISTENT;
+    }
+
+    /**
      * @return array
      */
     public function __toArray()

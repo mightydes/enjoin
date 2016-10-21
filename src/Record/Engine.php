@@ -70,7 +70,8 @@ class Engine
         $Setters = Factory::getSetters();
         foreach ($this->Record as $field => $recordVal) {
             if ($recordVal instanceof Record) {
-                $recordVal->save();
+                # We can start recursive saving here...
+                #$recordVal->save();
             } elseif (array_key_exists($field, $defAttributes)) {
                 $saveVal = $Setters->perform($record, $defAttributes[$field], $field);
                 if (isset($defAttributes[$field]['validate'])) {
