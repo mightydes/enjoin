@@ -5,89 +5,23 @@ namespace Enjoin;
 class Extras
 {
 
-    public static $SQL_OR = 'sql_or';
+    const INT_TYPE = 'INTEGER';
+    const STR_TYPE = 'STRING';
+    const TEXT_TYPE = 'TEXT';
+    const BOOL_TYPE = 'BOOLEAN';
+    const FLOAT_TYPE = 'FLOAT';
+    const DATE_TYPE = 'DATETIME';
+    const ENUM_TYPE = 'ENUM';
 
     /**
      * Delimiter for `as` statements.
      * @var string
      */
-    public static $GLUE_CHAR = ':';
+    const GLUE_CHAR = '.';
 
-    /**
-     * Date format in database.
-     * @var string
-     */
-    public static $DATE_FORMAT = 'Y-m-d H:i:s';
-
-    /**
-     * Default name for `created at` attribute.
-     * @var string
-     */
-    public static $CREATED_AT_ATTR = 'created_at';
-
-    /**
-     * Default name for `updated at` attribute.
-     * @var string
-     */
-    public static $UPDATED_AT_ATTR = 'updated_at';
-
-    public static $INT_TYPE = 'int';
-    public static $STR_TYPE = 'str';
-    public static $TEXT_TYPE = 'text';
-    public static $BOOL_TYPE = 'bool';
-    public static $FLOAT_TYPE = 'float';
-    public static $DATE_TYPE = 'date';
-    public static $ENUM_TYPE = 'enum';
-
-    public static $HAS_ONE = 'hasOne';
-    public static $HAS_MANY = 'hasMany';
-    public static $BELONGS_TO = 'belongsTo';
-
-    /**
-     * List of simple `where` clauses.
-     * @var array
-     */
-    public static $WHERE_CLAUSES = [
-        'gt' => '>', 'gte' => '>=',
-        'lt' => '<', 'lte' => '<=',
-        'like' => 'LIKE'
-    ];
-
-    /**
-     * Persistent record type.
-     * @var string
-     */
-    public static $PERSISTENT_RECORD = 'persistent';
-
-    /**
-     * Non persistent record type.
-     * @var string
-     */
-    public static $NON_PERSISTENT_RECORD = 'non_persistent';
-
-    /**
-     * Blacklisted methods for `Record` values collecting.
-     * @var array
-     */
-    public static $RECORD_OMIT = [
-        '_internal', '_getInternal', '_setInternal',
-        '__construct', '__toArray', '__toString',
-        'save', 'updateAttributes', 'destroy'
-    ];
-
-    /**
-     * Determines if array is collection (ie `['name' => 'Alice', 'age' => 23]`)
-     * @param $arr
-     * @return bool
-     */
-    public static function isCollection($arr)
-    {
-        if (!is_array($arr)) {
-            return false;
-        }
-        reset($arr);
-        return key($arr) !== 0;
-    }
+    const HAS_ONE = 'hasOne';
+    const HAS_MANY = 'hasMany';
+    const BELONGS_TO = 'belongsTo';
 
     /**
      * Returns a copy of the array, filtered to only have values for the whitelisted array of valid keys.
@@ -126,25 +60,61 @@ class Extras
     /**
      * Looks through the list and returns the first value that matches
      * all of the key-value pairs listed in properties.
-     * @param array $collection
+     * @param array|object $collection
      * @param array $where
-     * @return int|null|string
+     * @return mixed
      */
-    public static function findWhere(array $collection, array $where)
+    public static function findWhere($collection, array $where)
     {
-        foreach ($collection as $v) {
+        foreach ($collection as $it) {
             $done = true;
-            foreach ($where as $attr => $value) {
-                if ($v[$attr] !== $value) {
+            $isArray = is_array($it);
+            foreach ($where as $k => $v) {
+                $value = $isArray ? $it[$k] : $it->$k;
+                if ($value !== $v) {
                     $done = false;
                     break;
                 }
             }
             if ($done) {
-                return $v;
+                return $it;
             }
         }
         return null;
     }
 
-} // end of class
+    /**
+     * A convenient version of what is perhaps the most common use-case for map:
+     * extracting a list of property values.
+     * @param array|object $list
+     * @param string $propertyName
+     * @return array
+     */
+    public static function pluck($list, $propertyName)
+    {
+        $out = [];
+        foreach ($list as $it) {
+            if (is_array($it) && array_key_exists($propertyName, $it)) {
+                $out [] = $it[$propertyName];
+            } elseif (is_object($it) && property_exists($it, $propertyName)) {
+                $out [] = $it->$propertyName;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Determines if array is collection (ie `['name' => 'Alice', 'age' => 23]`).
+     * @param mixed $arr
+     * @return bool
+     */
+    public static function isCollection($arr)
+    {
+        if (!is_array($arr)) {
+            return false;
+        }
+        reset($arr);
+        return key($arr) !== 0;
+    }
+
+}

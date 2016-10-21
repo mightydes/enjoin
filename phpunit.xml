@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         bootstrap="./vendor/autoload.php"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="true"
+         syntaxCheck="false">
+    <testsuites>
+        <testsuite name="Enjoin Test Suite">
+            <directory>./test/php/</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <env name="ENJ_DATABASE" value="enjoin_test"/>
+        <env name="ENJ_USERNAME" value="enjoin_test"/>
+        <env name="ENJ_PASSWORD" value="enjoin_test"/>
+    </php>
+</phpunit>

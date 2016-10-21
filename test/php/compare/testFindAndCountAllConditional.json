@@ -1,0 +1,1 @@
+{"params":"['where'=>['id'=>['lt'=>5],'title'=>['like'=>'My%']]]","sql":"SELECT count(*) AS `count` FROM `books` AS `books` WHERE `books`.`id` < 5 AND `books`.`title` LIKE 'My%'"}

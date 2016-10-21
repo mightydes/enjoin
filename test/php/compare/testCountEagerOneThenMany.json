@@ -1,0 +1,1 @@
+{"params":"['include'=>['model'=>Enjoin::get('Authors'),'include'=>Enjoin::get('Articles')]]","sql":"SELECT count(`books`.`id`) AS `count` FROM `books` AS `books` LEFT OUTER JOIN `authors` AS `author` ON `books`.`authors_id` = `author`.`id` LEFT OUTER JOIN `articles` AS `author.articles` ON `author`.`id` = `author.articles`.`authors_id`"}

@@ -1,0 +1,1 @@
+{"params":"['where'=>['id'=>['in'=>[1,2,3],'gte'=>2,'lt'=>10],'name'=>['notIn'=>['Alice','Bob'],'ne'=>null]]]","sql":"SELECT `id`, `name`, `created_at`, `updated_at` FROM `authors` AS `authors` WHERE (`authors`.`id` IN (1, 2, 3) AND `authors`.`id` >= 2 AND `authors`.`id` < 10) AND (`authors`.`name` NOT IN ('Alice', 'Bob') AND `authors`.`name` IS NOT NULL) LIMIT 1"}

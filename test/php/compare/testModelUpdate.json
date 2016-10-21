@@ -1,0 +1,1 @@
+{"params":"['where'=>['id'=>200]]","collection":"['name'=>'Korean']","sql":"UPDATE `languages` SET `name`='Korean' WHERE `id` = 200"}
