@@ -3,7 +3,6 @@
 namespace Enjoin\Record;
 
 use Enjoin\Enjoin;
-use Enjoin\Exceptions\Error;
 use Enjoin\Model\Model;
 use Enjoin\Factory;
 use Carbon\Carbon;
@@ -51,26 +50,45 @@ class Engine
      */
     public function save(array $params = null, $flags = 0)
     {
-        $defAttributes = $this->Model->Definition->getAttributes();
-        $list = $this->prepSaveList(isset($params['fields']) ? $params['fields'] : null);
-        $volume = [];
-
         if ($this->Model->isTimestamps()) {
-            $this->prepSaveTimestamps($list, $volume);
+            $createdAtField = $this->Model->getCreatedAtField();
+            if ($this->type === self::NON_PERSISTENT ||
+                $this->type === self::PERSISTENT && !isset($this->Record->$createdAtField)
+            ) {
+                $this->Record->$createdAtField = Carbon::now();
+            }
+
+            $updatedAtField = $this->Model->getUpdatedAtField();
+            $this->Record->$updatedAtField = Carbon::now();
         }
 
-        # Perform setters and validation:
+        $defAttributes = $this->Model->Definition->getAttributes();
+        $pick = isset($params['fields']) ? $params['fields'] : null;
+        $volume = [];
         $validate = [];
         $record = $this->Record->__toArray();
-        foreach ($list as $k => $v) {
-            if (array_key_exists($k, $defAttributes)) {
-                $volume[$k] = Factory::getSetters()->perform($record, $defAttributes[$k], $k);
-                if (isset($defAttributes[$k]['validate'])) {
-                    $validate [] = [$k, $volume[$k], $defAttributes[$k]['validate']];
+        $Setters = Factory::getSetters();
+        foreach ($this->Record as $field => $recordVal) {
+            if ($recordVal instanceof Record) {
+                $recordVal->save();
+            } elseif (array_key_exists($field, $defAttributes)) {
+                $saveVal = $Setters->perform($record, $defAttributes[$field], $field);
+                if (isset($defAttributes[$field]['validate'])) {
+                    $validate [] = [$field, $saveVal, $defAttributes[$field]['validate']];
                 }
+                if (!$pick || in_array($field, $pick)) {
+                    $volume[$field] = $saveVal;
+                }
+            } elseif ($this->Model->isTimestamps() && $field === $createdAtField) {
+                if (!$pick || in_array($field, $pick)) {
+                    $volume[$field] = $Setters->getCreatedAt($recordVal);
+                }
+            } elseif ($this->Model->isTimestamps() && $field === $updatedAtField) {
+                $volume[$field] = $Setters->getUpdatedAt($recordVal);
             }
         }
-        !$validate ?: Factory::getSetters()->validate($validate);
+
+        !$validate ?: $Setters->validate($validate);
 
         if (!($flags & self::SOFT_SAVE)) {
             $id = $this->saveEntry($volume);
@@ -79,7 +97,7 @@ class Engine
             $volume['id'] = $id;
         }
 
-        return $this->mapSaved($defAttributes, $volume);
+        return $this->Record;
     }
 
     /**
@@ -112,88 +130,6 @@ class Engine
             ->take(1)
             ->update($volume); // id can be changed
         return isset($volume['id']) ? $volume['id'] : $this->id;
-    }
-
-    /**
-     * @param array|null $pick
-     * @return array
-     */
-    private function prepSaveList(array $pick = null)
-    {
-        $list = [];
-        foreach ($this->Record as $key => $val) {
-            if ($pick && !in_array($key, $pick)) {
-                continue;
-            }
-            if ($val instanceof Record) {
-                $val->save();
-            } else {
-                $list[$key] = $val;
-            }
-        }
-        return $list;
-    }
-
-    /**
-     * @param array $list
-     * @param array $volume
-     */
-    private function prepSaveTimestamps(array &$list, array &$volume)
-    {
-        $Setters = Factory::getSetters();
-        # Created at:
-        $createdAtAttr = $this->Model->getCreatedAtAttr();
-        if (array_key_exists($createdAtAttr, $list)) {
-            $volume[$createdAtAttr] = $Setters->getCreatedAt($list[$createdAtAttr]);
-        } elseif ($this->type === self::NON_PERSISTENT) {
-            $volume[$createdAtAttr] = $Setters->getCreatedAt();
-        }
-        unset($list[$createdAtAttr]);
-        # Updated at:
-        $updatedAtAttr = $this->Model->getUpdatedAtAttr();
-        $volume[$updatedAtAttr] = $Setters->getUpdatedAt();
-        $this->touchUpdatedAt($updatedAtAttr, $volume[$updatedAtAttr]);
-        unset($list[$updatedAtAttr]);
-    }
-
-    /**
-     * @param string $updatedAtAttr
-     * @param string $dateTimeString
-     * @return Carbon|string
-     */
-    private function touchUpdatedAt($updatedAtAttr, $dateTimeString)
-    {
-        $cur = isset($this->Record->$updatedAtAttr)
-            ? $this->Record->$updatedAtAttr : null;
-        if (!$cur || $cur instanceof Carbon) {
-            return new Carbon($dateTimeString);
-        }
-        return $dateTimeString;
-    }
-
-    /**
-     * @param array $defAttributes
-     * @param array $volume
-     * @return Record
-     */
-    private function mapSaved(array $defAttributes, array $volume)
-    {
-        $Getters = Factory::getGetters();
-        $createdAtAttr = $this->Model->getCreatedAtAttr();
-        $updatedAtAttr = $this->Model->getUpdatedAtAttr();
-        foreach ($volume as $k => $v) {
-            if ($k === $createdAtAttr) {
-                $getter = $Getters->getCreatedAt();
-            } elseif ($k === $updatedAtAttr) {
-                $getter = $Getters->getUpdatedAt();
-            } else {
-                $getter = $Getters->perform($defAttributes[$k]);
-            }
-            $this->Record->$k = $getter($k, function ($prop) use ($volume) {
-                return $volume[$prop];
-            });
-        }
-        return $this->Record;
     }
 
 }

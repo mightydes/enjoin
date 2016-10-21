@@ -97,11 +97,12 @@ class Setters
     }
 
     /**
-     * @return string
+     * @param mixed $value
+     * @return mixed
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt($value = null)
     {
-        return Carbon::now()->toDateTimeString();
+        return $this->getCreatedAt($value);
     }
 
     /**

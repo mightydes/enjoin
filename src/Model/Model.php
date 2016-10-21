@@ -356,10 +356,18 @@ class Model
     }
 
     /**
-     * @todo: Rename -> getCreatedAtField.
+     * @deprecated use `getCreatedAtField()` instead.
      * @return string
      */
     public function getCreatedAtAttr()
+    {
+        return $this->getCreatedAtField();
+    }
+
+    /**
+     * @return string
+     */
+    public function getCreatedAtField()
     {
         if (isset($this->Definition->createdAt) && $this->Definition->createdAt) {
             return $this->Definition->createdAt;
@@ -368,10 +376,18 @@ class Model
     }
 
     /**
-     * @todo: Rename -> getUpdatedAtField.
+     * @deprecated use `getUpdatedAtField()` instead.
      * @return string
      */
     public function getUpdatedAtAttr()
+    {
+        return $this->getUpdatedAtField();
+    }
+
+    /**
+     * @return string
+     */
+    public function getUpdatedAtField()
     {
         if (isset($this->Definition->updatedAt) && $this->Definition->updatedAt) {
             return $this->Definition->updatedAt;
