@@ -1,0 +1,5 @@
+{
+  "params": "[]",
+  "mysql": "SELECT count(*) AS `count` FROM `authors` AS `authors`",
+  "postgresql": "SELECT count(*) AS \"count\" FROM \"authors\" AS \"authors\""
+}

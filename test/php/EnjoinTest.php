@@ -89,7 +89,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      * @depends testModelBuild
      * @param Record $it
      */
-    public function testNonPersistentRecordSave(Record $it)
+    public function testNewRecordSave(Record $it)
     {
         $this->handleDebug(__FUNCTION__);
         $it->save();
@@ -100,7 +100,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      * @depends testBootstrap
      * @return Record
      */
-    public function testNonPersistentNestedRecordSave()
+    public function testNewRecordNestedSave()
     {
         $this->handleDebug(__FUNCTION__);
         $it = Enjoin::get('Authors')->build([
@@ -117,10 +117,10 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @depends testNonPersistentNestedRecordSave
+     * @depends testNewRecordNestedSave
      * @param Record $it
      */
-    public function testPersistentRecordSave(Record $it)
+    public function testRecordSave(Record $it)
     {
         $this->handleDebug(__FUNCTION__);
         $authorName = 'G. Orwell';
@@ -134,7 +134,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @depends testNonPersistentNestedRecordSave
+     * @depends testNewRecordNestedSave
      * @param Record $it
      */
     public function testRecordValidation(Record $it)
@@ -211,7 +211,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindById()
+    public function testModelFindById()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findById(1, Enjoin::SQL);
@@ -227,10 +227,10 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      * @depends testModelBuild
      * @param Record $author
      */
-    public function testBulkCreateValidation(Record $author)
+    public function testModelBulkCreateValidation(Record $author)
     {
         $bulk = [[
-            'title' => 'testBulkCreateValidation',
+            'title' => 'testModelBulkCreateValidation',
             'year' => 3000,
             'authors_id' => $author->id
         ]];
@@ -245,10 +245,10 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     /**
      * @depends testModelBuild
-     * @depends testBulkCreateValidation
+     * @depends testModelBulkCreateValidation
      * @param Record $author
      */
-    public function testBulkCreate(Record $author)
+    public function testModelBulkCreate(Record $author)
     {
         $bulk = [];
         foreach (array_slice($this->getDataArray('books'), 0, 20) as $book) {
@@ -261,7 +261,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEager()
+    public function testModelFindOneEager()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -275,7 +275,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerRequired()
+    public function testModelFindOneEagerRequired()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -289,7 +289,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerById()
+    public function testModelFindOneEagerById()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -307,7 +307,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerByIdRequired()
+    public function testModelFindOneEagerByIdRequired()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -321,7 +321,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerByIdMean()
+    public function testModelFindOneEagerByIdMean()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -335,7 +335,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerMean()
+    public function testModelFindOneEagerMean()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -349,7 +349,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerMeanRequired()
+    public function testModelFindOneEagerMeanRequired()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -363,7 +363,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerReversed()
+    public function testModelFindOneEagerReversed()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -377,7 +377,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerReversedRequired()
+    public function testModelFindOneEagerReversedRequired()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -391,7 +391,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerReversedById()
+    public function testModelFindOneEagerReversedById()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -405,7 +405,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerReversedByIdRequired()
+    public function testModelFindOneEagerReversedByIdRequired()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -419,7 +419,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerReversedByIdMean()
+    public function testModelFindOneEagerReversedByIdMean()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -433,7 +433,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerReversedMean()
+    public function testModelFindOneEagerReversedMean()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -447,7 +447,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneEagerReversedMeanRequired()
+    public function testModelFindOneEagerReversedMeanRequired()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -461,7 +461,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneComplex()
+    public function testModelFindOneComplex()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -475,7 +475,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testFindOneAndOr()
+    public function testModelFindOneAndOr()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -516,7 +516,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataA
      */
-    public function testFindOneEagerMulti()
+    public function testModelFindOneEagerMulti()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -533,7 +533,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataA
      */
-    public function testFindOneEagerMultiRequired()
+    public function testModelFindOneEagerMultiRequired()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -556,7 +556,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataA
      */
-    public function testFindOneEagerMultiWhere()
+    public function testModelFindOneEagerMultiWhere()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -578,7 +578,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataA
      */
-    public function testFindOneEagerNested()
+    public function testModelFindOneEagerNested()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -600,7 +600,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataA
      */
-    public function testFindOneEagerNestedById()
+    public function testModelFindOneEagerNestedById()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -614,7 +614,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataA
      */
-    public function testFindOneEagerNestedMean()
+    public function testModelFindOneEagerNestedMean()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -636,7 +636,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataA
      */
-    public function testFindOneEagerNestedDeep()
+    public function testModelFindOneEagerNestedDeep()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -651,7 +651,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      * @todo: see https://github.com/sequelize/sequelize/issues/3917
      * @depends testMockDataA
      */
-    public function testFindOneEagerSelfNestedNoSubQuery()
+    public function testModelFindOneEagerSelfNestedNoSubQuery()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -662,7 +662,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
-    public function testExpanseModel()
+    public function testDefinitionExpanseModel()
     {
         $this->handleDebug(__FUNCTION__);
         $this->assertEquals('OK', Enjoin::get('Authors')->ping());
@@ -671,7 +671,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataA
      */
-    public function testFindAll()
+    public function testModelFindAll()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findAll(null, Enjoin::SQL);
@@ -687,7 +687,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataA
      */
-    public function testFindAllEmptyList()
+    public function testModelFindAllEmptyList()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Books')->findAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
@@ -710,7 +710,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAllEagerOneThenMany()
+    public function testModelFindAllEagerOneThenMany()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -727,7 +727,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAllEagerOneThenManyMean()
+    public function testModelFindAllEagerOneThenManyMean()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -744,7 +744,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAllEagerOneThenManyMeanOrdered()
+    public function testModelFindAllEagerOneThenManyMeanOrdered()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -758,7 +758,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAllEagerOneThenManyMeanGrouped()
+    public function testModelFindAllEagerOneThenManyMeanGrouped()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -774,7 +774,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAllEagerNestedDeep()
+    public function testModelFindAllEagerNestedDeep()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -785,7 +785,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAllEagerNestedDeepLimited()
+    public function testModelFindAllEagerNestedDeepLimited()
     {
         $this->handleDebug(__FUNCTION__);
         $params = $this->getCompareParams(__FUNCTION__);
@@ -796,7 +796,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAllEqArray()
+    public function testModelFindAllEqArray()
     {
         $this->handleDebug(__FUNCTION__);
         $sqlEq = Enjoin::get('Books')->findAll([
@@ -811,7 +811,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testCount()
+    public function testModelCount()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->count(null, Enjoin::SQL);
@@ -824,7 +824,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testCountConditional()
+    public function testModelCountConditional()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Books')->count($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
@@ -834,7 +834,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testCountEagerOneThenMany()
+    public function testModelCountEagerOneThenMany()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Books')->count($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
@@ -844,7 +844,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testCountEagerOneThenManyMean()
+    public function testModelCountEagerOneThenManyMean()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Books')->count($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
@@ -854,7 +854,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testCountEagerRequired()
+    public function testModelCountEagerRequired()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->count($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
@@ -864,7 +864,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testCountEagerRequiredLimited()
+    public function testModelCountEagerRequiredLimited()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->count($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
@@ -874,7 +874,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAndCountAll()
+    public function testModelFindAndCountAll()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findAndCountAll(null, Enjoin::SQL);
@@ -890,7 +890,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAndCountAllConditional()
+    public function testModelFindAndCountAllConditional()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Books')->findAndCountAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
@@ -900,7 +900,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAndCountAllEagerOneThenMany()
+    public function testModelFindAndCountAllEagerOneThenMany()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Books')->findAndCountAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
@@ -910,7 +910,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAndCountAllEagerOneThenManyMean()
+    public function testModelFindAndCountAllEagerOneThenManyMean()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Books')->findAndCountAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
@@ -920,7 +920,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAndCountAllEagerRequired()
+    public function testModelFindAndCountAllEagerRequired()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findAndCountAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
@@ -930,7 +930,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindAndCountAllEagerRequiredLimited()
+    public function testModelFindAndCountAllEagerRequiredLimited()
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findAndCountAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
@@ -940,7 +940,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testMockDataB
      */
-    public function testFindOrCreate()
+    public function testModelFindOrCreate()
     {
         $this->handleDebug(__FUNCTION__);
         $it = Enjoin::get('Books')->findOrCreate([
@@ -957,7 +957,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @depends testFindOrCreate
+     * @depends testModelFindOrCreate
      */
     public function testRecordUpdate()
     {
@@ -982,7 +982,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testRecordUpdate
      */
-    public function testFindCreateFind()
+    public function testModelFindCreateFind()
     {
         $this->handleDebug(__FUNCTION__);
         $it = Enjoin::get('Books')->findCreateFind([
@@ -999,7 +999,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @depends testFindOrCreate
+     * @depends testModelFindOrCreate
      */
     public function testCache()
     {

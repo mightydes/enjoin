@@ -6,59 +6,59 @@ module.exports = {
     testModelCreateEmpty: testModelCreateEmpty,
     testModelCreateWithDateField: testModelCreateWithDateField,
 
-    testFindById: testFindById,
+    testModelFindById: testModelFindById,
 
-    testFindOneEager: testFindOneEager,
-    testFindOneEagerRequired: testFindOneEagerRequired,
-    testFindOneEagerById: testFindOneEagerById,
-    testFindOneEagerByIdRequired: testFindOneEagerByIdRequired,
-    testFindOneEagerByIdMean: testFindOneEagerByIdMean,
-    testFindOneEagerMean: testFindOneEagerMean,
-    testFindOneEagerMeanRequired: testFindOneEagerMeanRequired,
+    testModelFindOneEager: testModelFindOneEager,
+    testModelFindOneEagerRequired: testModelFindOneEagerRequired,
+    testModelFindOneEagerById: testModelFindOneEagerById,
+    testModelFindOneEagerByIdRequired: testModelFindOneEagerByIdRequired,
+    testModelFindOneEagerByIdMean: testModelFindOneEagerByIdMean,
+    testModelFindOneEagerMean: testModelFindOneEagerMean,
+    testModelFindOneEagerMeanRequired: testModelFindOneEagerMeanRequired,
 
-    testFindOneEagerReversed: testFindOneEagerReversed,
-    testFindOneEagerReversedRequired: testFindOneEagerReversedRequired,
-    testFindOneEagerReversedById: testFindOneEagerReversedById,
-    testFindOneEagerReversedByIdRequired: testFindOneEagerReversedByIdRequired,
-    testFindOneEagerReversedByIdMean: testFindOneEagerReversedByIdMean,
-    testFindOneEagerReversedMean: testFindOneEagerReversedMean,
-    testFindOneEagerReversedMeanRequired: testFindOneEagerReversedMeanRequired,
+    testModelFindOneEagerReversed: testModelFindOneEagerReversed,
+    testModelFindOneEagerReversedRequired: testModelFindOneEagerReversedRequired,
+    testModelFindOneEagerReversedById: testModelFindOneEagerReversedById,
+    testModelFindOneEagerReversedByIdRequired: testModelFindOneEagerReversedByIdRequired,
+    testModelFindOneEagerReversedByIdMean: testModelFindOneEagerReversedByIdMean,
+    testModelFindOneEagerReversedMean: testModelFindOneEagerReversedMean,
+    testModelFindOneEagerReversedMeanRequired: testModelFindOneEagerReversedMeanRequired,
 
-    testFindOneComplex: testFindOneComplex,
-    testFindOneAndOr: testFindOneAndOr,
+    testModelFindOneComplex: testModelFindOneComplex,
+    testModelFindOneAndOr: testModelFindOneAndOr,
 
-    testFindOneEagerMulti: testFindOneEagerMulti,
-    testFindOneEagerMultiRequired: testFindOneEagerMultiRequired,
-    testFindOneEagerMultiWhere: testFindOneEagerMultiWhere,
+    testModelFindOneEagerMulti: testModelFindOneEagerMulti,
+    testModelFindOneEagerMultiRequired: testModelFindOneEagerMultiRequired,
+    testModelFindOneEagerMultiWhere: testModelFindOneEagerMultiWhere,
 
-    testFindOneEagerNested: testFindOneEagerNested,
-    testFindOneEagerNestedById: testFindOneEagerNestedById,
-    testFindOneEagerNestedMean: testFindOneEagerNestedMean,
-    testFindOneEagerNestedDeep: testFindOneEagerNestedDeep,
-    testFindOneEagerSelfNestedNoSubQuery: testFindOneEagerSelfNestedNoSubQuery,
+    testModelFindOneEagerNested: testModelFindOneEagerNested,
+    testModelFindOneEagerNestedById: testModelFindOneEagerNestedById,
+    testModelFindOneEagerNestedMean: testModelFindOneEagerNestedMean,
+    testModelFindOneEagerNestedDeep: testModelFindOneEagerNestedDeep,
+    testModelFindOneEagerSelfNestedNoSubQuery: testModelFindOneEagerSelfNestedNoSubQuery,
 
-    testFindAll: testFindAll,
-    testFindAllEmptyList: testFindAllEmptyList,
-    testFindAllEagerOneThenMany: testFindAllEagerOneThenMany,
-    testFindAllEagerOneThenManyMean: testFindAllEagerOneThenManyMean,
-    testFindAllEagerOneThenManyMeanOrdered: testFindAllEagerOneThenManyMeanOrdered,
-    testFindAllEagerOneThenManyMeanGrouped: testFindAllEagerOneThenManyMeanGrouped,
-    testFindAllEagerNestedDeep: testFindAllEagerNestedDeep,
-    testFindAllEagerNestedDeepLimited: testFindAllEagerNestedDeepLimited,
+    testModelFindAll: testModelFindAll,
+    testModelFindAllEmptyList: testModelFindAllEmptyList,
+    testModelFindAllEagerOneThenMany: testModelFindAllEagerOneThenMany,
+    testModelFindAllEagerOneThenManyMean: testModelFindAllEagerOneThenManyMean,
+    testModelFindAllEagerOneThenManyMeanOrdered: testModelFindAllEagerOneThenManyMeanOrdered,
+    testModelFindAllEagerOneThenManyMeanGrouped: testModelFindAllEagerOneThenManyMeanGrouped,
+    testModelFindAllEagerNestedDeep: testModelFindAllEagerNestedDeep,
+    testModelFindAllEagerNestedDeepLimited: testModelFindAllEagerNestedDeepLimited,
 
-    testCount: testCount,
-    testCountConditional: testCountConditional,
-    testCountEagerOneThenMany: testCountEagerOneThenMany,
-    testCountEagerOneThenManyMean: testCountEagerOneThenManyMean,
-    testCountEagerRequired: testCountEagerRequired,
-    testCountEagerRequiredLimited: testCountEagerRequiredLimited,
+    testModelCount: testModelCount,
+    testModelCountConditional: testModelCountConditional,
+    testModelCountEagerOneThenMany: testModelCountEagerOneThenMany,
+    testModelCountEagerOneThenManyMean: testModelCountEagerOneThenManyMean,
+    testModelCountEagerRequired: testModelCountEagerRequired,
+    testModelCountEagerRequiredLimited: testModelCountEagerRequiredLimited,
 
-    testFindAndCountAll: testFindAndCountAll,
-    testFindAndCountAllConditional: testFindAndCountAllConditional,
-    testFindAndCountAllEagerOneThenMany: testFindAndCountAllEagerOneThenMany,
-    testFindAndCountAllEagerOneThenManyMean: testFindAndCountAllEagerOneThenManyMean,
-    testFindAndCountAllEagerRequired: testFindAndCountAllEagerRequired,
-    testFindAndCountAllEagerRequiredLimited: testFindAndCountAllEagerRequiredLimited,
+    testModelFindAndCountAll: testModelFindAndCountAll,
+    testModelFindAndCountAllConditional: testModelFindAndCountAllConditional,
+    testModelFindAndCountAllEagerOneThenMany: testModelFindAndCountAllEagerOneThenMany,
+    testModelFindAndCountAllEagerOneThenManyMean: testModelFindAndCountAllEagerOneThenManyMean,
+    testModelFindAndCountAllEagerRequired: testModelFindAndCountAllEagerRequired,
+    testModelFindAndCountAllEagerRequiredLimited: testModelFindAndCountAllEagerRequiredLimited,
 
     testModelDestroy: testModelDestroy,
     testModelUpdate: testModelUpdate
@@ -81,18 +81,18 @@ function testModelCreateWithDateField(callback) {
     }).then(callback);
 }
 
-function testFindById(callback) {
-    compare.save('testFindById', models.Authors, 'findById', 1).then(callback);
+function testModelFindById(callback) {
+    compare.save('testModelFindById', models.Authors, 'findById', 1).then(callback);
 }
 
-function testFindOneEager(callback) {
-    compare.save('testFindOneEager', models.Authors, 'findOne', {
+function testModelFindOneEager(callback) {
+    compare.save('testModelFindOneEager', models.Authors, 'findOne', {
         include: models.Books
     }).then(callback);
 }
 
-function testFindOneEagerRequired(callback) {
-    compare.save('testFindOneEagerRequired', models.Authors, 'findOne', {
+function testModelFindOneEagerRequired(callback) {
+    compare.save('testModelFindOneEagerRequired', models.Authors, 'findOne', {
         include: {
             model: models.Books,
             required: true
@@ -100,15 +100,15 @@ function testFindOneEagerRequired(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerById(callback) {
-    compare.save('testFindOneEagerById', models.Authors, 'findOne', {
+function testModelFindOneEagerById(callback) {
+    compare.save('testModelFindOneEagerById', models.Authors, 'findOne', {
         where: {id: 1},
         include: models.Books
     }).then(callback);
 }
 
-function testFindOneEagerByIdRequired(callback) {
-    compare.save('testFindOneEagerByIdRequired', models.Authors, 'findOne', {
+function testModelFindOneEagerByIdRequired(callback) {
+    compare.save('testModelFindOneEagerByIdRequired', models.Authors, 'findOne', {
         where: {id: 1},
         include: {
             model: models.Books,
@@ -117,8 +117,8 @@ function testFindOneEagerByIdRequired(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerByIdMean(callback) {
-    compare.save('testFindOneEagerByIdMean', models.Authors, 'findOne', {
+function testModelFindOneEagerByIdMean(callback) {
+    compare.save('testModelFindOneEagerByIdMean', models.Authors, 'findOne', {
         where: {
             id: 1,
             name: ['Alice', 'Bob']
@@ -127,8 +127,8 @@ function testFindOneEagerByIdMean(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerMean(callback) {
-    compare.save('testFindOneEagerMean', models.Authors, 'findOne', {
+function testModelFindOneEagerMean(callback) {
+    compare.save('testModelFindOneEagerMean', models.Authors, 'findOne', {
         where: {
             id: [1, 2, 3],
             name: ['Alice', 'Bob']
@@ -137,8 +137,8 @@ function testFindOneEagerMean(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerMeanRequired(callback) {
-    compare.save('testFindOneEagerMeanRequired', models.Authors, 'findOne', {
+function testModelFindOneEagerMeanRequired(callback) {
+    compare.save('testModelFindOneEagerMeanRequired', models.Authors, 'findOne', {
         where: {
             id: [1, 2, 3],
             name: ['Alice', 'Bob']
@@ -150,14 +150,14 @@ function testFindOneEagerMeanRequired(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerReversed(callback) {
-    compare.save('testFindOneEagerReversed', models.Books, 'findOne', {
+function testModelFindOneEagerReversed(callback) {
+    compare.save('testModelFindOneEagerReversed', models.Books, 'findOne', {
         include: models.Authors
     }).then(callback);
 }
 
-function testFindOneEagerReversedRequired(callback) {
-    compare.save('testFindOneEagerReversedRequired', models.Books, 'findOne', {
+function testModelFindOneEagerReversedRequired(callback) {
+    compare.save('testModelFindOneEagerReversedRequired', models.Books, 'findOne', {
         include: {
             model: models.Authors,
             required: true
@@ -165,15 +165,15 @@ function testFindOneEagerReversedRequired(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerReversedById(callback) {
-    compare.save('testFindOneEagerReversedById', models.Books, 'findOne', {
+function testModelFindOneEagerReversedById(callback) {
+    compare.save('testModelFindOneEagerReversedById', models.Books, 'findOne', {
         where: {id: 1},
         include: models.Authors
     }).then(callback);
 }
 
-function testFindOneEagerReversedByIdRequired(callback) {
-    compare.save('testFindOneEagerReversedByIdRequired', models.Books, 'findOne', {
+function testModelFindOneEagerReversedByIdRequired(callback) {
+    compare.save('testModelFindOneEagerReversedByIdRequired', models.Books, 'findOne', {
         where: {id: 1},
         include: {
             model: models.Authors,
@@ -182,8 +182,8 @@ function testFindOneEagerReversedByIdRequired(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerReversedByIdMean(callback) {
-    compare.save('testFindOneEagerReversedByIdMean', models.Books, 'findOne', {
+function testModelFindOneEagerReversedByIdMean(callback) {
+    compare.save('testModelFindOneEagerReversedByIdMean', models.Books, 'findOne', {
         where: {
             id: [1, 2, 3],
             title: ['Alice', 'Bob']
@@ -192,8 +192,8 @@ function testFindOneEagerReversedByIdMean(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerReversedMean(callback) {
-    compare.save('testFindOneEagerReversedMean', models.Books, 'findOne', {
+function testModelFindOneEagerReversedMean(callback) {
+    compare.save('testModelFindOneEagerReversedMean', models.Books, 'findOne', {
         where: {
             id: {
                 $in: [1, 2, 3],
@@ -206,8 +206,8 @@ function testFindOneEagerReversedMean(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerReversedMeanRequired(callback) {
-    compare.save('testFindOneEagerReversedMeanRequired', models.Books, 'findOne', {
+function testModelFindOneEagerReversedMeanRequired(callback) {
+    compare.save('testModelFindOneEagerReversedMeanRequired', models.Books, 'findOne', {
         where: {
             id: {
                 $in: [1, 2, 3],
@@ -223,8 +223,8 @@ function testFindOneEagerReversedMeanRequired(callback) {
     }).then(callback);
 }
 
-function testFindOneComplex(callback) {
-    compare.save('testFindOneComplex', models.Authors, 'findOne', {
+function testModelFindOneComplex(callback) {
+    compare.save('testModelFindOneComplex', models.Authors, 'findOne', {
         where: {
             id: {
                 $in: [1, 2, 3],
@@ -239,8 +239,8 @@ function testFindOneComplex(callback) {
     }).then(callback);
 }
 
-function testFindOneAndOr(callback) {
-    compare.save('testFindOneAndOr', models.Authors, 'findOne', {
+function testModelFindOneAndOr(callback) {
+    compare.save('testModelFindOneAndOr', models.Authors, 'findOne', {
         where: {
             $or: [
                 {
@@ -276,8 +276,8 @@ function testFindOneAndOr(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerMulti(callback) {
-    compare.save('testFindOneEagerMulti', models.Books, 'findOne', {
+function testModelFindOneEagerMulti(callback) {
+    compare.save('testModelFindOneEagerMulti', models.Books, 'findOne', {
         include: [
             models.Authors,
             models.Reviews,
@@ -286,8 +286,8 @@ function testFindOneEagerMulti(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerMultiRequired(callback) {
-    compare.save('testFindOneEagerMultiRequired', models.Books, 'findOne', {
+function testModelFindOneEagerMultiRequired(callback) {
+    compare.save('testModelFindOneEagerMultiRequired', models.Books, 'findOne', {
         include: [
             {
                 model: models.Authors,
@@ -305,8 +305,8 @@ function testFindOneEagerMultiRequired(callback) {
 /**
  * Note: when an eager loaded model is filtered using include.where then include.required is implicitly set to true.
  */
-function testFindOneEagerMultiWhere(callback) {
-    compare.save('testFindOneEagerMultiWhere', models.Books, 'findOne', {
+function testModelFindOneEagerMultiWhere(callback) {
+    compare.save('testModelFindOneEagerMultiWhere', models.Books, 'findOne', {
         include: [
             {
                 model: models.Authors,
@@ -330,8 +330,8 @@ function testFindOneEagerMultiWhere(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerNested(callback) {
-    compare.save('testFindOneEagerNested', models.Authors, 'findOne', {
+function testModelFindOneEagerNested(callback) {
+    compare.save('testModelFindOneEagerNested', models.Authors, 'findOne', {
         include: {
             model: models.Books,
             where: {
@@ -364,8 +364,8 @@ function testFindOneEagerNested(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerNestedById(callback) {
-    compare.save('testFindOneEagerNestedById', models.Authors, 'findOne', {
+function testModelFindOneEagerNestedById(callback) {
+    compare.save('testModelFindOneEagerNestedById', models.Authors, 'findOne', {
         where: {
             id: {
                 $in: [1, 2, 3],
@@ -405,8 +405,8 @@ function testFindOneEagerNestedById(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerNestedMean(callback) {
-    compare.save('testFindOneEagerNestedMean', models.Authors, 'findOne', {
+function testModelFindOneEagerNestedMean(callback) {
+    compare.save('testModelFindOneEagerNestedMean', models.Authors, 'findOne', {
         where: {
             id: {
                 $gte: 0,
@@ -451,8 +451,8 @@ function testFindOneEagerNestedMean(callback) {
     }).then(callback);
 }
 
-function testFindOneEagerNestedDeep(callback) {
-    compare.save('testFindOneEagerNestedDeep', models.Authors, 'findOne', {
+function testModelFindOneEagerNestedDeep(callback) {
+    compare.save('testModelFindOneEagerNestedDeep', models.Authors, 'findOne', {
         where: {
             id: {
                 $gte: 0,
@@ -515,8 +515,8 @@ function testFindOneEagerNestedDeep(callback) {
 /**
  * Note: https://github.com/sequelize/sequelize/issues/3917
  */
-function testFindOneEagerSelfNestedNoSubQuery(callback) {
-    compare.save('testFindOneEagerSelfNestedNoSubQuery', models.Books, 'findOne', {
+function testModelFindOneEagerSelfNestedNoSubQuery(callback) {
+    compare.save('testModelFindOneEagerSelfNestedNoSubQuery', models.Books, 'findOne', {
         where: {
             year: {$notIn: [1900, 1950, 2000]},
             $or: [
@@ -569,12 +569,12 @@ function testFindOneEagerSelfNestedNoSubQuery(callback) {
     }).then(callback);
 }
 
-function testFindAll(callback) {
-    compare.save('testFindAll', models.Authors, 'findAll').then(callback);
+function testModelFindAll(callback) {
+    compare.save('testModelFindAll', models.Authors, 'findAll').then(callback);
 }
 
-function testFindAllEmptyList(callback) {
-    compare.save('testFindAllEmptyList', models.Books, 'findAll', {
+function testModelFindAllEmptyList(callback) {
+    compare.save('testModelFindAllEmptyList', models.Books, 'findAll', {
         where: {
             id: [],
             title: {$like: '%cloud%'},
@@ -583,8 +583,8 @@ function testFindAllEmptyList(callback) {
     }).then(callback);
 }
 
-function testFindAllEagerOneThenMany(callback) {
-    compare.save('testFindAllEagerOneThenMany', models.Books, 'findAll', {
+function testModelFindAllEagerOneThenMany(callback) {
+    compare.save('testModelFindAllEagerOneThenMany', models.Books, 'findAll', {
         include: {
             model: models.Authors,
             include: models.Articles
@@ -592,8 +592,8 @@ function testFindAllEagerOneThenMany(callback) {
     }).then(callback);
 }
 
-function testFindAllEagerOneThenManyMean(callback) {
-    compare.save('testFindAllEagerOneThenManyMean', models.Books, 'findAll', {
+function testModelFindAllEagerOneThenManyMean(callback) {
+    compare.save('testModelFindAllEagerOneThenManyMean', models.Books, 'findAll', {
         where: {id: {$lt: 5}},
         include: {
             model: models.Authors,
@@ -606,8 +606,8 @@ function testFindAllEagerOneThenManyMean(callback) {
     }).then(callback);
 }
 
-function testFindAllEagerOneThenManyMeanOrdered(callback) {
-    compare.save('testFindAllEagerOneThenManyMeanOrdered', models.Books, 'findAll', {
+function testModelFindAllEagerOneThenManyMeanOrdered(callback) {
+    compare.save('testModelFindAllEagerOneThenManyMeanOrdered', models.Books, 'findAll', {
         where: {id: {$lt: 5}},
         include: {
             model: models.Authors,
@@ -624,8 +624,8 @@ function testFindAllEagerOneThenManyMeanOrdered(callback) {
     }).then(callback);
 }
 
-function testFindAllEagerOneThenManyMeanGrouped(callback) {
-    compare.save('testFindAllEagerOneThenManyMeanGrouped', models.Books, 'findAll', {
+function testModelFindAllEagerOneThenManyMeanGrouped(callback) {
+    compare.save('testModelFindAllEagerOneThenManyMeanGrouped', models.Books, 'findAll', {
         where: {id: {$lt: 5}},
         include: {
             model: models.Authors,
@@ -644,8 +644,8 @@ function testFindAllEagerOneThenManyMeanGrouped(callback) {
     }).then(callback);
 }
 
-function testFindAllEagerNestedDeep(callback) {
-    compare.save('testFindAllEagerNestedDeep', models.Authors, 'findAll', {
+function testModelFindAllEagerNestedDeep(callback) {
+    compare.save('testModelFindAllEagerNestedDeep', models.Authors, 'findAll', {
         where: {
             id: {
                 $gte: 0,
@@ -705,8 +705,8 @@ function testFindAllEagerNestedDeep(callback) {
     }).then(callback);
 }
 
-function testFindAllEagerNestedDeepLimited(callback) {
-    compare.save('testFindAllEagerNestedDeepLimited', models.Authors, 'findAll', {
+function testModelFindAllEagerNestedDeepLimited(callback) {
+    compare.save('testModelFindAllEagerNestedDeepLimited', models.Authors, 'findAll', {
         where: {
             id: {
                 $gte: 0,
@@ -768,12 +768,12 @@ function testFindAllEagerNestedDeepLimited(callback) {
     }).then(callback);
 }
 
-function testCount(callback) {
-    compare.save('testCount', models.Authors, 'count').then(callback);
+function testModelCount(callback) {
+    compare.save('testModelCount', models.Authors, 'count').then(callback);
 }
 
-function testCountConditional(callback) {
-    compare.save('testCountConditional', models.Books, 'count', {
+function testModelCountConditional(callback) {
+    compare.save('testModelCountConditional', models.Books, 'count', {
         where: {
             id: {$lt: 5},
             title: {$like: 'My%'}
@@ -781,8 +781,8 @@ function testCountConditional(callback) {
     }).then(callback);
 }
 
-function testCountEagerOneThenMany(callback) {
-    compare.save('testCountEagerOneThenMany', models.Books, 'count', {
+function testModelCountEagerOneThenMany(callback) {
+    compare.save('testModelCountEagerOneThenMany', models.Books, 'count', {
         include: {
             model: models.Authors,
             include: models.Articles
@@ -790,8 +790,8 @@ function testCountEagerOneThenMany(callback) {
     }).then(callback);
 }
 
-function testCountEagerOneThenManyMean(callback) {
-    compare.save('testCountEagerOneThenManyMean', models.Books, 'count', {
+function testModelCountEagerOneThenManyMean(callback) {
+    compare.save('testModelCountEagerOneThenManyMean', models.Books, 'count', {
         where: {id: {$lt: 5}},
         include: {
             model: models.Authors,
@@ -804,8 +804,8 @@ function testCountEagerOneThenManyMean(callback) {
     }).then(callback);
 }
 
-function testCountEagerRequired(callback) {
-    compare.save('testCountEagerRequired', models.Authors, 'count', {
+function testModelCountEagerRequired(callback) {
+    compare.save('testModelCountEagerRequired', models.Authors, 'count', {
         where: {
             id: {
                 $gte: 0,
@@ -831,8 +831,8 @@ function testCountEagerRequired(callback) {
     }).then(callback);
 }
 
-function testCountEagerRequiredLimited(callback) {
-    compare.save('testCountEagerRequiredLimited', models.Authors, 'count', {
+function testModelCountEagerRequiredLimited(callback) {
+    compare.save('testModelCountEagerRequiredLimited', models.Authors, 'count', {
         where: {
             id: {
                 $gte: 0,
@@ -860,12 +860,12 @@ function testCountEagerRequiredLimited(callback) {
     }).then(callback);
 }
 
-function testFindAndCountAll(callback) {
-    compare.save('testFindAndCountAll', models.Authors, 'findAndCountAll').then(callback);
+function testModelFindAndCountAll(callback) {
+    compare.save('testModelFindAndCountAll', models.Authors, 'findAndCountAll').then(callback);
 }
 
-function testFindAndCountAllConditional(callback) {
-    compare.save('testFindAndCountAllConditional', models.Books, 'findAndCountAll', {
+function testModelFindAndCountAllConditional(callback) {
+    compare.save('testModelFindAndCountAllConditional', models.Books, 'findAndCountAll', {
         where: {
             id: {$lt: 5},
             title: {$like: 'My%'}
@@ -873,8 +873,8 @@ function testFindAndCountAllConditional(callback) {
     }).then(callback);
 }
 
-function testFindAndCountAllEagerOneThenMany(callback) {
-    compare.save('testFindAndCountAllEagerOneThenMany', models.Books, 'findAndCountAll', {
+function testModelFindAndCountAllEagerOneThenMany(callback) {
+    compare.save('testModelFindAndCountAllEagerOneThenMany', models.Books, 'findAndCountAll', {
         include: {
             model: models.Authors,
             include: models.Articles
@@ -882,8 +882,8 @@ function testFindAndCountAllEagerOneThenMany(callback) {
     }).then(callback);
 }
 
-function testFindAndCountAllEagerOneThenManyMean(callback) {
-    compare.save('testFindAndCountAllEagerOneThenManyMean', models.Books, 'findAndCountAll', {
+function testModelFindAndCountAllEagerOneThenManyMean(callback) {
+    compare.save('testModelFindAndCountAllEagerOneThenManyMean', models.Books, 'findAndCountAll', {
         where: {id: {$lt: 5}},
         include: {
             model: models.Authors,
@@ -896,8 +896,8 @@ function testFindAndCountAllEagerOneThenManyMean(callback) {
     }).then(callback);
 }
 
-function testFindAndCountAllEagerRequired(callback) {
-    compare.save('testFindAndCountAllEagerRequired', models.Authors, 'findAndCountAll', {
+function testModelFindAndCountAllEagerRequired(callback) {
+    compare.save('testModelFindAndCountAllEagerRequired', models.Authors, 'findAndCountAll', {
         where: {
             id: {
                 $gte: 0,
@@ -923,8 +923,8 @@ function testFindAndCountAllEagerRequired(callback) {
     }).then(callback);
 }
 
-function testFindAndCountAllEagerRequiredLimited(callback) {
-    compare.save('testFindAndCountAllEagerRequiredLimited', models.Authors, 'findAndCountAll', {
+function testModelFindAndCountAllEagerRequiredLimited(callback) {
+    compare.save('testModelFindAndCountAllEagerRequiredLimited', models.Authors, 'findAndCountAll', {
         where: {
             id: {
                 $gte: 0,

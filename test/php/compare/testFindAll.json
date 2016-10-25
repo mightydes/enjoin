@@ -1,5 +1,0 @@
-{
-  "params": "[]",
-  "postgresql": "SELECT \"id\", \"name\", \"created_at\", \"updated_at\" FROM \"authors\" AS \"authors\"",
-  "mysql": "SELECT `id`, `name`, `created_at`, `updated_at` FROM `authors` AS `authors`"
-}

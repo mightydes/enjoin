@@ -1,5 +1,5 @@
 {
   "params": "['where'=>['name'=>['like'=>'Samuel%']]]",
-  "postgresql": "DELETE FROM \"authors\" WHERE \"name\" LIKE 'Samuel%'",
-  "mysql": "DELETE FROM `authors` WHERE `name` LIKE 'Samuel%'"
+  "mysql": "DELETE FROM `authors` WHERE `name` LIKE 'Samuel%'",
+  "postgresql": "DELETE FROM \"authors\" WHERE \"name\" LIKE 'Samuel%'"
 }
