@@ -2,9 +2,9 @@
 
 namespace Enjoin\Builder;
 
+use Enjoin\Enjoin;
 use Enjoin\Model\Model;
 use Enjoin\Exceptions\Error;
-use Enjoin\Enjoin;
 
 /**
  * Class Group
@@ -27,6 +27,11 @@ class Group
 {
 
     /**
+     * @var Model
+     */
+    protected $Model;
+
+    /**
      * @var \stdClass
      */
     protected $tree;
@@ -36,11 +41,13 @@ class Group
 
     /**
      * Group constructor.
+     * @param Model $Model
      * @param Tree $Tree
      * @param string|array $params
      */
-    public function __construct(Tree $Tree, $params)
+    public function __construct(Model $Model, Tree $Tree, $params)
     {
+        $this->Model = $Model;
         $this->tree = $Tree->get();
         $this->params = $params;
     }
@@ -69,16 +76,34 @@ class Group
 
     /**
      * For example: 'group' => 'title'.
+     * Note: `books.etc.id` => `books.etc`.`id`.
+     *
      * @param string $str
      * @param string $prefix
      */
     private function handleString($str, $prefix = '')
     {
-        $query = '`' . $str . '`';
-        if ($prefix) {
-            $query = '`' . $prefix . '`.' . $query;
-        }
+        $e = $this->Model->dialectify()->getEscapeChar();
+        $query = $prefix
+            ? "{$e}$prefix{$e}.{$e}$str{$e}"
+            : $this->handleColumnedString($str);
         $this->query [] = $query;
+    }
+
+    /**
+     * @param string $str
+     * @return string
+     */
+    protected function handleColumnedString($str)
+    {
+        $e = $this->Model->dialectify()->getEscapeChar();
+        $arr = explode('.', $str);
+        if (count($arr) > 1) {
+            $last = array_pop($arr);
+            $str = join('.', $arr);
+            return "{$e}$str{$e}.{$e}$last{$e}";
+        }
+        return "{$e}$str{$e}";
     }
 
     /**

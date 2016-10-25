@@ -3,8 +3,9 @@
 namespace Enjoin\Model;
 
 use Doctrine\Common\Inflector\Inflector;
+use Enjoin\Enjoin;
 use Enjoin\Extras;
-use Illuminate\Database\Capsule\Manager as Capsule;
+use Enjoin\Exceptions\Error;
 use Enjoin\Factory;
 use Enjoin\Record\Record;
 use Enjoin\Record\Records;
@@ -12,7 +13,6 @@ use Enjoin\Builder\Find;
 use Enjoin\Builder\Count;
 use Enjoin\Builder\Destroy;
 use Enjoin\Builder\Update;
-use Enjoin\Enjoin;
 use PdoDebugger;
 
 /**
@@ -27,6 +27,11 @@ class Model
      * @var \Enjoin\Model\Definition
      */
     public $Definition;
+
+    /**
+     * @var null|\Enjoin\Dialectify\Dialectify
+     */
+    public $Dialectify = null;
 
     /**
      * @var \Enjoin\Model\CacheJar
@@ -57,12 +62,7 @@ class Model
      */
     public function connection()
     {
-        $key = $this->Definition->connection;
-        $key ?: $key = Factory::getConfig()['database']['default'];
-        if ($app = Factory::getApp()) {
-            return $app['db']->connection($key);
-        }
-        return Capsule::connection($key);
+        return Factory::getConnection($this->Definition->connection);
     }
 
     /**
@@ -118,19 +118,19 @@ class Model
             # Perform timestamps:
             if ($this->isTimestamps()) {
                 # Created at:
-                $createdAtAttr = $this->getCreatedAtAttr();
-                $volume[$createdAtAttr] = $Setters->getCreatedAt(isset($record[$createdAtAttr]) ? $record[$createdAtAttr] : null);
-                $skip [] = $createdAtAttr;
+                $createdAtField = $this->getCreatedAtField();
+                $volume[$createdAtField] = $Setters->getCreatedAt($this, isset($record[$createdAtField]) ? $record[$createdAtField] : null);
+                $skip [] = $createdAtField;
                 # Updated at:
-                $updatedAtAttr = $this->getUpdatedAtAttr();
-                $volume[$updatedAtAttr] = $Setters->getUpdatedAt();
-                $skip [] = $updatedAtAttr;
+                $updatedAtField = $this->getUpdatedAtField();
+                $volume[$updatedAtField] = $Setters->getUpdatedAt($this);
+                $skip [] = $updatedAtField;
             }
             # Perform setters:
             $validate = [];
             foreach (array_diff(array_keys($record), $skip) as $attr) {
                 if (array_key_exists($attr, $defAttributes)) {
-                    $volume[$attr] = $Setters->perform($record, $defAttributes[$attr], $attr);
+                    $volume[$attr] = $Setters->perform($this, $record, $defAttributes[$attr], $attr);
                     if (isset($defAttributes[$attr]['validate'])) {
                         $validate [] = [$attr, $volume[$attr], $defAttributes[$attr]['validate']];
                     }
@@ -152,7 +152,7 @@ class Model
     public function update(array $collection, array $params = null, $flags = 0)
     {
         $where = isset($params['where']) ? $params['where'] : null;
-        $Update = new Update($collection, $where, $this->getTableName());
+        $Update = new Update($this, $collection, $where);
         list($query, $place) = $Update->getPrepared();
         if ($flags & Enjoin::SQL) {
             return PdoDebugger::show($query, $place);
@@ -174,7 +174,7 @@ class Model
             return $flags & Enjoin::SQL ? $query : $this->connection()->update($query);
         }
 
-        $Destroy = new Destroy($params['where'], $this->getTableName());
+        $Destroy = new Destroy($this, $params['where']);
         list($query, $place) = $Destroy->getPrepared();
         if ($flags & Enjoin::SQL) {
             return PdoDebugger::show($query, $place);
@@ -401,6 +401,24 @@ class Model
     public function getTableName()
     {
         return $this->Definition->table;
+    }
+
+    /**
+     * @return \Enjoin\Dialectify\Dialectify|null
+     */
+    public function dialectify()
+    {
+        if (!$this->Dialectify) {
+            $map = [
+                'mysql' => 'MySql',
+                'pgsql' => 'PostgreSql'
+            ];
+            $driver = $this->connection()->getDriverName();
+            isset($map[$driver]) ?: Error::dropModelException("Unknown dialectify driver: '$driver'!");
+            $dialect = '\\Enjoin\\Dialectify\\' . $map[$driver];
+            $this->Dialectify = new $dialect($this);
+        }
+        return $this->Dialectify;
     }
 
 }

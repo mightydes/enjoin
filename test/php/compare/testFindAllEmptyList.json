@@ -1,1 +1,5 @@
-{"params":"['where'=>['id'=>[],'title'=>['like'=>'%cloud%'],'year'=>['ne'=>null]]]","sql":"SELECT `id`, `authors_id`, `languages_id`, `title`, `year`, `created_at`, `updated_at` FROM `books` AS `books` WHERE `books`.`id` IN (NULL) AND `books`.`title` LIKE '%cloud%' AND `books`.`year` IS NOT NULL"}
+{
+  "params": "['where'=>['id'=>[],'title'=>['like'=>'%cloud%'],'year'=>['ne'=>null]]]",
+  "mysql": "SELECT `id`, `authors_id`, `languages_id`, `title`, `year`, `created_at`, `updated_at` FROM `books` AS `books` WHERE `books`.`id` IN (NULL) AND `books`.`title` LIKE '%cloud%' AND `books`.`year` IS NOT NULL",
+  "postgresql": "SELECT \"id\", \"authors_id\", \"languages_id\", \"title\", \"year\", \"created_at\", \"updated_at\" FROM \"books\" AS \"books\" WHERE \"books\".\"id\" IN (NULL) AND \"books\".\"title\" LIKE '%cloud%' AND \"books\".\"year\" IS NOT NULL"
+}

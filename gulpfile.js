@@ -1,11 +1,16 @@
 require('dotenv').load();
 var gulp = require('gulp');
 var phpunit = require('gulp-phpunit');
-var del = require('del');
-var path = require('path');
+var async = require('async');
+var debug = require('debug')('gulp');
 var lib = require('./test/js');
+var createTables = require('./test/js/create-tables');
 
 var testList = [
+    'testModelCreate',
+    'testModelCreateEmpty',
+    'testModelCreateWithDateField',
+
     'testFindById',
 
     'testFindOneEager',
@@ -61,18 +66,18 @@ var testList = [
     'testFindAndCountAllEagerRequiredLimited',
 
     'testModelDestroy',
-    'testModelUpdate',
-    'testModelCreateEmpty'
+    'testModelUpdate'
 ];
 
 gulp.task('create-tables', function (callback) {
-    return lib.createTables(callback);
+    return createTables(callback);
 });
 
-gulp.task('create-compare-trait', lib.createCompareTrait);
-
 testList.forEach(function (task) {
-    gulp.task(task, ['create-tables'], lib[task]);
+    gulp.task(task, ['create-tables'], function () {
+        lib[task](function () {
+        });
+    });
 });
 
 gulp.task('phpunit', ['create-tables'], phpUnit);
@@ -87,13 +92,16 @@ function phpUnit() {
 }
 
 function testAll() {
-    var dir = path.normalize(__dirname + '/test/php/compare');
-    var compareTrait = path.normalize(__dirname + '/test/php/CompareTrait.php');
-    del([dir + '/*.json', compareTrait]).then(function () {
-        testList.forEach(function (test) {
-            lib.createTables(function () {
-                lib[test]();
+    async.eachSeries(testList, function (task, done) {
+        createTables(function () {
+            debug('Run ' + task + '...');
+            lib[task](function () {
+                done();
             });
         });
+    }, function (err) {
+        if (err) {
+            debug(err);
+        }
     });
 }

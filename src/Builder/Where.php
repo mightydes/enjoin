@@ -3,9 +3,12 @@
 namespace Enjoin\Builder;
 
 use Enjoin\Enjoin;
+use Enjoin\Model\Model;
 
 class Where
 {
+
+    const HIDE_TABLE = 1;
 
     /**
      * List of `where` control statements.
@@ -25,7 +28,12 @@ class Where
         'notLike' => 'NOT LIKE'
     ];
 
-    protected $table;
+    /**
+     * @var Model
+     */
+    protected $Model;
+
+    protected $prefix;
     protected $query;
     protected $place;
 
@@ -34,15 +42,16 @@ class Where
 
     /**
      * Where constructor.
-     * @param array $params
-     * @param string $table
+     * @param Model $Model
+     * @param array $where
+     * @param string $prefix
      */
-    public function __construct(array $params, $table)
+    public function __construct(Model $Model, array $where, $prefix = '')
     {
-        $this->table = $table;
+        $this->Model = $Model;
+        $this->prefix = $prefix;
 
-        $handle = $this->handle($params);
-//        !Enjoin::debug() ?: +sd($params, $handle);
+        $handle = $this->handle($where);
         list($this->query, $this->place) = $this->resolve($handle);
 
         # Wrap with additional braces on init and-or control:
@@ -254,9 +263,10 @@ class Where
      */
     private function getTableField($field)
     {
-        $out = "`{$field}`";
-        if ($this->table) {
-            $out = "`{$this->table}`.$out";
+        $esc = $this->Model->dialectify()->getEscapeChar();
+        $out = $esc . $field . $esc;
+        if ($this->prefix) {
+            $out = $esc . $this->prefix . $esc . '.' . $out;
         }
         return $out;
     }

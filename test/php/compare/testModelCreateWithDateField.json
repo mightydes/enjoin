@@ -1,0 +1,5 @@
+{
+  "collection": "['date_till'=>[]]",
+  "postgresql": "INSERT INTO \"pile\" (\"id\",\"date_till\",\"created_at\",\"updated_at\") VALUES (DEFAULT,'2016-10-25 12:40:02.584 +00:00','2016-10-25 12:40:02.585 +00:00','2016-10-25 12:40:02.585 +00:00') RETURNING *",
+  "mysql": "INSERT INTO `pile` (`id`,`date_till`,`created_at`,`updated_at`) VALUES (DEFAULT,'2016-10-25 12:40:44','2016-10-25 12:40:44','2016-10-25 12:40:44')"
+}

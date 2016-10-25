@@ -1,0 +1,5 @@
+{
+  "postgresql": "INSERT INTO \"languages\" (\"id\") VALUES (DEFAULT) RETURNING *",
+  "collection": "[]",
+  "mysql": "INSERT INTO `languages` (`id`) VALUES (DEFAULT)"
+}

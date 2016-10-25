@@ -5,7 +5,7 @@ namespace Enjoin;
 use Enjoin\Mixin\DataTypes;
 use Enjoin\Model\Model;
 use Doctrine\Common\Inflector\Inflector;
-use stdClass;
+use stdClass, Closure, PdoDebugger;
 
 class Enjoin
 {
@@ -13,7 +13,7 @@ class Enjoin
     use DataTypes;
 
     # BITWISE:
-    const SQL = 1;
+    const SQL = 1; // TODO: drop it...
     const WITH_CACHE = 2;
     const NO_CACHE = 4;
 
@@ -137,6 +137,56 @@ class Enjoin
     public static function sqlOr()
     {
         return ['or' => func_get_args()];
+    }
+
+    /**
+     * Enable query log for connection.
+     */
+    public static function enableQueryLog()
+    {
+        Factory::getConnection()->enableQueryLog();
+    }
+
+    /**
+     * Disable query log for connection.
+     */
+    public static function disableQueryLog()
+    {
+        Factory::getConnection()->disableQueryLog();
+    }
+
+    /**
+     * Flush query log for connection.
+     */
+    public static function flushQueryLog()
+    {
+        Factory::getConnection()->flushQueryLog();
+    }
+
+    /**
+     * @return array
+     */
+    public static function getQueryLog()
+    {
+        return Factory::getConnection()->getQueryLog();
+    }
+
+    /**
+     * @param Closure $fn
+     * @return array
+     */
+    public static function logify(Closure $fn)
+    {
+        static::flushQueryLog();
+        static::enableQueryLog();
+        $fn();
+        static::disableQueryLog();
+        $log = static::getQueryLog();
+        $out = [];
+        foreach ($log as $it) {
+            $out [] = PdoDebugger::show($it['query'], $it['bindings']);
+        }
+        return $out;
     }
 
 }

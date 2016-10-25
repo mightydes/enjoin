@@ -84,6 +84,9 @@ class CompareQueries
     private function sortJunctionClause($queryA, $queryB)
     {
         $pattern = '/WHERE\(?(`\w+`\.`\w+`=`\w+`.`id`|`\w+`\.`id`=`\w+`.`\w+`)/U';
+        if (getenv('ENJ_DIALECT') === 'postgresql') {
+            $pattern = str_replace('`', '"', $pattern);
+        }
         foreach (['A' => $queryA, 'B' => $queryB] as $key => $query) {
             $r = preg_replace_callback($pattern, function ($matches) {
                 $list = explode('=', $matches[1]);

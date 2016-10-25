@@ -2,14 +2,14 @@ var Sequelize = require('sequelize');
 var path = require('path');
 var debug = require('debug')('sequelize');
 
+const DIALECT = process.env.ENJ_DIALECT;
 const DATABASE = process.env.ENJ_DATABASE;
 const USERNAME = process.env.ENJ_USERNAME;
 const PASSWORD = process.env.ENJ_PASSWORD;
 
 var sequelize = new Sequelize(DATABASE, USERNAME, PASSWORD, {
     host: 'localhost',
-    dialect: 'mysql',
-    port: 3306,
+    dialect: DIALECT,
     logging: debug,
     define: {
         underscored: true,

@@ -1,0 +1,5 @@
+{
+  "collection": "['name'=>'Good Books!']",
+  "postgresql": "INSERT INTO \"publishers\" (\"id\",\"name\",\"created_at\",\"updated_at\") VALUES (DEFAULT,'Good Books!','2016-10-25 12:40:02.236 +00:00','2016-10-25 12:40:02.236 +00:00') RETURNING *",
+  "mysql": "INSERT INTO `publishers` (`id`,`name`,`created_at`,`updated_at`) VALUES (DEFAULT,'Good Books!','2016-10-25 12:40:44','2016-10-25 12:40:44')"
+}

@@ -45,13 +45,13 @@ class Records
                 # Created at:
                 $createdAtAttr = $node->Model->getCreatedAtAttr();
                 if (in_array($createdAtAttr, $node->attributes)) {
-                    $node->getters[$createdAtAttr] = $Getters->getCreatedAt();
+                    $node->getters[$createdAtAttr] = $Getters->getCreatedAt($node->Model);
                     $skip [] = $createdAtAttr;
                 }
                 # Updated at:
                 $updatedAtAttr = $node->Model->getUpdatedAtAttr();
                 if (in_array($updatedAtAttr, $node->attributes)) {
-                    $node->getters[$updatedAtAttr] = $Getters->getUpdatedAt();
+                    $node->getters[$updatedAtAttr] = $Getters->getUpdatedAt($node->Model);
                     $skip [] = $updatedAtAttr;
                 }
             }
@@ -60,7 +60,7 @@ class Records
             $defAttributes = $node->Model->Definition->getAttributes();
             foreach ($node->attributes as $attr) {
                 if (!in_array($attr, $skip)) {
-                    $node->getters[$attr] = $Getters->perform($defAttributes[$attr]);
+                    $node->getters[$attr] = $Getters->perform($node->Model, $defAttributes[$attr]);
                 }
             }
         });

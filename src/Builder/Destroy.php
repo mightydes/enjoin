@@ -2,21 +2,27 @@
 
 namespace Enjoin\Builder;
 
+use Enjoin\Model\Model;
+
 class Destroy
 {
 
+    /**
+     * @var Model
+     */
+    protected $Model;
+
     protected $where = [];
-    protected $table;
 
     /**
      * Destroy constructor.
+     * @param Model $Model
      * @param array $where
-     * @param string $table
      */
-    public function __construct(array $where, $table)
+    public function __construct(Model $Model, array $where)
     {
+        $this->Model = $Model;
         $this->where = $where;
-        $this->table = $table;
     }
 
     /**
@@ -24,8 +30,10 @@ class Destroy
      */
     public function getPrepared()
     {
-        list($query, $place) = (new Where($this->where, $this->table))->getPrepared();
-        $query = "DELETE FROM `$this->table` WHERE $query";
+        $e = $this->Model->dialectify()->getEscapeChar();
+        $table = $this->Model->getTableName();
+        list($query, $place) = (new Where($this->Model, $this->where))->getPrepared();
+        $query = "DELETE FROM {$e}$table{$e} WHERE $query";
         return [$query, $place];
     }
 

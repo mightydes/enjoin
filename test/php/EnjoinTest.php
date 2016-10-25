@@ -6,6 +6,7 @@ require_once 'CompareQueries.php';
 
 use Enjoin\Factory;
 use Enjoin\Enjoin;
+use Enjoin\Extras;
 use Enjoin\Record\Record;
 use Enjoin\Exceptions\ValidationException;
 use Carbon\Carbon;
@@ -19,12 +20,13 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     public function testBootstrap()
     {
+        $this->handleDebug(__FUNCTION__);
         Factory::bootstrap([
             'database' => [
                 'default' => 'test',
                 'connections' => [
                     'test' => [
-                        'driver' => 'mysql',
+                        'driver' => $this->getDriver(),
                         'host' => 'localhost',
                         'database' => getenv('ENJ_DATABASE'),
                         'username' => getenv('ENJ_USERNAME'),
@@ -64,6 +66,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      */
     public function testEnjoinGet()
     {
+        $this->handleDebug(__FUNCTION__);
         Enjoin::get('Authors');
         $this->assertArrayHasKey('\Models\Authors', Factory::getInstance()->models);
     }
@@ -74,6 +77,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      */
     public function testModelBuild()
     {
+        $this->handleDebug(__FUNCTION__);
         $collection = new stdClass;
         $collection->name = 'J. R. R. Tolkien';
         $it = Enjoin::get('Authors')->build($collection);
@@ -87,6 +91,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      */
     public function testNonPersistentRecordSave(Record $it)
     {
+        $this->handleDebug(__FUNCTION__);
         $it->save();
         $this->assertEquals(1, $it->id);
     }
@@ -97,6 +102,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      */
     public function testNonPersistentNestedRecordSave()
     {
+        $this->handleDebug(__FUNCTION__);
         $it = Enjoin::get('Authors')->build([
             'name' => 'George Orwell',
             'book' => Enjoin::get('Books')->build([
@@ -116,6 +122,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      */
     public function testPersistentRecordSave(Record $it)
     {
+        $this->handleDebug(__FUNCTION__);
         $authorName = 'G. Orwell';
         $bookAuthorId = 2;
 
@@ -132,6 +139,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      */
     public function testRecordValidation(Record $it)
     {
+        $this->handleDebug(__FUNCTION__);
         $year = $it->book->year;
         $it->book->year = 3000;
         try {
@@ -148,7 +156,8 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      */
     public function testModelCreate()
     {
-        $it = Enjoin::get('Publishers')->create(['name' => 'Good Books!']);
+        $this->handleDebug(__FUNCTION__);
+        $it = Enjoin::get('Publishers')->create($this->getCompareCollection(__FUNCTION__));
         $this->assertEquals(1, $it->id);
         return $it;
     }
@@ -159,9 +168,16 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testModelCreateEmpty()
     {
         $this->handleDebug(__FUNCTION__);
-        $a = Enjoin::get('Languages')->create();
-        $b = Enjoin::get('Languages')->create([]);
-        $this->assertEquals([1, 2], [$a->id, $b->id]);
+        $assert = [];
+        $log = Enjoin::logify(function () use (&$assert) {
+            $assert [] = Enjoin::get('Languages')->create()->id;
+            $assert [] = Enjoin::get('Languages')->create([])->id;
+        });
+        $assert [] = $log[0];
+        $this->assertEquals(
+            [1, 2, $this->getCompareSql(__FUNCTION__)],
+            $assert
+        );
     }
 
     /**
@@ -199,10 +215,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findById(1, Enjoin::SQL);
-        $this->assertEquals(
-            "SELECT `id`, `name`, `created_at`, `updated_at` FROM `authors` AS `authors` WHERE `authors`.`id` = 1",
-            $sql
-        );
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
         $it = Enjoin::get('Authors')->findById(1);
         $this->assertInstanceOf('Enjoin\Record\Record', $it);
         $this->assertEquals([1, 'J. R. R. Tolkien'], [$it->id, $it->name]);
@@ -251,9 +264,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEager()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEager();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEager(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertInstanceOf('Enjoin\Record\Record', $it);
@@ -265,9 +278,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerRequired()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerRequired();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertTrue(CompareQueries::isSame($this->sql_testFindOneEagerRequired(), $sql));
+        $this->assertTrue(CompareQueries::isSame($this->getCompareSql(__FUNCTION__), $sql));
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertInstanceOf('Enjoin\Record\Record', $it);
@@ -279,9 +292,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerById()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerById();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerById(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertEquals([
@@ -297,9 +310,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerByIdRequired()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerByIdRequired();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerByIdRequired(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertInstanceOf('Enjoin\Record\Record', $it);
@@ -311,9 +324,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerByIdMean()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerByIdMean();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerByIdMean(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertTrue(is_null($it));
@@ -325,9 +338,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerMean()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerMean();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerMean(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertTrue(is_null($it));
@@ -339,9 +352,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerMeanRequired()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerMeanRequired();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertTrue(CompareQueries::isSame($this->sql_testFindOneEagerMeanRequired(), $sql));
+        $this->assertTrue(CompareQueries::isSame($this->getCompareSql(__FUNCTION__), $sql));
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertTrue(is_null($it));
@@ -353,9 +366,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerReversed()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerReversed();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerReversed(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Books')->findOne($params);
         $this->assertInstanceOf('Enjoin\Record\Record', $it);
@@ -367,9 +380,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerReversedRequired()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerReversedRequired();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerReversedRequired(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Books')->findOne($params);
         $this->assertInstanceOf('Enjoin\Record\Record', $it);
@@ -381,9 +394,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerReversedById()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerReversedById();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerReversedById(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Books')->findOne($params);
         $this->assertInstanceOf('Enjoin\Record\Record', $it);
@@ -395,9 +408,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerReversedByIdRequired()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerReversedByIdRequired();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerReversedByIdRequired(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Books')->findOne($params);
         $this->assertInstanceOf('Enjoin\Record\Record', $it);
@@ -409,9 +422,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerReversedByIdMean()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerReversedByIdMean();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerReversedByIdMean(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Books')->findOne($params);
         $this->assertTrue(is_null($it));
@@ -423,9 +436,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerReversedMean()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerReversedMean();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerReversedMean(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Books')->findOne($params);
         $this->assertTrue(is_null($it));
@@ -437,9 +450,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerReversedMeanRequired()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerReversedMeanRequired();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerReversedMeanRequired(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Books')->findOne($params);
         $this->assertTrue(is_null($it));
@@ -451,9 +464,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneComplex()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneComplex();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneComplex(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertInstanceOf('Enjoin\Record\Record', $it);
@@ -465,9 +478,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneAndOr()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneAndOr();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneAndOr(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertTrue(is_null($it));
@@ -506,9 +519,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerMulti()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerMulti();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerMulti(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $it = Enjoin::get('Books')->findOne($params);
         $this->assertEquals(
@@ -523,18 +536,19 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerMultiRequired()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerMultiRequired();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findOne($params, Enjoin::SQL);
-        $this->assertTrue(CompareQueries::isSame($this->sql_testFindOneEagerMultiRequired(), $sql));
+        $this->assertTrue(CompareQueries::isSame($this->getCompareSql(__FUNCTION__), $sql));
 
         $it = Enjoin::get('Books')->findOne($params);
+        $review = Extras::findWhere($it->reviews, ['id' => 1]);
         $this->assertEquals([
             1, 1937, 'J. R. R. Tolkien',
             25, 'ac leo pellentesque ultrices mattis odio donec vitae nisi nam',
             5, 5000
         ], [
             $it->authors_id, $it->year, $it->author->name,
-            count($it->reviews), $it->reviews[0]->resource,
+            count($it->reviews), $review->resource,
             count($it->publishersBooks), $it->publishersBooks[0]->pressrun
         ]);
     }
@@ -545,9 +559,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerMultiWhere()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerMultiWhere();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findOne($params, Enjoin::SQL);
-        $this->assertTrue(CompareQueries::isSame($this->sql_testFindOneEagerMultiWhere(), $sql));
+        $this->assertTrue(CompareQueries::isSame($this->getCompareSql(__FUNCTION__), $sql));
 
         $it = Enjoin::get('Books')->findOne($params);
         $this->assertEquals([
@@ -567,9 +581,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerNested()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerNested();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertTrue(CompareQueries::isSame($this->sql_testFindOneEagerNested(), $sql));
+        $this->assertTrue(CompareQueries::isSame($this->getCompareSql(__FUNCTION__), $sql));
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertEquals([
@@ -589,9 +603,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerNestedById()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerNestedById();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertTrue(CompareQueries::isSame($this->sql_testFindOneEagerNestedById(), $sql));
+        $this->assertTrue(CompareQueries::isSame($this->getCompareSql(__FUNCTION__), $sql));
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertTrue(is_null($it));
@@ -603,9 +617,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerNestedMean()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerNestedMean();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertTrue(CompareQueries::isSame($this->sql_testFindOneEagerNestedMean(), $sql));
+        $this->assertTrue(CompareQueries::isSame($this->getCompareSql(__FUNCTION__), $sql));
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertEquals([
@@ -625,9 +639,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerNestedDeep()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerNestedDeep();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
-        $this->assertTrue(CompareQueries::isSame($this->sql_testFindOneEagerNestedDeep(), $sql));
+        $this->assertTrue(CompareQueries::isSame($this->getCompareSql(__FUNCTION__), $sql));
 
         $it = Enjoin::get('Authors')->findOne($params);
         $this->assertTrue(is_null($it));
@@ -640,9 +654,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindOneEagerSelfNestedNoSubQuery()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindOneEagerSelfNestedNoSubQuery();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findOne($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindOneEagerSelfNestedNoSubQuery(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
     }
 
     /**
@@ -661,10 +675,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findAll(null, Enjoin::SQL);
-        $this->assertEquals(
-            "SELECT `id`, `name`, `created_at`, `updated_at` FROM `authors` AS `authors`",
-            $sql
-        );
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $r = Enjoin::get('Authors')->findAll();
         $this->assertEquals(
@@ -679,8 +690,8 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindAllEmptyList()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Books')->findAll($this->params_testFindAllEmptyList(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindAllEmptyList(), $sql);
+        $sql = Enjoin::get('Books')->findAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
     }
 
     /**
@@ -702,9 +713,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindAllEagerOneThenMany()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindAllEagerOneThenMany();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findAll($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindAllEagerOneThenMany(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $r = Enjoin::get('Books')->findAll($params);
         $this->assertEquals(
@@ -719,9 +730,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindAllEagerOneThenManyMean()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindAllEagerOneThenManyMean();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findAll($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindAllEagerOneThenManyMean(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $r = Enjoin::get('Books')->findAll($params);
         $this->assertEquals(
@@ -736,9 +747,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindAllEagerOneThenManyMeanOrdered()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindAllEagerOneThenManyMeanOrdered();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findAll($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindAllEagerOneThenManyMeanOrdered(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $r = Enjoin::get('Books')->findAll($params);
         $this->assertEquals(1980, $r[0]->author->articles[0]->year);
@@ -750,12 +761,14 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindAllEagerOneThenManyMeanGrouped()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindAllEagerOneThenManyMeanGrouped();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Books')->findAll($params, Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindAllEagerOneThenManyMeanGrouped(), $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $r = Enjoin::get('Books')->findAll($params);
-        $this->assertEquals(1928, $r[0]->author->articles[0]->year);
+        $book = Extras::findWhere($r, ['id' => 1]);
+        $article = Extras::findWhere($book->author->articles, ['id' => 3]);
+        $this->assertEquals(1928, $article->year);
     }
 
     /**
@@ -764,9 +777,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindAllEagerNestedDeep()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindAllEagerNestedDeep();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findAll($params, Enjoin::SQL);
-        $this->assertTrue(CompareQueries::isSame($this->sql_testFindAllEagerNestedDeep(), $sql));
+        $this->assertTrue(CompareQueries::isSame($this->getCompareSql(__FUNCTION__), $sql));
     }
 
     /**
@@ -775,9 +788,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindAllEagerNestedDeepLimited()
     {
         $this->handleDebug(__FUNCTION__);
-        $params = $this->params_testFindAllEagerNestedDeepLimited();
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findAll($params, Enjoin::SQL);
-        $this->assertTrue(CompareQueries::isSame($this->sql_testFindAllEagerNestedDeepLimited(), $sql));
+        $this->assertTrue(CompareQueries::isSame($this->getCompareSql(__FUNCTION__), $sql));
     }
 
     /**
@@ -802,7 +815,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->count(null, Enjoin::SQL);
-        $this->assertEquals("SELECT count(*) AS `count` FROM `authors` AS `authors`", $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $r = Enjoin::get('Authors')->count();
         $this->assertEquals(2, $r);
@@ -814,8 +827,8 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testCountConditional()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Books')->count($this->params_testCountConditional(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testCountConditional(), $sql);
+        $sql = Enjoin::get('Books')->count($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
     }
 
     /**
@@ -824,8 +837,8 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testCountEagerOneThenMany()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Books')->count($this->params_testCountEagerOneThenMany(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testCountEagerOneThenMany(), $sql);
+        $sql = Enjoin::get('Books')->count($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
     }
 
     /**
@@ -834,8 +847,8 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testCountEagerOneThenManyMean()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Books')->count($this->params_testCountEagerOneThenManyMean(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testCountEagerOneThenManyMean(), $sql);
+        $sql = Enjoin::get('Books')->count($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
     }
 
     /**
@@ -844,8 +857,8 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testCountEagerRequired()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Authors')->count($this->params_testCountEagerRequired(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testCountEagerRequired(), $sql);
+        $sql = Enjoin::get('Authors')->count($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
     }
 
     /**
@@ -854,8 +867,8 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testCountEagerRequiredLimited()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Authors')->count($this->params_testCountEagerRequiredLimited(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testCountEagerRequiredLimited(), $sql);
+        $sql = Enjoin::get('Authors')->count($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
     }
 
     /**
@@ -865,7 +878,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     {
         $this->handleDebug(__FUNCTION__);
         $sql = Enjoin::get('Authors')->findAndCountAll(null, Enjoin::SQL);
-        $this->assertEquals("SELECT count(*) AS `count` FROM `authors` AS `authors`", $sql['count']);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql['count']);
 
         $r = Enjoin::get('Authors')->findAndCountAll();
         $this->assertEquals(
@@ -880,8 +893,8 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindAndCountAllConditional()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Books')->findAndCountAll($this->params_testFindAndCountAllConditional(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindAndCountAllConditional(), $sql['count']);
+        $sql = Enjoin::get('Books')->findAndCountAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql['count']);
     }
 
     /**
@@ -890,8 +903,8 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindAndCountAllEagerOneThenMany()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Books')->findAndCountAll($this->params_testFindAndCountAllEagerOneThenMany(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindAndCountAllEagerOneThenMany(), $sql['count']);
+        $sql = Enjoin::get('Books')->findAndCountAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql['count']);
     }
 
     /**
@@ -900,8 +913,8 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindAndCountAllEagerOneThenManyMean()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Books')->findAndCountAll($this->params_testFindAndCountAllEagerOneThenManyMean(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindAndCountAllEagerOneThenManyMean(), $sql['count']);
+        $sql = Enjoin::get('Books')->findAndCountAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql['count']);
     }
 
     /**
@@ -910,8 +923,8 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindAndCountAllEagerRequired()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Authors')->findAndCountAll($this->params_testFindAndCountAllEagerRequired(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindAndCountAllEagerRequired(), $sql['count']);
+        $sql = Enjoin::get('Authors')->findAndCountAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql['count']);
     }
 
     /**
@@ -920,8 +933,8 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testFindAndCountAllEagerRequiredLimited()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Authors')->findAndCountAll($this->params_testFindAndCountAllEagerRequiredLimited(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testFindAndCountAllEagerRequiredLimited(), $sql['count']);
+        $sql = Enjoin::get('Authors')->findAndCountAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql['count']);
     }
 
     /**
@@ -1024,11 +1037,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         Enjoin::get('Authors')->findOrCreate([
             'where' => ['name' => 'Samuel Pepys']
         ]);
-        $params = [
-            'where' => ['name' => ['like' => 'Samuel%']]
-        ];
+        $params = $this->getCompareParams(__FUNCTION__);
         $sql = Enjoin::get('Authors')->destroy($params, Enjoin::SQL);
-        $this->assertEquals("DELETE FROM `authors` WHERE `authors`.`name` LIKE 'Samuel%'", $sql);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
         $affected = Enjoin::get('Authors')->destroy($params);
         $this->assertEquals(1, $affected);
     }
@@ -1045,22 +1056,30 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     /**
      * @depends testCacheUpdate
+     * @return array
      */
     public function testModelUpdate()
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Languages')->update($this->collection_testModelUpdate(), $this->params_testModelUpdate(), Enjoin::SQL);
-        $this->assertEquals($this->sql_testModelUpdate(), $sql);
+        $collection = $this->getCompareCollection(__FUNCTION__);
+        $sql = Enjoin::get('Languages')->update($collection, $this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
+        return [
+            'collection' => $collection,
+            'sql' => $sql
+        ];
     }
 
     /**
-     * @depends testCacheUpdate
+     * @depends testModelUpdate
+     * @param array $data
      */
-    public function testModelUpdateWithoutWhere()
+    public function testModelUpdateWithoutWhere(array $data)
     {
         $this->handleDebug(__FUNCTION__);
-        $sql = Enjoin::get('Languages')->update($this->collection_testModelUpdate(), null, Enjoin::SQL);
-        $this->assertEquals("UPDATE `languages` SET `name`='Korean'", $sql);
+        $sql = Enjoin::get('Languages')->update($data['collection'], null, Enjoin::SQL);
+        $assertSql = explode(' WHERE ', $data['sql'])[0];
+        $this->assertEquals($assertSql, $sql);
     }
 
     /**
@@ -1108,6 +1127,18 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         if ($fnName === $this->debugFunction) {
             Enjoin::debug(true);
         }
+    }
+
+    /**
+     * @return string
+     */
+    private function getDriver()
+    {
+        $dialect = getenv('ENJ_DIALECT');
+        if ($dialect === 'postgresql') {
+            return 'pgsql';
+        }
+        return $dialect;
     }
 
 }

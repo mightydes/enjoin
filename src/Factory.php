@@ -10,6 +10,7 @@ use Illuminate\Cache\CacheManager;
 use Illuminate\Redis\Database;
 use Illuminate\Cache\MemcachedConnector;
 use Illuminate\Container\Container;
+use Illuminate\Database\Capsule\Manager as Capsule;
 use Enjoin\Record\Getters;
 use Enjoin\Record\Setters;
 
@@ -152,11 +153,17 @@ class Factory
     }
 
     /**
-     * @return Container|null
+     * @param null|string $key
+     * @return \Illuminate\Database\Connection
      */
-    public static function getApp()
+    public static function getConnection($key = null)
     {
-        return self::getInstance()->App;
+        $Factory = self::getInstance();
+        $key ?: $key = $Factory->getConfig()['database']['default'];
+        if ($Factory->App) {
+            return $Factory->App['db']->connection($key);
+        }
+        return Capsule::connection($key);
     }
 
     /**

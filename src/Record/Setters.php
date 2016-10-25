@@ -6,17 +6,19 @@ use Carbon\Carbon;
 use Enjoin\Extras;
 use Enjoin\Factory;
 use Enjoin\Exceptions\Error;
+use Enjoin\Model\Model;
 
 class Setters
 {
 
     /**
+     * @param Model $Model
      * @param array $record
      * @param array $descAttr
      * @param string $attr
      * @return string
      */
-    public function perform(array $record, array $descAttr, $attr)
+    public function perform(Model $Model, array $record, array $descAttr, $attr)
     {
         $type = $descAttr['type']['key'];
 
@@ -30,7 +32,7 @@ class Setters
 
         switch ($type) {
             case Extras::DATE_TYPE:
-                return $this->getDate($record[$attr]);
+                return $this->getDate($Model, $record[$attr]);
             case Extras::BOOL_TYPE:
                 return intval($record[$attr]) > 0 ? 1 : null;
             case Extras::STR_TYPE:
@@ -83,37 +85,40 @@ class Setters
     }
 
     /**
+     * @param Model $Model
      * @param mixed $value
      * @return mixed
      */
-    public function getCreatedAt($value = null)
+    public function getCreatedAt(Model $Model, $value = null)
     {
         if ($value) {
             return $value instanceof Carbon
-                ? $value->toDateTimeString()
+                ? $value->format($Model->dialectify()->getDateFormat())
                 : $value;
         }
-        return Carbon::now()->toDateTimeString();
+        return Carbon::now()->format($Model->dialectify()->getDateFormat());
     }
 
     /**
+     * @param Model $Model
      * @param mixed $value
      * @return mixed
      */
-    public function getUpdatedAt($value = null)
+    public function getUpdatedAt(Model $Model, $value = null)
     {
-        return $this->getCreatedAt($value);
+        return $this->getCreatedAt($Model, $value);
     }
 
     /**
      * Handle date/datetime.
+     * @param Model $Model
      * @param mixed $value
      * @return mixed
      */
-    private function getDate($value)
+    private function getDate(Model $Model, $value)
     {
         if ($value instanceof Carbon) {
-            return $value->toDateTimeString();
+            return $value->format($Model->dialectify()->getDateFormat());
         }
         return $value;
     }

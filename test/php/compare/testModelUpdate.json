@@ -1,1 +1,6 @@
-{"params":"['where'=>['id'=>200]]","collection":"['name'=>'Korean']","sql":"UPDATE `languages` SET `name`='Korean' WHERE `id` = 200"}
+{
+  "params": "['where'=>['id'=>200]]",
+  "collection": "['name'=>'Korean']",
+  "mysql": "UPDATE `languages` SET `name`='Korean' WHERE `id` = 200",
+  "postgresql": "UPDATE \"languages\" SET \"name\"='Korean' WHERE \"id\" = 200"
+}

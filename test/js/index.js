@@ -1,11 +1,11 @@
 var models = require('./models');
-var debug = require('debug')('phpunit');
-var _ = require('underscore');
-var fs = require('fs');
+var compare = require('./compare');
 
 module.exports = {
-    createTables: require('./create-tables'),
-    createCompareTrait: require('./create-compare-trait'),
+    testModelCreate: testModelCreate,
+    testModelCreateEmpty: testModelCreateEmpty,
+    testModelCreateWithDateField: testModelCreateWithDateField,
+
     testFindById: testFindById,
 
     testFindOneEager: testFindOneEager,
@@ -61,144 +61,84 @@ module.exports = {
     testFindAndCountAllEagerRequiredLimited: testFindAndCountAllEagerRequiredLimited,
 
     testModelDestroy: testModelDestroy,
-    testModelUpdate: testModelUpdate,
-    testModelCreateEmpty: testModelCreateEmpty
+    testModelUpdate: testModelUpdate
 };
 
-function camelize(str) {
-    return str.replace(/(?:^|[-_])(\w)/g, function (_, c) {
-        return c ? c.toUpperCase() : '';
-    });
+function testModelCreate(callback) {
+    compare.save('testModelCreate', models.Publishers, 'create', {
+        name: 'Good Books!'
+    }).then(callback);
 }
 
-function toPhpParams(params) {
-    var out = handle(params);
-    debug('Php params: ' + out);
-    return out;
-
-    function handle(params) {
-        var r = '[';
-        var length = _.isArray(params) ? params.length : _.allKeys(params).length;
-        var i = 0;
-        _.forEach(params, function (v, k) {
-            if (_.isString(k)) {
-                if (k.substr(0, 1) === '$') {
-                    k = k.substr(1);
-                }
-                r += "'" + k + "'=>";
-            }
-            // TODO: if `null`...
-            if (_.isObject(v) && _.has(v, 'sequelize')) {
-                r += "Enjoin::get('" + camelize(v.getTableName()) + "')";
-            } else if (_.isObject(v) || _.isArray(v)) {
-                r += handle(v);
-            } else if (_.isBoolean(v)) {
-                r += v ? 'true' : 'false';
-            } else if (_.isNull(v)) {
-                r += 'null';
-            } else {
-                r += _.isNumber(v) ? v : "'" + v + "'";
-            }
-            i++;
-            if (i < length) {
-                r += ',';
-            }
-        });
-        r += ']';
-        return r;
-    }
+function testModelCreateEmpty(callback) {
+    compare.save('testModelCreateEmpty', models.Languages, 'create').then(callback);
+    // Same result for `create({})`...
 }
 
-function saveCompare(name, model, method, params) {
-    if (method === 'update') {
-        return saveUpdateCompare(name, model, params, arguments[4]);
-    }
-    var phpParams = toPhpParams(params);
-    params || (params = {});
-    params.logging = createSaveCompareLogging(name, {
-        params: phpParams
-    });
-    model[method](params);
+function testModelCreateWithDateField(callback) {
+    compare.save('testModelCreateWithDateField', models.Pile, 'create', {
+        date_till: new Date
+    }).then(callback);
 }
 
-function saveUpdateCompare(name, model, collection, params) {
-    var phpParams = toPhpParams(params);
-    var phpCollection = toPhpParams(collection);
-    params.logging = createSaveCompareLogging(name, {
-        params: phpParams,
-        collection: phpCollection
-    });
-    model.update(collection, params);
+function testFindById(callback) {
+    compare.save('testFindById', models.Authors, 'findById', 1).then(callback);
 }
 
-function createSaveCompareLogging(name, data) {
-    return function (sql) {
-        debug(sql);
-        var filename = __dirname + '/../php/compare/' + name + '.json';
-        var re = /Executing \(default\):\s*([^;]+)/g;
-        data.sql = re.exec(sql)[1];
-        fs.writeFile(filename, JSON.stringify(data));
-    };
-}
-
-function testFindById() {
-    models.Authors.findById(1);
-}
-
-function testFindOneEager() {
-    saveCompare('testFindOneEager', models.Authors, 'findOne', {
+function testFindOneEager(callback) {
+    compare.save('testFindOneEager', models.Authors, 'findOne', {
         include: models.Books
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerRequired() {
-    saveCompare('testFindOneEagerRequired', models.Authors, 'findOne', {
+function testFindOneEagerRequired(callback) {
+    compare.save('testFindOneEagerRequired', models.Authors, 'findOne', {
         include: {
             model: models.Books,
             required: true
         }
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerById() {
-    saveCompare('testFindOneEagerById', models.Authors, 'findOne', {
+function testFindOneEagerById(callback) {
+    compare.save('testFindOneEagerById', models.Authors, 'findOne', {
         where: {id: 1},
         include: models.Books
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerByIdRequired() {
-    saveCompare('testFindOneEagerByIdRequired', models.Authors, 'findOne', {
+function testFindOneEagerByIdRequired(callback) {
+    compare.save('testFindOneEagerByIdRequired', models.Authors, 'findOne', {
         where: {id: 1},
         include: {
             model: models.Books,
             required: true
         }
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerByIdMean() {
-    saveCompare('testFindOneEagerByIdMean', models.Authors, 'findOne', {
+function testFindOneEagerByIdMean(callback) {
+    compare.save('testFindOneEagerByIdMean', models.Authors, 'findOne', {
         where: {
             id: 1,
             name: ['Alice', 'Bob']
         },
         include: models.Books
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerMean() {
-    saveCompare('testFindOneEagerMean', models.Authors, 'findOne', {
+function testFindOneEagerMean(callback) {
+    compare.save('testFindOneEagerMean', models.Authors, 'findOne', {
         where: {
             id: [1, 2, 3],
             name: ['Alice', 'Bob']
         },
         include: models.Books
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerMeanRequired() {
-    saveCompare('testFindOneEagerMeanRequired', models.Authors, 'findOne', {
+function testFindOneEagerMeanRequired(callback) {
+    compare.save('testFindOneEagerMeanRequired', models.Authors, 'findOne', {
         where: {
             id: [1, 2, 3],
             name: ['Alice', 'Bob']
@@ -207,53 +147,53 @@ function testFindOneEagerMeanRequired() {
             model: models.Books,
             required: true
         }
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerReversed() {
-    saveCompare('testFindOneEagerReversed', models.Books, 'findOne', {
+function testFindOneEagerReversed(callback) {
+    compare.save('testFindOneEagerReversed', models.Books, 'findOne', {
         include: models.Authors
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerReversedRequired() {
-    saveCompare('testFindOneEagerReversedRequired', models.Books, 'findOne', {
+function testFindOneEagerReversedRequired(callback) {
+    compare.save('testFindOneEagerReversedRequired', models.Books, 'findOne', {
         include: {
             model: models.Authors,
             required: true
         }
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerReversedById() {
-    saveCompare('testFindOneEagerReversedById', models.Books, 'findOne', {
+function testFindOneEagerReversedById(callback) {
+    compare.save('testFindOneEagerReversedById', models.Books, 'findOne', {
         where: {id: 1},
         include: models.Authors
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerReversedByIdRequired() {
-    saveCompare('testFindOneEagerReversedByIdRequired', models.Books, 'findOne', {
+function testFindOneEagerReversedByIdRequired(callback) {
+    compare.save('testFindOneEagerReversedByIdRequired', models.Books, 'findOne', {
         where: {id: 1},
         include: {
             model: models.Authors,
             required: true
         }
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerReversedByIdMean() {
-    saveCompare('testFindOneEagerReversedByIdMean', models.Books, 'findOne', {
+function testFindOneEagerReversedByIdMean(callback) {
+    compare.save('testFindOneEagerReversedByIdMean', models.Books, 'findOne', {
         where: {
             id: [1, 2, 3],
             title: ['Alice', 'Bob']
         },
         include: models.Authors
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerReversedMean() {
-    saveCompare('testFindOneEagerReversedMean', models.Books, 'findOne', {
+function testFindOneEagerReversedMean(callback) {
+    compare.save('testFindOneEagerReversedMean', models.Books, 'findOne', {
         where: {
             id: {
                 $in: [1, 2, 3],
@@ -263,11 +203,11 @@ function testFindOneEagerReversedMean() {
             title: ['Alice', 'Bob']
         },
         include: models.Authors
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerReversedMeanRequired() {
-    saveCompare('testFindOneEagerReversedMeanRequired', models.Books, 'findOne', {
+function testFindOneEagerReversedMeanRequired(callback) {
+    compare.save('testFindOneEagerReversedMeanRequired', models.Books, 'findOne', {
         where: {
             id: {
                 $in: [1, 2, 3],
@@ -280,11 +220,11 @@ function testFindOneEagerReversedMeanRequired() {
             model: models.Authors,
             required: true
         }
-    });
+    }).then(callback);
 }
 
-function testFindOneComplex() {
-    saveCompare('testFindOneComplex', models.Authors, 'findOne', {
+function testFindOneComplex(callback) {
+    compare.save('testFindOneComplex', models.Authors, 'findOne', {
         where: {
             id: {
                 $in: [1, 2, 3],
@@ -296,11 +236,11 @@ function testFindOneComplex() {
                 $ne: null
             }
         }
-    });
+    }).then(callback);
 }
 
-function testFindOneAndOr() {
-    saveCompare('testFindOneAndOr', models.Authors, 'findOne', {
+function testFindOneAndOr(callback) {
+    compare.save('testFindOneAndOr', models.Authors, 'findOne', {
         where: {
             $or: [
                 {
@@ -333,21 +273,21 @@ function testFindOneAndOr() {
                 }
             ]
         }
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerMulti() {
-    saveCompare('testFindOneEagerMulti', models.Books, 'findOne', {
+function testFindOneEagerMulti(callback) {
+    compare.save('testFindOneEagerMulti', models.Books, 'findOne', {
         include: [
             models.Authors,
             models.Reviews,
             models.PublishersBooks
         ]
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerMultiRequired() {
-    saveCompare('testFindOneEagerMultiRequired', models.Books, 'findOne', {
+function testFindOneEagerMultiRequired(callback) {
+    compare.save('testFindOneEagerMultiRequired', models.Books, 'findOne', {
         include: [
             {
                 model: models.Authors,
@@ -359,19 +299,19 @@ function testFindOneEagerMultiRequired() {
             },
             models.PublishersBooks
         ]
-    });
+    }).then(callback);
 }
 
 /**
  * Note: when an eager loaded model is filtered using include.where then include.required is implicitly set to true.
  */
-function testFindOneEagerMultiWhere() {
-    saveCompare('testFindOneEagerMultiWhere', models.Books, 'findOne', {
+function testFindOneEagerMultiWhere(callback) {
+    compare.save('testFindOneEagerMultiWhere', models.Books, 'findOne', {
         include: [
             {
                 model: models.Authors,
                 where: {
-                    name: {$like: '%tol%'}
+                    name: {$like: '%Tol%'}
                 }
             },
             {
@@ -387,11 +327,11 @@ function testFindOneEagerMultiWhere() {
                 }
             }
         ]
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerNested() {
-    saveCompare('testFindOneEagerNested', models.Authors, 'findOne', {
+function testFindOneEagerNested(callback) {
+    compare.save('testFindOneEagerNested', models.Authors, 'findOne', {
         include: {
             model: models.Books,
             where: {
@@ -421,11 +361,11 @@ function testFindOneEagerNested() {
                 }
             ]
         }
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerNestedById() {
-    saveCompare('testFindOneEagerNestedById', models.Authors, 'findOne', {
+function testFindOneEagerNestedById(callback) {
+    compare.save('testFindOneEagerNestedById', models.Authors, 'findOne', {
         where: {
             id: {
                 $in: [1, 2, 3],
@@ -462,11 +402,11 @@ function testFindOneEagerNestedById() {
                 }
             ]
         }
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerNestedMean() {
-    saveCompare('testFindOneEagerNestedMean', models.Authors, 'findOne', {
+function testFindOneEagerNestedMean(callback) {
+    compare.save('testFindOneEagerNestedMean', models.Authors, 'findOne', {
         where: {
             id: {
                 $gte: 0,
@@ -508,11 +448,11 @@ function testFindOneEagerNestedMean() {
                 }
             ]
         }
-    });
+    }).then(callback);
 }
 
-function testFindOneEagerNestedDeep() {
-    saveCompare('testFindOneEagerNestedDeep', models.Authors, 'findOne', {
+function testFindOneEagerNestedDeep(callback) {
+    compare.save('testFindOneEagerNestedDeep', models.Authors, 'findOne', {
         where: {
             id: {
                 $gte: 0,
@@ -569,14 +509,14 @@ function testFindOneEagerNestedDeep() {
                 }
             ]
         }
-    });
+    }).then(callback);
 }
 
 /**
  * Note: https://github.com/sequelize/sequelize/issues/3917
  */
-function testFindOneEagerSelfNestedNoSubQuery() {
-    saveCompare('testFindOneEagerSelfNestedNoSubQuery', models.Books, 'findOne', {
+function testFindOneEagerSelfNestedNoSubQuery(callback) {
+    compare.save('testFindOneEagerSelfNestedNoSubQuery', models.Books, 'findOne', {
         where: {
             year: {$notIn: [1900, 1950, 2000]},
             $or: [
@@ -626,84 +566,86 @@ function testFindOneEagerSelfNestedNoSubQuery() {
                 }
             }
         }
-    });
+    }).then(callback);
 }
 
-function testFindAll() {
-    models.Authors.findAll();
+function testFindAll(callback) {
+    compare.save('testFindAll', models.Authors, 'findAll').then(callback);
 }
 
-function testFindAllEmptyList() {
-    saveCompare('testFindAllEmptyList', models.Books, 'findAll', {
+function testFindAllEmptyList(callback) {
+    compare.save('testFindAllEmptyList', models.Books, 'findAll', {
         where: {
             id: [],
             title: {$like: '%cloud%'},
             year: {$ne: null}
         }
-    });
+    }).then(callback);
 }
 
-function testFindAllEagerOneThenMany() {
-    saveCompare('testFindAllEagerOneThenMany', models.Books, 'findAll', {
+function testFindAllEagerOneThenMany(callback) {
+    compare.save('testFindAllEagerOneThenMany', models.Books, 'findAll', {
         include: {
             model: models.Authors,
             include: models.Articles
         }
-    });
+    }).then(callback);
 }
 
-function testFindAllEagerOneThenManyMean() {
-    saveCompare('testFindAllEagerOneThenManyMean', models.Books, 'findAll', {
+function testFindAllEagerOneThenManyMean(callback) {
+    compare.save('testFindAllEagerOneThenManyMean', models.Books, 'findAll', {
         where: {id: {$lt: 5}},
         include: {
             model: models.Authors,
-            where: {id: {$like: '2%'}},
+            where: {id: {$gte: 2}},
             include: {
                 model: models.Articles,
-                where: {year: {$like: '19%'}}
+                where: {year: {$gte: 1900}}
             }
         }
-    });
+    }).then(callback);
 }
 
-function testFindAllEagerOneThenManyMeanOrdered() {
-    saveCompare('testFindAllEagerOneThenManyMeanOrdered', models.Books, 'findAll', {
+function testFindAllEagerOneThenManyMeanOrdered(callback) {
+    compare.save('testFindAllEagerOneThenManyMeanOrdered', models.Books, 'findAll', {
         where: {id: {$lt: 5}},
         include: {
             model: models.Authors,
-            where: {id: {$like: '2%'}},
+            where: {id: {$gte: 2}},
             include: {
                 model: models.Articles,
-                where: {year: {$like: '19%'}}
+                where: {year: {$gte: 1900}}
             }
         },
         order: [
             'year',
             [models.Authors, models.Articles, 'year', 'DESC']
         ]
-    });
+    }).then(callback);
 }
 
-function testFindAllEagerOneThenManyMeanGrouped() {
-    saveCompare('testFindAllEagerOneThenManyMeanGrouped', models.Books, 'findAll', {
+function testFindAllEagerOneThenManyMeanGrouped(callback) {
+    compare.save('testFindAllEagerOneThenManyMeanGrouped', models.Books, 'findAll', {
         where: {id: {$lt: 5}},
         include: {
             model: models.Authors,
-            where: {id: {$like: '2%'}},
+            where: {id: {$gte: 2}},
             include: {
                 model: models.Articles,
-                where: {year: {$like: '19%'}}
+                where: {year: {$gte: 1900}}
             }
         },
         group: [
-            'year',
-            [models.Authors, models.Articles, 'year']
+            [models.Authors, models.Articles, 'year'],
+            [models.Authors, models.Articles, 'id'],
+            [models.Authors, 'id'],
+            'books.id'
         ]
-    });
+    }).then(callback);
 }
 
-function testFindAllEagerNestedDeep() {
-    saveCompare('testFindAllEagerNestedDeep', models.Authors, 'findAll', {
+function testFindAllEagerNestedDeep(callback) {
+    compare.save('testFindAllEagerNestedDeep', models.Authors, 'findAll', {
         where: {
             id: {
                 $gte: 0,
@@ -760,11 +702,11 @@ function testFindAllEagerNestedDeep() {
                 }
             ]
         }
-    });
+    }).then(callback);
 }
 
-function testFindAllEagerNestedDeepLimited() {
-    saveCompare('testFindAllEagerNestedDeepLimited', models.Authors, 'findAll', {
+function testFindAllEagerNestedDeepLimited(callback) {
+    compare.save('testFindAllEagerNestedDeepLimited', models.Authors, 'findAll', {
         where: {
             id: {
                 $gte: 0,
@@ -823,47 +765,47 @@ function testFindAllEagerNestedDeepLimited() {
         },
         offset: 0,
         limit: 50
-    });
+    }).then(callback);
 }
 
-function testCount() {
-    models.Authors.count();
+function testCount(callback) {
+    compare.save('testCount', models.Authors, 'count').then(callback);
 }
 
-function testCountConditional() {
-    saveCompare('testCountConditional', models.Books, 'count', {
+function testCountConditional(callback) {
+    compare.save('testCountConditional', models.Books, 'count', {
         where: {
             id: {$lt: 5},
             title: {$like: 'My%'}
         }
-    });
+    }).then(callback);
 }
 
-function testCountEagerOneThenMany() {
-    saveCompare('testCountEagerOneThenMany', models.Books, 'count', {
+function testCountEagerOneThenMany(callback) {
+    compare.save('testCountEagerOneThenMany', models.Books, 'count', {
         include: {
             model: models.Authors,
             include: models.Articles
         }
-    });
+    }).then(callback);
 }
 
-function testCountEagerOneThenManyMean() {
-    saveCompare('testCountEagerOneThenManyMean', models.Books, 'count', {
+function testCountEagerOneThenManyMean(callback) {
+    compare.save('testCountEagerOneThenManyMean', models.Books, 'count', {
         where: {id: {$lt: 5}},
         include: {
             model: models.Authors,
-            where: {id: {$like: '2%'}},
+            where: {id: {$gte: 2}},
             include: {
                 model: models.Articles,
-                where: {year: {$like: '19%'}}
+                where: {year: {$gte: 1900}}
             }
         }
-    });
+    }).then(callback);
 }
 
-function testCountEagerRequired() {
-    saveCompare('testCountEagerRequired', models.Authors, 'count', {
+function testCountEagerRequired(callback) {
+    compare.save('testCountEagerRequired', models.Authors, 'count', {
         where: {
             id: {
                 $gte: 0,
@@ -886,11 +828,11 @@ function testCountEagerRequired() {
                 }
             ]
         }
-    });
+    }).then(callback);
 }
 
-function testCountEagerRequiredLimited() {
-    saveCompare('testCountEagerRequiredLimited', models.Authors, 'count', {
+function testCountEagerRequiredLimited(callback) {
+    compare.save('testCountEagerRequiredLimited', models.Authors, 'count', {
         where: {
             id: {
                 $gte: 0,
@@ -915,47 +857,47 @@ function testCountEagerRequiredLimited() {
         },
         limit: 25,
         offset: 7
-    });
+    }).then(callback);
 }
 
-function testFindAndCountAll() {
-    models.Authors.findAndCountAll();
+function testFindAndCountAll(callback) {
+    compare.save('testFindAndCountAll', models.Authors, 'findAndCountAll').then(callback);
 }
 
-function testFindAndCountAllConditional() {
-    saveCompare('testFindAndCountAllConditional', models.Books, 'findAndCountAll', {
+function testFindAndCountAllConditional(callback) {
+    compare.save('testFindAndCountAllConditional', models.Books, 'findAndCountAll', {
         where: {
             id: {$lt: 5},
             title: {$like: 'My%'}
         }
-    });
+    }).then(callback);
 }
 
-function testFindAndCountAllEagerOneThenMany() {
-    saveCompare('testFindAndCountAllEagerOneThenMany', models.Books, 'findAndCountAll', {
+function testFindAndCountAllEagerOneThenMany(callback) {
+    compare.save('testFindAndCountAllEagerOneThenMany', models.Books, 'findAndCountAll', {
         include: {
             model: models.Authors,
             include: models.Articles
         }
-    });
+    }).then(callback);
 }
 
-function testFindAndCountAllEagerOneThenManyMean() {
-    saveCompare('testFindAndCountAllEagerOneThenManyMean', models.Books, 'findAndCountAll', {
+function testFindAndCountAllEagerOneThenManyMean(callback) {
+    compare.save('testFindAndCountAllEagerOneThenManyMean', models.Books, 'findAndCountAll', {
         where: {id: {$lt: 5}},
         include: {
             model: models.Authors,
-            where: {id: {$like: '2%'}},
+            where: {id: {$gte: 2}},
             include: {
                 model: models.Articles,
-                where: {year: {$like: '19%'}}
+                where: {year: {$gte: 1900}}
             }
         }
-    });
+    }).then(callback);
 }
 
-function testFindAndCountAllEagerRequired() {
-    saveCompare('testFindAndCountAllEagerRequired', models.Authors, 'findAndCountAll', {
+function testFindAndCountAllEagerRequired(callback) {
+    compare.save('testFindAndCountAllEagerRequired', models.Authors, 'findAndCountAll', {
         where: {
             id: {
                 $gte: 0,
@@ -978,11 +920,11 @@ function testFindAndCountAllEagerRequired() {
                 }
             ]
         }
-    });
+    }).then(callback);
 }
 
-function testFindAndCountAllEagerRequiredLimited() {
-    saveCompare('testFindAndCountAllEagerRequiredLimited', models.Authors, 'findAndCountAll', {
+function testFindAndCountAllEagerRequiredLimited(callback) {
+    compare.save('testFindAndCountAllEagerRequiredLimited', models.Authors, 'findAndCountAll', {
         where: {
             id: {
                 $gte: 0,
@@ -1007,31 +949,19 @@ function testFindAndCountAllEagerRequiredLimited() {
         },
         limit: 25,
         offset: 7
-    });
+    }).then(callback);
 }
 
-function testModelDestroy() {
-    models.Languages.destroy({
-        where: {id: {$gt: 5}}
-    }).then(function () {
-        debug(arguments);
-    });
+function testModelDestroy(callback) {
+    compare.save('testModelDestroy', models.Authors, 'destroy', {
+        where: {name: {$like: 'Samuel%'}}
+    }).then(callback);
 }
 
-function testModelUpdate() {
-    saveCompare('testModelUpdate', models.Languages, 'update', {
+function testModelUpdate(callback) {
+    compare.save('testModelUpdate', models.Languages, 'update', {
         name: 'Korean'
     }, {
         where: {id: 200}
-    });
-}
-
-/**
- * Same result for `create({})`.
- */
-function testModelCreateEmpty() {
-    models.Languages.create().then(function () {
-        debug(arguments);
-    });
-    // INSERT INTO `languages` (`id`) VALUES (DEFAULT)
+    }).then(callback);
 }

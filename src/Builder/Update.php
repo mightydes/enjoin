@@ -2,24 +2,30 @@
 
 namespace Enjoin\Builder;
 
+use Enjoin\Model\Model;
+
 class Update
 {
 
+    /**
+     * @var Model
+     */
+    protected $Model;
+
     protected $collection = [];
     protected $where = [];
-    protected $table;
 
     /**
      * Update constructor.
+     * @param Model $Model
      * @param array $collection
      * @param array|null $where
-     * @param string $table
      */
-    public function __construct(array $collection, array $where = null, $table)
+    public function __construct(Model $Model, array $collection, array $where = null)
     {
+        $this->Model = $Model;
         $this->collection = $collection;
         $this->where = $where;
-        $this->table = $table;
     }
 
     /**
@@ -27,12 +33,14 @@ class Update
      */
     public function getPrepared()
     {
-        list($setQuery, $setPlace) = $this->handleSet();
-        $query = "UPDATE `$this->table` SET $setQuery";
+        $e = $this->Model->dialectify()->getEscapeChar();
+        $table = $this->Model->getTableName();
+        list($setQuery, $setPlace) = $this->handleSet($e);
+        $query = "UPDATE {$e}$table{$e} SET $setQuery";
 
         $wherePlace = [];
         if ($this->where) {
-            list($whereQuery, $wherePlace) = (new Where($this->where, null))->getPrepared();
+            list($whereQuery, $wherePlace) = (new Where($this->Model, $this->where))->getPrepared();
             $query .= " WHERE $whereQuery";
         }
 
@@ -40,14 +48,15 @@ class Update
     }
 
     /**
+     * @param string $e
      * @return array
      */
-    private function handleSet()
+    private function handleSet($e)
     {
         $query = [];
         $place = [];
         foreach ($this->collection as $field => $value) {
-            $query [] = "`$field`=?";
+            $query [] = "{$e}$field{$e}=?";
             $place [] = $value;
         }
         return [join(', ', $query), $place];

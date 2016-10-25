@@ -2,8 +2,9 @@
 
 namespace Enjoin\Record;
 
-use Carbon\Carbon;
 use Enjoin\Extras;
+use Enjoin\Model\Model;
+use Carbon\Carbon;
 use Closure;
 
 /**
@@ -28,13 +29,12 @@ use Closure;
 class Getters
 {
 
-    const DATE_FORMAT = 'Y-m-d H:i:s';
-
     /**
+     * @param Model $Model
      * @param array $descAttr
      * @return Closure
      */
-    public function perform(array $descAttr)
+    public function perform(Model $Model, array $descAttr)
     {
         # Handle `allowNull` parameter:
         $allowNull = array_key_exists('allowNull', $descAttr)
@@ -63,7 +63,7 @@ class Getters
                     return intval($getValue($attr)) > 0 ? true : false;
                 };
             case Extras::DATE_TYPE:
-                return $this->getDate();
+                return $this->getDate($Model);
             case Extras::STR_TYPE:
             case Extras::TEXT_TYPE:
             case Extras::ENUM_TYPE:
@@ -80,31 +80,35 @@ class Getters
 
     /**
      * Perform `created as` handler.
+     * @param Model $Model
      * @return Closure
      */
-    public function getCreatedAt()
+    public function getCreatedAt(Model $Model)
     {
-        return $this->getDate();
+        return $this->getDate($Model);
     }
 
     /**
      * Perform `updated at` handler.
+     * @param Model $Model
      * @return Closure
      */
-    public function getUpdatedAt()
+    public function getUpdatedAt(Model $Model)
     {
-        return $this->getDate();
+        return $this->getDate($Model);
     }
 
     /**
+     * @param Model $Model
      * @return Closure
      */
-    private function getDate()
+    private function getDate(Model $Model)
     {
-        return function ($attr, Closure $getValue) {
+        $dateFormat = $Model->dialectify()->getDateFormat();
+        return function ($attr, Closure $getValue) use ($dateFormat) {
             $value = $getValue($attr);
             return is_string($value)
-                ? Carbon::createFromFormat(self::DATE_FORMAT, $value)
+                ? Carbon::createFromFormat($dateFormat, $value)
                 : $value;
         };
     }

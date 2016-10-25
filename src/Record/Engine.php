@@ -3,6 +3,7 @@
 namespace Enjoin\Record;
 
 use Enjoin\Enjoin;
+use Enjoin\Exceptions\Error;
 use Enjoin\Model\Model;
 use Enjoin\Factory;
 use Carbon\Carbon;
@@ -73,7 +74,7 @@ class Engine
                 # We can start recursive saving here...
                 #$recordVal->save();
             } elseif (array_key_exists($field, $defAttributes)) {
-                $saveVal = $Setters->perform($record, $defAttributes[$field], $field);
+                $saveVal = $Setters->perform($this->Model, $record, $defAttributes[$field], $field);
                 if (isset($defAttributes[$field]['validate'])) {
                     $validate [] = [$field, $saveVal, $defAttributes[$field]['validate']];
                 }
@@ -82,17 +83,20 @@ class Engine
                 }
             } elseif ($this->Model->isTimestamps() && $field === $createdAtField) {
                 if (!$pick || in_array($field, $pick)) {
-                    $volume[$field] = $Setters->getCreatedAt($recordVal);
+                    $volume[$field] = $Setters->getCreatedAt($this->Model, $recordVal);
                 }
             } elseif ($this->Model->isTimestamps() && $field === $updatedAtField) {
-                $volume[$field] = $Setters->getUpdatedAt($recordVal);
+                $volume[$field] = $Setters->getUpdatedAt($this->Model, $recordVal);
             }
         }
 
         !$validate ?: $Setters->validate($validate);
 
         if (!($flags & self::SOFT_SAVE)) {
-            $id = $this->saveEntry($volume);
+//            $id = $this->saveEntry($volume);
+            $id = $this->type === self::NON_PERSISTENT
+                ? $this->saveNonPersistent($volume)
+                : $this->savePersistent($volume);
             $this->id = $id;
             $this->Record->id = $id;
             $volume['id'] = $id;
@@ -113,24 +117,44 @@ class Engine
 
     /**
      * @param array $volume
-     * @return int|mixed
+     * @return mixed
      */
-    private function saveEntry(array $volume)
+    private function saveNonPersistent(array $volume)
     {
-        if ($this->type === self::NON_PERSISTENT) {
+        $DB = $this->Model->connection();
+        return $DB->transaction(function () use ($volume, $DB) {
             $this->type = self::PERSISTENT;
-            return $this->Model->queryBuilder()->insertGetId($volume);
-        }
+            if ($volume) {
+                $this->Model->queryBuilder()->insert($volume)
+                    ?: Error::dropRecordException('Unable to insert record!');
+            } else {
+                $DB->insert($this->Model->dialectify()->getInsertEmptyQuery())
+                    ?: Error::dropRecordException('Unable to insert empty record!');
+            }
+            $this->Model->CacheJar->flush();
+            $id = $DB->getPdo()->lastInsertId($this->Model->dialectify()->getIdSequence());
+            return (int)$id;
+        });
+    }
 
-        if (isset($volume['id']) && $volume['id'] === $this->id) {
-            unset($volume['id']);
-        }
-        $this->Model->CacheJar->flush();
-        $this->Model->queryBuilder()
-            ->where('id', $this->id)// use constructed id
-            ->take(1)
-            ->update($volume); // id can be changed
-        return isset($volume['id']) ? $volume['id'] : $this->id;
+    /**
+     * @param array $volume
+     * @return mixed
+     */
+    private function savePersistent(array $volume)
+    {
+        $DB = $this->Model->connection();
+        return $DB->transaction(function () use ($volume) {
+            if (isset($volume['id']) && $volume['id'] === $this->id) {
+                unset($volume['id']);
+            }
+            $this->Model->queryBuilder()
+                ->where('id', $this->id)// use constructed id
+                ->take(1)
+                ->update($volume); // id can be changed
+            $this->Model->CacheJar->flush();
+            return isset($volume['id']) ? $volume['id'] : $this->id;
+        });
     }
 
 }

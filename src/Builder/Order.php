@@ -2,8 +2,6 @@
 
 namespace Enjoin\Builder;
 
-use Enjoin\Model\Model;
-use Enjoin\Exceptions\Error;
 use Enjoin\Enjoin;
 
 /**
@@ -92,10 +90,10 @@ class Order extends Group
      */
     private function handleArrayNotation(array $notation, $prefix = '')
     {
-        $query = '`' . $notation[0] . '`';
-        if ($prefix) {
-            $query = '`' . $prefix . '`.' . $query;
-        }
+        $e = $this->Model->dialectify()->getEscapeChar();
+        $query = $prefix
+            ? "{$e}$prefix{$e}.{$e}{$notation[0]}{$e}"
+            : $this->handleColumnedString($notation[0]);
         if (isset($notation[1])) {
             $query .= ' ' . strtoupper($notation[1]);
         }

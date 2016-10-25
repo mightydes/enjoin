@@ -1,0 +1,4 @@
+{
+  "postgresql": "SELECT \"id\", \"name\", \"created_at\", \"updated_at\" FROM \"authors\" AS \"authors\" WHERE \"authors\".\"id\" = 1",
+  "mysql": "SELECT `id`, `name`, `created_at`, `updated_at` FROM `authors` AS `authors` WHERE `authors`.`id` = 1"
+}

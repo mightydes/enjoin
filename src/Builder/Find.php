@@ -92,17 +92,18 @@ class Find
      */
     private function handleNodeSelect(stdClass $node, array $path, $depth)
     {
+        $e = $this->Model->dialectify()->getEscapeChar();
         $prefix = null;
         if ($node->prefix) {
             $prefix = $node->prefix;
         } elseif ($this->Tree->hasChildren) {
             $prefix = $this->Model->Definition->table;
         }
-        !$prefix ?: $prefix = "`$prefix`.";
+        !$prefix ?: $prefix = "{$e}$prefix{$e}.";
         $glue = Extras::GLUE_CHAR;
         foreach ($node->attributes as $attr) {
-            $as = $node->as ? " AS `{$node->prefix}{$glue}{$attr}`" : '';
-            $query = "$prefix`$attr`$as";
+            $as = $node->as ? " AS {$e}{$node->prefix}{$glue}{$attr}{$e}" : '';
+            $query = "$prefix{$e}$attr{$e}$as";
             if ($this->isSubquery && (!$depth || $depth && $node->required && $node->relation->type === Extras::BELONGS_TO)) {
                 $this->subSelect [] = $query;
             } else {
@@ -119,18 +120,19 @@ class Find
      */
     protected function handleNodeJoin(stdClass $node, array $path, $depth)
     {
+        $e = $node->Model->dialectify()->getEscapeChar();
         $parent = $path[$depth - 1];
         $parentPrefix = $parent->prefix ?: $this->Model->Definition->table;
         $on = $node->relation->type === Extras::BELONGS_TO
-            ? "`$parentPrefix`.`{$node->relation->foreignKey}` = `{$node->prefix}`.`id`"
-            : "`$parentPrefix`.`id` = `{$node->prefix}`.`{$node->relation->foreignKey}`";
+            ? "{$e}$parentPrefix{$e}.{$e}{$node->relation->foreignKey}{$e} = {$e}{$node->prefix}{$e}.{$e}id{$e}"
+            : "{$e}$parentPrefix{$e}.{$e}id{$e} = {$e}{$node->prefix}{$e}.{$e}{$node->relation->foreignKey}{$e}";
         $junction = $node->required ? 'INNER' : 'LEFT OUTER';
-        $query = "$junction JOIN `{$node->Model->Definition->table}` AS `{$node->prefix}` ON $on";
+        $query = "$junction JOIN {$e}{$node->Model->Definition->table}{$e} AS {$e}{$node->prefix}{$e} ON $on";
 
         $where = '';
         $place = [];
         if ($node->where) {
-            $WhereBuilder = new Where($node->where, $node->prefix);
+            $WhereBuilder = new Where($node->Model, $node->where, $node->prefix);
             list($where, $place) = $WhereBuilder->getPrepared();
             $query .= " AND $where";
         }
@@ -145,8 +147,8 @@ class Find
                     !$WhereBuilder->isComposite() ?: $where = "($where)";
                     $clause = " AND $where";
                 }
-                $subWhere = "SELECT `{$node->relation->foreignKey}` " .
-                    "FROM `{$node->Model->Definition->table}` AS `{$node->prefix}` " .
+                $subWhere = "SELECT {$e}{$node->relation->foreignKey}{$e} " .
+                    "FROM {$e}{$node->Model->getTableName()}{$e} AS {$e}{$node->prefix}{$e} " .
                     "WHERE ({$on}$clause) LIMIT 1";
                 $this->subWhere [] = "($subWhere) IS NOT NULL";
                 $this->join [] = $query;
@@ -166,9 +168,8 @@ class Find
     {
         $node = $this->Tree->get();
         if (isset($node->where)) {
-            list($query, $place) = (new Where(
-                $node->where,
-                $node->Model->Definition->table)
+            list($query, $place) = (
+            new Where($node->Model, $node->where, $this->Model->getTableName())
             )->getPrepared();
             $this->prepWhere = $query;
             if ($this->isSubquery) {
@@ -192,11 +193,7 @@ class Find
         $limit = isset($this->params['limit'])
             ? abs($this->params['limit']) : null;
         if ($limit) {
-            if ($offset === 0 && $limit === 1) {
-                $this->prepLimit = 'LIMIT 1';
-            } else {
-                $this->prepLimit = "LIMIT $offset, $limit";
-            }
+            $this->prepLimit = $this->Model->dialectify()->getLimitStatement($limit, $offset);
         }
     }
 
@@ -205,9 +202,10 @@ class Find
      */
     private function handle()
     {
+        $e = $this->Model->dialectify()->getEscapeChar();
         $table = $this->Model->Definition->table;
         $select = join(', ', $this->select);
-        $query = "SELECT $select FROM `$table` AS `$table`";
+        $query = "SELECT $select FROM {$e}$table{$e} AS {$e}$table{$e}";
 
         !$this->join ?: $query .= ' ' . join(' ', $this->join);
         !$this->prepWhere ?: $query .= ' WHERE ' . $this->prepWhere;
@@ -232,10 +230,10 @@ class Find
      */
     private function handleSubquery()
     {
-//        !Enjoin::debug() ?: sd($this);
+        $e = $this->Model->dialectify()->getEscapeChar();
         $table = $this->Model->Definition->table;
         $subSelect = join(', ', $this->subSelect);
-        $sub = "SELECT $subSelect FROM `$table` AS `$table`";
+        $sub = "SELECT $subSelect FROM {$e}$table{$e} AS {$e}$table{$e}";
         !$this->subJoin ?: $sub .= ' ' . join(' ', $this->subJoin);
 
         $where = $this->prepWhere;
@@ -247,9 +245,9 @@ class Find
         !$where ?: $sub .= ' WHERE ' . $where;
         !$this->prepLimit ?: $sub .= ' ' . $this->prepLimit;
 
-        array_unshift($this->select, "`{$this->Model->Definition->table}`.*");
+        array_unshift($this->select, "{$e}{$this->Model->Definition->table}{$e}.*");
         $select = join(', ', $this->select);
-        $query = "SELECT $select FROM ($sub) AS `$table`";
+        $query = "SELECT $select FROM ($sub) AS {$e}$table{$e}";
         !$this->join ?: $query .= ' ' . join(' ', $this->join);
         !$this->prepGroup ?: $query .= ' ' . $this->prepGroup;
         !$this->prepOrder ?: $query .= ' ' . $this->prepOrder;
@@ -271,7 +269,8 @@ class Find
     private function handleGroup()
     {
         if (isset($this->params['group'])) {
-            $this->prepGroup = 'GROUP BY ' . (new Group($this->Tree, $this->params['group']))->getQuery();
+            $this->prepGroup = 'GROUP BY ' .
+                (new Group($this->Model, $this->Tree, $this->params['group']))->getQuery();
         }
     }
 
@@ -281,7 +280,8 @@ class Find
     private function handleOrder()
     {
         if (isset($this->params['order'])) {
-            $this->prepOrder = 'ORDER BY ' . (new Order($this->Tree, $this->params['order']))->getQuery();
+            $this->prepOrder = 'ORDER BY ' .
+                (new Order($this->Model, $this->Tree, $this->params['order']))->getQuery();
         }
     }
 
