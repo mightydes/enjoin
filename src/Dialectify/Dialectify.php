@@ -64,4 +64,24 @@ class Dialectify
         return "LIMIT $offset, $limit";
     }
 
+    /**
+     * @return array
+     */
+    public function getWhereControls()
+    {
+        return [
+            'and' => 'AND',
+            'or' => 'OR',
+            'gt' => '>',
+            'gte' => '>=',
+            'lt' => '<',
+            'lte' => '<=',
+            'ne' => '!=',
+            'in' => 'IN',
+            'notIn' => 'NOT IN',
+            'like' => 'LIKE',
+            'notLike' => 'NOT LIKE'
+        ];
+    }
+
 }

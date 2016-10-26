@@ -8,6 +8,7 @@ module.exports = {
 
     testModelFindById: testModelFindById,
 
+    testModelFindOneILike: testModelFindOneILike,
     testModelFindOneEager: testModelFindOneEager,
     testModelFindOneEagerRequired: testModelFindOneEagerRequired,
     testModelFindOneEagerById: testModelFindOneEagerById,
@@ -83,6 +84,12 @@ function testModelCreateWithDateField(callback) {
 
 function testModelFindById(callback) {
     compare.save('testModelFindById', models.Authors, 'findById', 1).then(callback);
+}
+
+function testModelFindOneILike(callback) {
+    compare.save('testModelFindOneILike', models.Authors, 'findOne', {
+        where: {name: {$iLike: 'tol'}}
+    }).then(callback);
 }
 
 function testModelFindOneEager(callback) {

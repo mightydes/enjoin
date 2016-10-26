@@ -51,4 +51,14 @@ class PostgreSql extends Dialectify
         return "LIMIT $limit OFFSET $offset";
     }
 
+    /**
+     * @return array
+     */
+    public function getWhereControls()
+    {
+        $out = parent::getWhereControls();
+        $out['iLike'] = 'ILIKE';
+        return $out;
+    }
+
 }

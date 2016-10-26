@@ -1,0 +1,4 @@
+{
+  "params": "['where'=>['name'=>['iLike'=>'tol']]]",
+  "postgresql": "SELECT \"id\", \"name\", \"created_at\", \"updated_at\" FROM \"authors\" AS \"authors\" WHERE \"authors\".\"name\" ILIKE 'tol' LIMIT 1"
+}

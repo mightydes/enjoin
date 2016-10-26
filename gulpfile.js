@@ -6,13 +6,14 @@ var debug = require('debug')('gulp');
 var lib = require('./test/js');
 var createTables = require('./test/js/create-tables');
 
-var testList = [
+var testList = handleFilters([
     'testModelCreate',
     'testModelCreateEmpty',
     'testModelCreateWithDateField',
 
     'testModelFindById',
 
+    'testModelFindOneILike|postgresql',
     'testModelFindOneEager',
     'testModelFindOneEagerRequired',
     'testModelFindOneEagerById',
@@ -67,7 +68,7 @@ var testList = [
 
     'testModelDestroy',
     'testModelUpdate'
-];
+]);
 
 gulp.task('create-tables', function (callback) {
     return createTables(callback);
@@ -104,4 +105,21 @@ function testAll() {
             debug(err);
         }
     });
+}
+
+function handleFilters(list) {
+    let out = [];
+    let dialect = process.env.ENJ_DIALECT;
+    list.forEach(function (str) {
+        let filters = str.split('|');
+        let testName = filters.shift();
+        if (filters.length) {
+            if (filters.indexOf(dialect) > -1) {
+                out.push(testName);
+            }
+        } else {
+            out.push(testName);
+        }
+    });
+    return out;
 }

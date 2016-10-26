@@ -14,19 +14,7 @@ class Where
      * List of `where` control statements.
      * @var array
      */
-    public static $controls = [
-        'and' => 'AND',
-        'or' => 'OR',
-        'gt' => '>',
-        'gte' => '>=',
-        'lt' => '<',
-        'lte' => '<=',
-        'ne' => '!=',
-        'in' => 'IN',
-        'notIn' => 'NOT IN',
-        'like' => 'LIKE',
-        'notLike' => 'NOT LIKE'
-    ];
+    protected $controls = [];
 
     /**
      * @var Model
@@ -50,6 +38,7 @@ class Where
     {
         $this->Model = $Model;
         $this->prefix = $prefix;
+        $this->controls = $Model->dialectify()->getWhereControls();
 
         $handle = $this->handle($where);
         list($this->query, $this->place) = $this->resolve($handle);
@@ -100,7 +89,7 @@ class Where
 
         $data = [];
         foreach ($where as $key => $value) {
-            if (array_key_exists($key, static::$controls)) {
+            if (array_key_exists($key, $this->controls)) {
 
                 # Key is CONTROL:
                 if ($key === 'and' || $key === 'or') {
@@ -173,7 +162,7 @@ class Where
             $query = $this->getTableField($field) . ' ';
             $query .= is_null($value) ? 'IS NOT NULL' : '!= ?';
         } else {
-            $operator = static::$controls[$control];
+            $operator = $this->controls[$control];
             $query = "{$this->getTableField($field)} $operator ?";
         }
         return [$query, $value];
