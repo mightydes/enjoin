@@ -109,11 +109,12 @@ function testAll() {
 }
 
 function handleFilters(list) {
-    let out = [];
-    let dialect = process.env.ENJ_DIALECT;
+    var out = [];
+    var dialect = process.env.ENJ_DIALECT;
+    var filters, testName;
     list.forEach(function (str) {
-        let filters = str.split('|');
-        let testName = filters.shift();
+        filters = str.split('|');
+        testName = filters.shift();
         if (filters.length) {
             if (filters.indexOf(dialect) > -1) {
                 out.push(testName);

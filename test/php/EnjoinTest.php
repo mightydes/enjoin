@@ -10,6 +10,7 @@ use Enjoin\Extras;
 use Enjoin\Record\Record;
 use Enjoin\Exceptions\ValidationException;
 use Carbon\Carbon;
+use Dotenv\Dotenv;
 
 class EnjoinTest extends PHPUnit_Framework_TestCase
 {
@@ -20,6 +21,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     public function testBootstrap()
     {
+        (new Dotenv(__DIR__ . '/../../'))->overload();
         $this->handleDebug(__FUNCTION__);
         Factory::bootstrap([
             'database' => [
@@ -49,11 +51,17 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
                 'lang_dir' => 'vendor/caouecs/laravel-lang'
             ],
             'cache' => [
-                'default' => 'redis',
+                'default' => getenv('ENJ_CACHE'),
                 'stores' => [
                     'redis' => [
                         'driver' => 'redis',
                         'connection' => 'default'
+                    ],
+                    'memcached' => [
+                        'driver' => 'memcached',
+                        'servers' => [
+                            ['host' => '127.0.0.1', 'port' => 11211, 'weight' => 100]
+                        ],
                     ]
                 ],
                 'prefix' => 'enjoin_test'

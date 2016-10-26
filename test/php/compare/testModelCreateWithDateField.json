@@ -1,5 +1,5 @@
 {
   "collection": "['date_till'=>[]]",
-  "mysql": "INSERT INTO `pile` (`id`,`date_till`,`created_at`,`updated_at`) VALUES (DEFAULT,'2016-10-26 08:22:00','2016-10-26 08:22:00','2016-10-26 08:22:00')",
+  "mysql": "INSERT INTO `pile` (`id`,`date_till`,`created_at`,`updated_at`) VALUES (DEFAULT,'2016-10-26 09:02:46','2016-10-26 09:02:46','2016-10-26 09:02:46')",
   "postgresql": "INSERT INTO \"pile\" (\"id\",\"date_till\",\"created_at\",\"updated_at\") VALUES (DEFAULT,'2016-10-26 08:21:18.601 +00:00','2016-10-26 08:21:18.602 +00:00','2016-10-26 08:21:18.602 +00:00') RETURNING *"
 }
