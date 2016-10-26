@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Enjoin ORM by mightydes</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Enjoin ORM</h1>
+        <h2>Multi dialect ORM for PHP inspired by Sequelize.JS</h2>
+        <a href="https://github.com/mightydes/enjoin" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="enjoin-orm" class="anchor" href="#enjoin-orm" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Enjoin ORM</h1>
+
+<p><a href="https://travis-ci.org/mightydes/enjoin"><img src="https://travis-ci.org/mightydes/enjoin.svg?branch=master" alt="Build Status"></a></p>
+
+<h1>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started</h1>
+
+<h2>
+<a id="introduction" class="anchor" href="#introduction" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Introduction</h2>
+
+<p>Enjoin is an active-record ORM for PHP.
+Enjoin built on <a href="https://github.com/illuminate">Laravel Components</a> and inspired by <a href="https://github.com/sequelize/sequelize">Sequelize</a> for Node.js.
+It supports MySQL and PostgreSQL dialects.
+Unlike Eloquent, Enjoin features eager loading, built-in validation and more.</p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Enjoin is available via Composer:</p>
+
+<div class="highlight highlight-source-shell"><pre>$ composer require mightydes/enjoin</pre></div>
+
+<p>If you need language locales, then require <a href="https://github.com/caouecs/laravel-lang">laravel-lang</a> package:</p>
+
+<div class="highlight highlight-source-shell"><pre>$ composer require caouecs/laravel-lang</pre></div>
+
+<p>Then add <code>Models</code> autoload entry to your <code>composer.json</code> file:</p>
+
+<div class="highlight highlight-source-json"><pre>  <span class="pl-s"><span class="pl-pds">"</span>autoload<span class="pl-pds">"</span></span>: {
+    <span class="pl-s"><span class="pl-pds">"</span>psr-4<span class="pl-pds">"</span></span>: {
+      <span class="pl-s"><span class="pl-pds">"</span>Models<span class="pl-cce">\\</span><span class="pl-pds">"</span></span>: [
+        <span class="pl-s"><span class="pl-pds">"</span>app/Models<span class="pl-pds">"</span></span>
+      ]
+    }
+  }</pre></div>
+
+<h2>
+<a id="stand-alone-bootstrap" class="anchor" href="#stand-alone-bootstrap" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Stand-alone bootstrap</h2>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-pse">&lt;?php</span><span class="pl-s1"></span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">require_once</span> <span class="pl-c1">__DIR__</span> <span class="pl-k">.</span> <span class="pl-s"><span class="pl-pds">'</span>/vendor/autoload.php<span class="pl-pds">'</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Factory</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-c1">Factory</span><span class="pl-k">::</span>bootstrap([</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>database<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>acme<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>connections<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>acme<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>driver<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>mysql<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>host<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>localhost<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>database<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>acme<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>username<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>acme<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>password<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>acme<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>charset<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>utf8<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>collation<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>utf8_unicode_ci<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>prefix<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span><span class="pl-pds">'</span></span></span>
+<span class="pl-s1">            ]</span>
+<span class="pl-s1">        ],</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>redis<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>cluster<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">false</span>,</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>host<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>127.0.0.1<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>port<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">6379</span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>database<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">0</span>,</span>
+<span class="pl-s1">            ]</span>
+<span class="pl-s1">        ]</span>
+<span class="pl-s1">    ],</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>enjoin<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>lang_dir<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>vendor/caouecs/laravel-lang<span class="pl-pds">'</span></span></span>
+<span class="pl-s1">    ],</span>
+<span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>cache<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>redis<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>stores<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>redis<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>driver<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>redis<span class="pl-pds">'</span></span>,</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>connection<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>default<span class="pl-pds">'</span></span></span>
+<span class="pl-s1">            ]</span>
+<span class="pl-s1">        ],</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>prefix<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>enjoin_<span class="pl-pds">'</span></span></span>
+<span class="pl-s1">    ]</span>
+<span class="pl-s1">]);</span></pre></div>
+
+<h2>
+<a id="laravel-bootstrap" class="anchor" href="#laravel-bootstrap" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Laravel bootstrap</h2>
+
+<p>First add <code>Enjoin\EnjoinServiceProvider</code> to <code>providers</code> list,
+and <code>'Enjoin' =&gt; 'Enjoin\EnjoinFacade'</code> to <code>aliases</code> list in <code>config/app.php</code>.</p>
+
+<p>Then register config in <code>app/Providers/ConfigServiceProvider.php</code>:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">&lt;</span>?<span class="pl-c1">php</span> <span class="pl-k">namespace</span> <span class="pl-en">App\Providers</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Illuminate\Support\ServiceProvider</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">ConfigServiceProvider</span> <span class="pl-k">extends</span> <span class="pl-e">ServiceProvider</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-en">register</span>()</span>
+<span class="pl-s1">    {</span>
+<span class="pl-s1">        config([</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>enjoin<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">                <span class="pl-s"><span class="pl-pds">'</span>lang_dir<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>vendor/caouecs/laravel-lang<span class="pl-pds">'</span></span></span>
+<span class="pl-s1">            ]</span>
+<span class="pl-s1">        ]);</span>
+<span class="pl-s1">    }</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">}</span></pre></div>
+
+<h2>
+<a id="model-definition" class="anchor" href="#model-definition" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Model Definition</h2>
+
+<p>You need to define mapping between tables and models.
+For example, table <code>books</code> with columns:</p>
+
+<ul>
+<li>id (int, primary, auto-increment)</li>
+<li>authors_id (int, foreign-key)</li>
+<li>title (varchar)</li>
+<li>year (int)</li>
+</ul>
+
+<p>Has definition:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">&lt;</span>?<span class="pl-c1">php</span> <span class="pl-k">namespace</span> <span class="pl-en">Models</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Model\Definition</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Enjoin</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">Books</span> <span class="pl-k">extends</span> <span class="pl-e">Definition</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-en">getAttributes</span>()</span>
+<span class="pl-s1">    {</span>
+<span class="pl-s1">        <span class="pl-k">return</span> [</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>id<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [<span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>Integer()],</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>authors_id<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [<span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>Integer()],</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>title<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [<span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>String()],</span>
+<span class="pl-s1">            <span class="pl-s"><span class="pl-pds">'</span>year<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [<span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>Integer(), <span class="pl-s"><span class="pl-pds">'</span>validate<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>integer|max:2020<span class="pl-pds">'</span></span>]</span>
+<span class="pl-s1">        ];</span>
+<span class="pl-s1">    }</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-en">getRelations</span>()</span>
+<span class="pl-s1">    {</span>
+<span class="pl-s1">        <span class="pl-k">return</span> [</span>
+<span class="pl-s1">            <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>belongsTo(<span class="pl-c1">Enjoin</span><span class="pl-k">::</span>get(<span class="pl-s"><span class="pl-pds">'</span>Authors<span class="pl-pds">'</span></span>), [<span class="pl-s"><span class="pl-pds">'</span>foreignKey<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>authors_id<span class="pl-pds">'</span></span>])</span>
+<span class="pl-s1">        ];</span>
+<span class="pl-s1">    }</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">}</span></pre></div>
+
+<h3>
+<a id="definitionconnection" class="anchor" href="#definitionconnection" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.connection</h3>
+
+<p>Connection to use. Equals to <code>default</code> connection by default.
+Example:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">&lt;</span>?<span class="pl-c1">php</span> <span class="pl-k">namespace</span> <span class="pl-en">Models</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Model\Definition</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Enjoin</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">Books</span> <span class="pl-k">extends</span> <span class="pl-e">Definition</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-smi">$connection</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>acme<span class="pl-pds">'</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">}</span></pre></div>
+
+<h3>
+<a id="definitiontable" class="anchor" href="#definitiontable" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.table</h3>
+
+<p>Table name. Equals to <code>Inflector::tableize(&lt;ModelClassName&gt;)</code> by default.
+Example:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">&lt;</span>?<span class="pl-c1">php</span> <span class="pl-k">namespace</span> <span class="pl-en">Models</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Model\Definition</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Enjoin</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">Books</span> <span class="pl-k">extends</span> <span class="pl-e">Definition</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-smi">$table</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>books<span class="pl-pds">'</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">}</span></pre></div>
+
+<h3>
+<a id="definitiontimestamps" class="anchor" href="#definitiontimestamps" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.timestamps</h3>
+
+<p>Enables or disables timestamps (ie <code>created_at</code>, <code>updated_at</code>). Equals to <code>true</code> by default.
+Example:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">&lt;</span>?<span class="pl-c1">php</span> <span class="pl-k">namespace</span> <span class="pl-en">Models</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Model\Definition</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Enjoin</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">Books</span> <span class="pl-k">extends</span> <span class="pl-e">Definition</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-smi">$timestamps</span> <span class="pl-k">=</span> <span class="pl-c1">false</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">}</span></pre></div>
+
+<h3>
+<a id="definitioncreatedat" class="anchor" href="#definitioncreatedat" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.createdAt</h3>
+
+<p>CreatedAt column name. Equals to <code>created_at</code> by default.
+Example:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">&lt;</span>?<span class="pl-c1">php</span> <span class="pl-k">namespace</span> <span class="pl-en">Models</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Model\Definition</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Enjoin</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">Books</span> <span class="pl-k">extends</span> <span class="pl-e">Definition</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-smi">$createdAt</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>createdAt<span class="pl-pds">'</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">}</span></pre></div>
+
+<h3>
+<a id="definitionupdatedat" class="anchor" href="#definitionupdatedat" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.updatedAt</h3>
+
+<p>UpdatedAt column name. Equals to <code>updated_at</code> by default.
+Example:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">&lt;</span>?<span class="pl-c1">php</span> <span class="pl-k">namespace</span> <span class="pl-en">Models</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Model\Definition</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Enjoin</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">Books</span> <span class="pl-k">extends</span> <span class="pl-e">Definition</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-smi">$updatedAt</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>updatedAt<span class="pl-pds">'</span></span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">}</span></pre></div>
+
+<h3>
+<a id="definitioncache" class="anchor" href="#definitioncache" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.cache</h3>
+
+<p>Enables or disables cache. Equals to <code>false</code> by default.
+Example:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">&lt;</span>?<span class="pl-c1">php</span> <span class="pl-k">namespace</span> <span class="pl-en">Models</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Model\Definition</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Enjoin</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">Books</span> <span class="pl-k">extends</span> <span class="pl-e">Definition</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-smi">$cache</span> <span class="pl-k">=</span> <span class="pl-c1">true</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">}</span></pre></div>
+
+<h3>
+<a id="definitionexpansemodel" class="anchor" href="#definitionexpansemodel" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.expanseModel</h3>
+
+<p>Class name to extend generic model class.
+It is useful, if you want to define custom model methods.
+Example:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">&lt;</span>?<span class="pl-c1">php</span> <span class="pl-k">namespace</span> <span class="pl-en">Models</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Model\Definition</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Enjoin</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">Books</span> <span class="pl-k">extends</span> <span class="pl-e">Definition</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-smi">$expanseModel</span> <span class="pl-k">=</span> <span class="pl-c1">Expanse\</span><span class="pl-c1">BooksModel</span><span class="pl-k">::</span><span class="pl-c1">class</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">}</span></pre></div>
+
+<h3>
+<a id="definitionexpanserecord" class="anchor" href="#definitionexpanserecord" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.expanseRecord</h3>
+
+<p>Class name to extend generic record class.
+It is useful, if you want to define custom record methods.
+Example:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1"><span class="pl-k">&lt;</span>?<span class="pl-c1">php</span> <span class="pl-k">namespace</span> <span class="pl-en">Models</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Model\Definition</span>;</span>
+<span class="pl-s1"><span class="pl-k">use</span> <span class="pl-c1">Enjoin\Enjoin</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1"><span class="pl-k">class</span> <span class="pl-en">Books</span> <span class="pl-k">extends</span> <span class="pl-e">Definition</span></span>
+<span class="pl-s1">{</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-smi">$expanseRecord</span> <span class="pl-k">=</span> <span class="pl-c1">Expanse\</span><span class="pl-c1">BooksRecord</span><span class="pl-k">::</span><span class="pl-c1">class</span>;</span>
+<span class="pl-s1"></span>
+<span class="pl-s1">}</span></pre></div>
+
+<h3>
+<a id="definitiongetattributes" class="anchor" href="#definitiongetattributes" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.getAttributes()</h3>
+
+<p>Returns associative array, where each key is a table column.</p>
+
+<h3>
+<a id="definitiongetattributestype" class="anchor" href="#definitiongetattributestype" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.getAttributes().type</h3>
+
+<ul>
+<li>Enjoin::Integer()</li>
+<li>Enjoin::Boolean()</li>
+<li>Enjoin::String()</li>
+<li>Enjoin::Text()</li>
+<li>Enjoin::Float()</li>
+<li>Enjoin::Date()</li>
+<li>Enjoin::Enum()</li>
+</ul>
+
+<h3>
+<a id="definitiongetattributesallownull" class="anchor" href="#definitiongetattributesallownull" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.getAttributes().allowNull</h3>
+
+<p>Indicates is <code>NULL</code> allowed on field.
+By default is <code>true</code>.</p>
+
+<h3>
+<a id="definitiongetattributesvalidate" class="anchor" href="#definitiongetattributesvalidate" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.getAttributes().validate</h3>
+
+<p>Validation rules for field.
+You can read more about validation <a href="https://laravel.com/docs/5.2/validation">here</a>.</p>
+
+<h3>
+<a id="definitiongetattributesget" class="anchor" href="#definitiongetattributesget" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.getAttributes().get</h3>
+
+<p>You can define custom getter closure for field:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>fullname<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>String(),</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>get<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-k">function</span> (<span class="pl-smi">$attr</span>, <span class="pl-c1">Closure</span> <span class="pl-smi">$getValue</span>) {</span>
+<span class="pl-s1">            <span class="pl-smi">$v</span> <span class="pl-k">=</span> $<span class="pl-smi">getValue</span>(<span class="pl-smi">$attr</span>);</span>
+<span class="pl-s1">            <span class="pl-k">if</span> (<span class="pl-c1">is_string</span>(<span class="pl-smi">$v</span>) <span class="pl-k">&amp;&amp;</span> <span class="pl-c1">strlen</span>(<span class="pl-smi">$v</span>) <span class="pl-k">&gt;</span> <span class="pl-c1">0</span>) {</span>
+<span class="pl-s1">                <span class="pl-smi">$r</span> <span class="pl-k">=</span> <span class="pl-c1">explode</span>(<span class="pl-s"><span class="pl-pds">'</span> <span class="pl-pds">'</span></span>, <span class="pl-smi">$v</span>);</span>
+<span class="pl-s1">                <span class="pl-k">return</span> [</span>
+<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>name<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-smi">$r</span>[<span class="pl-c1">0</span>],</span>
+<span class="pl-s1">                    <span class="pl-s"><span class="pl-pds">'</span>surname<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-smi">$r</span>[<span class="pl-c1">1</span>]</span>
+<span class="pl-s1">                ];</span>
+<span class="pl-s1">            }</span>
+<span class="pl-s1">            <span class="pl-k">return</span> <span class="pl-c1">null</span>;</span>
+<span class="pl-s1">        }</span>
+<span class="pl-s1">    ]</span></pre></div>
+
+<h3>
+<a id="definitiongetattributesset" class="anchor" href="#definitiongetattributesset" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.getAttributes().set</h3>
+
+<p>You can define custom setter closure for field:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1">    <span class="pl-s"><span class="pl-pds">'</span>fullname<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> [</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>String(),</span>
+<span class="pl-s1">        <span class="pl-s"><span class="pl-pds">'</span>set<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-k">function</span> (<span class="pl-smi">$attr</span>, <span class="pl-c1">Closure</span> <span class="pl-smi">$getValue</span>) {</span>
+<span class="pl-s1">            <span class="pl-smi">$v</span> <span class="pl-k">=</span> $<span class="pl-smi">getValue</span>(<span class="pl-smi">$attr</span>);</span>
+<span class="pl-s1">            <span class="pl-k">if</span> (<span class="pl-c1">is_array</span>(<span class="pl-smi">$v</span>)) {</span>
+<span class="pl-s1">                <span class="pl-k">return</span> <span class="pl-c1">join</span>(<span class="pl-s"><span class="pl-pds">'</span> <span class="pl-pds">'</span></span>, <span class="pl-smi">$v</span>);</span>
+<span class="pl-s1">            }</span>
+<span class="pl-s1">            <span class="pl-k">return</span> <span class="pl-smi">$v</span>;</span>
+<span class="pl-s1">        }</span>
+<span class="pl-s1">    ]</span></pre></div>
+
+<h3>
+<a id="definitiongetrelations" class="anchor" href="#definitiongetrelations" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.getRelations()</h3>
+
+<p>Returns array, where each value is a relation.
+Supported relations:</p>
+
+<ul>
+<li><code>belongsTo</code></li>
+<li><code>hasMany</code></li>
+<li><code>hasOne</code></li>
+</ul>
+
+<p>Example:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-en">getRelations</span>()</span>
+<span class="pl-s1">    {</span>
+<span class="pl-s1">        <span class="pl-k">return</span> [</span>
+<span class="pl-s1">            <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>belongsTo(<span class="pl-c1">Enjoin</span><span class="pl-k">::</span>get(<span class="pl-s"><span class="pl-pds">'</span>Authors<span class="pl-pds">'</span></span>)),</span>
+<span class="pl-s1">            <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>belongsTo(<span class="pl-c1">Enjoin</span><span class="pl-k">::</span>get(<span class="pl-s"><span class="pl-pds">'</span>Languages<span class="pl-pds">'</span></span>)),</span>
+<span class="pl-s1">            <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>hasMany(<span class="pl-c1">Enjoin</span><span class="pl-k">::</span>get(<span class="pl-s"><span class="pl-pds">'</span>Reviews<span class="pl-pds">'</span></span>)),</span>
+<span class="pl-s1">            <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>hasMany(<span class="pl-c1">Enjoin</span><span class="pl-k">::</span>get(<span class="pl-s"><span class="pl-pds">'</span>PublishersBooks<span class="pl-pds">'</span></span>))</span>
+<span class="pl-s1">        ];</span>
+<span class="pl-s1">    }</span></pre></div>
+
+<h3>
+<a id="definitiongetrelationsforeignkey" class="anchor" href="#definitiongetrelationsforeignkey" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.getRelations().foreignKey</h3>
+
+<p>Foreign key column name.
+Example:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-en">getRelations</span>()</span>
+<span class="pl-s1">    {</span>
+<span class="pl-s1">        <span class="pl-k">return</span> [</span>
+<span class="pl-s1">            <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>belongsTo(<span class="pl-c1">Enjoin</span><span class="pl-k">::</span>get(<span class="pl-s"><span class="pl-pds">'</span>Authors<span class="pl-pds">'</span></span>), [<span class="pl-s"><span class="pl-pds">'</span>foreignKey<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>authors_id<span class="pl-pds">'</span></span>])</span>
+<span class="pl-s1">        ];</span>
+<span class="pl-s1">    }</span></pre></div>
+
+<h3>
+<a id="definitiongetrelationsas" class="anchor" href="#definitiongetrelationsas" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Definition.getRelations().as</h3>
+
+<p>Foreign key column <code>as</code> alias.
+Example:</p>
+
+<div class="highlight highlight-text-html-php"><pre><span class="pl-s1">    <span class="pl-k">public</span> <span class="pl-k">function</span> <span class="pl-en">getRelations</span>()</span>
+<span class="pl-s1">    {</span>
+<span class="pl-s1">        <span class="pl-k">return</span> [</span>
+<span class="pl-s1">            <span class="pl-c1">Enjoin</span><span class="pl-k">::</span>belongsTo(<span class="pl-c1">Enjoin</span><span class="pl-k">::</span>get(<span class="pl-s"><span class="pl-pds">'</span>Authors<span class="pl-pds">'</span></span>), [<span class="pl-s"><span class="pl-pds">'</span>as<span class="pl-pds">'</span></span> <span class="pl-k">=&gt;</span> <span class="pl-s"><span class="pl-pds">'</span>person<span class="pl-pds">'</span></span>])</span>
+<span class="pl-s1">        ];</span>
+<span class="pl-s1">    }</span></pre></div>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/mightydes/enjoin/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/mightydes/enjoin/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/mightydes/enjoin"></a> is maintained by <a href="https://github.com/mightydes">mightydes</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
