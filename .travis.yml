@@ -7,8 +7,9 @@ php:
   - '5.6'
 
 env:
-  - MYSQL=true REDIS=true
-  - MYSQL=true MEMCACHED=true
+  - MYSQL=true      REDIS=true
+  - MYSQL=true      MEMCACHED=true
+  - POSTGRESQL=true REDIS=true
 
 cache:
   directories:
@@ -25,9 +26,10 @@ install:
 
 before_script:
   - cp -a .env.example .env
-  - if [ $MYSQL ]; then bin/mysql.sh; fi
-  - if [ $REDIS ]; then bin/redis.sh; fi
-  - if [ $MEMCACHED ]; then bin/memcached.sh; fi
+  - if [ $MYSQL ];      then bin/mysql.sh; fi
+  - if [ $POSTGRESQL ]; then bin/postgresql.sh; fi
+  - if [ $REDIS ];      then bin/redis.sh; fi
+  - if [ $MEMCACHED ];  then bin/memcached.sh; fi
   - gulp create-tables
 
 script: phpunit
