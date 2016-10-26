@@ -9,6 +9,7 @@ module.exports = {
     testModelFindById: testModelFindById,
 
     testModelFindOneILike: testModelFindOneILike,
+    testModelFindOneNotILike: testModelFindOneNotILike,
     testModelFindOneEager: testModelFindOneEager,
     testModelFindOneEagerRequired: testModelFindOneEagerRequired,
     testModelFindOneEagerById: testModelFindOneEagerById,
@@ -89,6 +90,12 @@ function testModelFindById(callback) {
 function testModelFindOneILike(callback) {
     compare.save('testModelFindOneILike', models.Authors, 'findOne', {
         where: {name: {$iLike: 'tol'}}
+    }).then(callback);
+}
+
+function testModelFindOneNotILike(callback) {
+    compare.save('testModelFindOneNotILike', models.Authors, 'findOne', {
+        where: {name: {$notILike: 'tol'}}
     }).then(callback);
 }
 

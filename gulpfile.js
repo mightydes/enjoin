@@ -14,6 +14,7 @@ var testList = handleFilters([
     'testModelFindById',
 
     'testModelFindOneILike|postgresql',
+    'testModelFindOneNotILike|postgresql',
     'testModelFindOneEager',
     'testModelFindOneEagerRequired',
     'testModelFindOneEagerById',

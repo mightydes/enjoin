@@ -58,6 +58,7 @@ class PostgreSql extends Dialectify
     {
         $out = parent::getWhereControls();
         $out['iLike'] = 'ILIKE';
+        $out['notILike'] = 'NOT ILIKE';
         return $out;
     }
 

@@ -275,6 +275,20 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     /**
      * @depends testBootstrap
      */
+    public function testModelFindOneNotILike()
+    {
+        $fnName = __FUNCTION__;
+        $this->ifPostgreSql(function () use ($fnName) {
+            $this->handleDebug($fnName);
+            $params = $this->getCompareParams($fnName);
+            $sql = Enjoin::get('Authors')->findOne($params, Enjoin::SQL);
+            $this->assertEquals($this->getCompareSql($fnName), $sql);
+        });
+    }
+
+    /**
+     * @depends testBootstrap
+     */
     public function testModelFindOneEager()
     {
         $this->handleDebug(__FUNCTION__);
