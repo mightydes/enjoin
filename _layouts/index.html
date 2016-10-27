@@ -1,51 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Enjoin by mightydes</title>
 
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
-
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
     <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-
-    <title>Enjoin ORM by mightydes</title>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 </head>
-
 <body>
-<header>
-    <div class="inner">
-        <h1>Enjoin ORM</h1>
-        <h2>Multi dialect ORM for PHP inspired by Sequelize.JS</h2>
-        <a href="https://github.com/mightydes/enjoin" class="button">
-            <small>View project on</small>
-            GitHub</a>
-    </div>
-</header>
+<div class="wrapper">
+    <header>
+        <h1 class="header">Enjoin</h1>
+        <p class="header">Multi dialect ORM for PHP inspired by Sequelize.JS</p>
 
-<div id="content-wrapper">
-    <div class="inner clearfix">
-        <section id="main-content">{{ content }}</section>
+        <ul>
+            <li class="download"><a class="buttons" href="https://github.com/mightydes/enjoin/zipball/master">Download ZIP</a></li>
+            <li class="download"><a class="buttons" href="https://github.com/mightydes/enjoin/tarball/master">Download TAR</a></li>
+            <li><a class="buttons github" href="https://github.com/mightydes/enjoin">View On GitHub</a></li>
+        </ul>
 
-        <aside id="sidebar">
-            <a href="https://github.com/mightydes/enjoin/zipball/master" class="button">
-                <small>Download</small>
-                .zip file
-            </a>
-            <a href="https://github.com/mightydes/enjoin/tarball/master" class="button">
-                <small>Download</small>
-                .tar.gz file
-            </a>
-        </aside>
-    </div>
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/mightydes">mightydes</a></p>
+
+
+    </header>
+    <section>{{ content }}</section>
+    <footer></footer>
 </div>
-
-
+<!--[if !IE]>
+<script>fixScale(document);</script><![endif]-->
 </body>
 </html>
