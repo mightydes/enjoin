@@ -24,6 +24,7 @@ $ composer require mightydes/enjoin
 ```
 
 If you need language locales, then require [laravel-lang](https://github.com/caouecs/laravel-lang) package:
+
 ```sh
 $ composer require caouecs/laravel-lang
 ```
