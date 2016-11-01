@@ -1043,7 +1043,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         Factory::getCache()->flush();
         $it = Enjoin::get('Books')->findById(1, Enjoin::WITH_CACHE);
         $cache = Enjoin::get('Books')->cache()->getCacheInstance()->get('9125bfc211f5ddbce7352499c9c71973');
-        $this->assertEquals($it->__toArray(), $cache->__toArray());
+        $this->assertEquals($it, $cache);
     }
 
     /**
@@ -1059,7 +1059,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $it = Enjoin::get('Books')->findOne($params, Enjoin::WITH_CACHE);
         $cacheKey = Enjoin::get('Books')->cache()->keyify(['findOne', $params]);
         $cache = Enjoin::get('Books')->cache()->getCacheInstance()->get($cacheKey);
-        $this->assertEquals($it->__toArray(), $cache->__toArray());
+        $this->assertEquals($it, $cache);
         $cache->author->update(['name' => 'George Orwell']);
         $cache = Enjoin::get('Books')->cache()->getCacheInstance()->get($cacheKey);
         $this->assertNull($cache);

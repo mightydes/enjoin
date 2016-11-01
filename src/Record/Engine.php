@@ -4,8 +4,8 @@ namespace Enjoin\Record;
 
 use Enjoin\Enjoin;
 use Enjoin\Exceptions\Error;
-use Enjoin\Model\Model;
 use Enjoin\Factory;
+use Enjoin\Extras;
 use Carbon\Carbon;
 
 class Engine
@@ -13,80 +13,58 @@ class Engine
 
     const PERSISTENT = 'PERSISTENT';
     const NON_PERSISTENT = 'NON_PERSISTENT';
+    const DESTROYED = 'DESTROYED';
 
     # BITWISE:
     const SOFT_SAVE = 1;
 
     /**
-     * @var Record
-     */
-    public $Record;
-
-    /**
-     * @var Model
-     */
-    public $Model;
-
-    public $type = null;
-    public $id = null;
-
-    /**
-     * @param Record $Record
-     * @param Model $Model
-     * @param string $type
-     * @param null|int $id
-     */
-    public function __construct(Record $Record, Model $Model, $type = self::NON_PERSISTENT, $id = null)
-    {
-        $this->Record = $Record;
-        $this->Model = $Model;
-        $this->type = $type;
-        $this->id = $id;
-    }
-
-    /**
+     * @param \Enjoin\Record\Record $Record
      * @param array|null $params
      * @param int $flags
-     * @return Record
+     * @return \Enjoin\Record\Record
      */
-    public function save(array $params = null, $flags = 0)
+    public static function save(Record $Record, array $params = null, $flags = 0)
     {
-        if ($this->Model->isTimestamps()) {
-            $createdAtField = $this->Model->getCreatedAtField();
-            if ($this->type === self::NON_PERSISTENT ||
-                $this->type === self::PERSISTENT && !isset($this->Record->$createdAtField)
+        $scope = $Record->scope();
+        $Model = Enjoin::get($scope->modelName);
+
+        if ($Model->isTimestamps()) {
+            $createdAtField = $Model->getCreatedAtField();
+            if ($scope->type === self::NON_PERSISTENT ||
+                $scope->type === self::PERSISTENT && !isset($Record->$createdAtField)
             ) {
-                $this->Record->$createdAtField = Carbon::now();
+                $Record->$createdAtField = Carbon::now();
             }
 
-            $updatedAtField = $this->Model->getUpdatedAtField();
-            $this->Record->$updatedAtField = Carbon::now();
+            $updatedAtField = $Model->getUpdatedAtField();
+            $Record->$updatedAtField = Carbon::now();
         }
 
-        $defAttributes = $this->Model->getDefinition()->getAttributes();
+        $defAttributes = $Model->getDefinition()->getAttributes();
         $pick = isset($params['fields']) ? $params['fields'] : null;
         $volume = [];
         $validate = [];
-        $record = $this->Record->__toArray();
+        $record = $Record->__toArray();
         $Setters = Factory::getSetters();
-        foreach ($this->Record as $field => $recordVal) {
+        foreach ($Record as $field => $recordVal) {
             if ($recordVal instanceof Record) {
                 # We can start recursive saving here...
                 #$recordVal->save();
             } elseif (array_key_exists($field, $defAttributes)) {
-                $saveVal = $Setters->perform($this->Model, $record, $defAttributes[$field], $field);
+                $saveVal = $Setters->perform($Model, $record, $defAttributes[$field], $field);
                 if (isset($defAttributes[$field]['validate'])) {
                     $validate [] = [$field, $saveVal, $defAttributes[$field]['validate']];
                 }
                 if (!$pick || in_array($field, $pick)) {
                     $volume[$field] = $saveVal;
                 }
-            } elseif ($this->Model->isTimestamps() && $field === $createdAtField) {
+            } elseif ($Model->isTimestamps() && $field === $createdAtField) {
                 if (!$pick || in_array($field, $pick)) {
-                    $volume[$field] = $Setters->getCreatedAt($this->Model, $recordVal);
+                    $volume[$field] = $Setters->getCreatedAt($Model, $recordVal);
                 }
-            } elseif ($this->Model->isTimestamps() && $field === $updatedAtField) {
-                $volume[$field] = $Setters->getUpdatedAt($this->Model, $recordVal);
+            } elseif ($Model->isTimestamps() && $field === $updatedAtField) {
+                $volume[$field] = $Setters->getUpdatedAt($Model, $recordVal);
             }
         }
 
@@ -94,66 +72,125 @@ class Engine
 
         if (!($flags & self::SOFT_SAVE)) {
 //            $id = $this->saveEntry($volume);
-            $id = $this->type === self::NON_PERSISTENT
-                ? $this->saveNonPersistent($volume)
-                : $this->savePersistent($volume);
-            $this->id = $id;
-            $this->Record->id = $id;
-            $volume['id'] = $id;
+            $id = $scope->type === self::NON_PERSISTENT
+                ? static::saveNonPersistent($Record, $volume)
+                : static::savePersistent($Record, $volume);
+            $scope->id = $id;
+            $Record->id = $id;
         }
 
-        return $this->Record;
+        return $Record;
     }
 
     /**
+     * @param \Enjoin\Record\Record $Record
+     * @param array $collection
+     * @param array|null $params
+     * @return \Enjoin\Record\Record
+     */
+    public static function update(Record $Record, array $collection, array $params = null)
+    {
+        if (isset($params['fields'])) {
+            $collection = Extras::pick($collection, $params['fields']);
+        }
+        foreach ($collection as $field => $value) {
+            $Record->$field = $value;
+        }
+        $flags = $Record->scope()->type === self::NON_PERSISTENT ? self::SOFT_SAVE : 0;
+        return static::save($Record, $params, $flags);
+    }
+
+    /**
+     * @param \Enjoin\Record\Record $Record
      * @return bool
      */
-    public function destroy()
+    public static function destroy(Record $Record)
     {
-        $this->Model->queryBuilder()->where('id', $this->id)->take(1)->delete();
-        $this->Model->cache()->flush();
+        $scope = $Record->scope();
+        $Model = Enjoin::get($scope->modelName);
+        $Model->queryBuilder()->where('id', $scope->id)->take(1)->delete();
+        $Model->cache()->flush();
+        foreach ($Record as $prop => $v) {
+            unset($Record->$prop);
+        }
+        $scope->type = self::DESTROYED;
         return true;
     }
 
     /**
+     * @param \Enjoin\Record\Record $Record
+     * @return array
+     */
+    public static function toArray(Record $Record)
+    {
+        $out = [];
+        foreach ($Record as $prop => $value) {
+//            if ($value instanceof Engine) {
+//                continue;
+//            }
+            if ($value instanceof Record) {
+                $out[$prop] = $value->__toArray();
+            } elseif (is_array($value)) {
+                $out[$prop] = [];
+                foreach ($value as $k => $v) {
+                    if ($v instanceof Record) {
+                        $out[$prop][$k] = $v->__toArray();
+                    } else {
+                        $out[$prop][$k] = $v;
+                    }
+                }
+            } else {
+                $out[$prop] = $value;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * @param \Enjoin\Record\Record $Record
      * @param array $volume
      * @return mixed
      */
-    private function saveNonPersistent(array $volume)
+    private static function saveNonPersistent(Record $Record, array $volume)
     {
-        $DB = $this->Model->connection();
-        return $DB->transaction(function () use ($volume, $DB) {
-            $this->type = self::PERSISTENT;
+        $scope = $Record->scope();
+        $Model = Enjoin::get($scope->modelName);
+        $DB = $Model->connection();
+        return $DB->transaction(function () use ($volume, $scope, $Model, $DB) {
+            $scope->type = self::PERSISTENT;
             if ($volume) {
-                $this->Model->queryBuilder()->insert($volume)
+                $Model->queryBuilder()->insert($volume)
                     ?: Error::dropRecordException('Unable to insert record!');
             } else {
-                $DB->insert($this->Model->dialectify()->getInsertEmptyQuery())
+                $DB->insert($Model->dialectify()->getInsertEmptyQuery())
                     ?: Error::dropRecordException('Unable to insert empty record!');
             }
-            $this->Model->cache()->flush();
-            $id = $DB->getPdo()->lastInsertId($this->Model->dialectify()->getIdSequence());
+            $Model->cache()->flush();
+            $id = $DB->getPdo()->lastInsertId($Model->dialectify()->getIdSequence());
             return (int)$id;
         });
     }
 
     /**
+     * @param \Enjoin\Record\Record $Record
      * @param array $volume
      * @return mixed
      */
-    private function savePersistent(array $volume)
+    private static function savePersistent(Record $Record, array $volume)
     {
-        $DB = $this->Model->connection();
-        return $DB->transaction(function () use ($volume) {
-            if (isset($volume['id']) && $volume['id'] === $this->id) {
+        $scope = $Record->scope();
+        $Model = Enjoin::get($scope->modelName);
+        $DB = $Model->connection();
+        return $DB->transaction(function () use ($volume, $scope, $Model) {
+            if (isset($volume['id']) && $volume['id'] === $scope->id) {
                 unset($volume['id']);
             }
-            $this->Model->queryBuilder()
-                ->where('id', $this->id)// use constructed id
+            $Model->queryBuilder()
+                ->where('id', $scope->id)// use constructed id
                 ->take(1)
-                ->update($volume); // id can be changed
-            $this->Model->cache()->flush();
-            return isset($volume['id']) ? $volume['id'] : $this->id;
+                ->update($volume);       // id can be changed
+            $Model->cache()->flush();
+            return isset($volume['id']) ? $volume['id'] : $scope->id;
         });
     }
 

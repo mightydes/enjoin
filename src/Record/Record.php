@@ -3,16 +3,15 @@
 namespace Enjoin\Record;
 
 use Enjoin\Model\Model;
-use Enjoin\Extras;
 use stdClass;
 
 class Record extends stdClass
 {
 
     /**
-     * @var \Enjoin\Record\Engine|null
+     * @var \Enjoin\Record\Scope
      */
-    private $Engine = null;
+    private $Scope;
 
     /**
      * @param \Enjoin\Model\Model $Model
@@ -21,7 +20,15 @@ class Record extends stdClass
      */
     public function __construct(Model $Model, $type = Engine::NON_PERSISTENT, $id = null)
     {
-        $this->Engine = new Engine($this, $Model, $type, $id);
+        $this->Scope = new Scope($Model->getName(), $type, $id);
+    }
+
+    /**
+     * @return \Enjoin\Record\Scope
+     */
+    public function scope()
+    {
+        return $this->Scope;
     }
 
     /**
@@ -30,7 +37,7 @@ class Record extends stdClass
      */
     public function save(array $params = null)
     {
-        return $this->Engine->save($params);
+        return Engine::save($this, $params);
     }
 
     /**
@@ -40,25 +47,18 @@ class Record extends stdClass
      */
     public function update(array $collection, array $params = null)
     {
-        if (isset($params['fields'])) {
-            $collection = Extras::pick($collection, $params['fields']);
-        }
-        foreach ($collection as $field => $value) {
-            $this->$field = $value;
-        }
-        $flags = $this->Engine->type === Engine::NON_PERSISTENT ? Engine::SOFT_SAVE : 0;
-        return $this->Engine->save($params, $flags);
+        return Engine::update($this, $collection, $params);
     }
 
     /**
      * @deprecated use `update()` instead.
      * @param array $collection
-     * @param array|null $pick
+     * @param array|null $params
      * @return \Enjoin\Record\Record
      */
-    public function updateAttributes(array $collection, array $pick = null)
+    public function updateAttributes(array $collection, array $params = null)
     {
-        return $this->update($collection, $pick);
+        return $this->update($collection, $params);
     }
 
     /**
@@ -66,11 +66,7 @@ class Record extends stdClass
      */
     public function destroy()
     {
-        $this->Engine->destroy();
-        foreach ($this as $prop => $v) {
-            unset($this->$prop);
-        }
-        return true;
+        return Engine::destroy($this);
     }
 
     /**
@@ -78,7 +74,7 @@ class Record extends stdClass
      */
     public function isNewRecord()
     {
-        return $this->Engine->type === Engine::NON_PERSISTENT;
+        return $this->scope()->type === Engine::NON_PERSISTENT;
     }
 
     /**
@@ -86,27 +82,7 @@ class Record extends stdClass
      */
     public function __toArray()
     {
-        $out = [];
-        foreach ($this as $prop => $value) {
-            if ($value instanceof Engine) {
-                continue;
-            }
-            if ($value instanceof Record) {
-                $out[$prop] = $value->__toArray();
-            } elseif (is_array($value)) {
-                $out[$prop] = [];
-                foreach ($value as $k => $v) {
-                    if ($v instanceof Record) {
-                        $out[$prop][$k] = $v->__toArray();
-                    } else {
-                        $out[$prop][$k] = $v;
-                    }
-                }
-            } else {
-                $out[$prop] = $value;
-            }
-        }
-        return $out;
+        return Engine::toArray($this);
     }
 
     /**

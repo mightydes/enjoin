@@ -38,13 +38,15 @@ class Model
      */
     private $CacheJar;
 
+    private $modelName;
     private $unique;
 
     /**
      * Model constructor.
      * @param \Enjoin\Model\Definition $Definition
+     * @param string $modelName
      */
-    public function __construct(Definition $Definition)
+    public function __construct(Definition $Definition, $modelName)
     {
         if (!property_exists($Definition, 'table') || !$Definition->table) {
             # Define table name from model name
@@ -53,6 +55,7 @@ class Model
             $Definition->table = Inflector::tableize(end($arr));
         }
         $this->Definition = $Definition;
+        $this->modelName = $modelName;
         $this->unique = get_class($Definition);
         $this->CacheJar = new CacheJar($this);
     }
@@ -393,6 +396,14 @@ class Model
             return $this->getDefinition()->updatedAt;
         }
         return 'updated_at';
+    }
+
+    /**
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->modelName;
     }
 
     /**

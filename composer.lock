@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "79afcfa0cf83cad87b88d6f78681ad42",
-    "content-hash": "be719eb076f9818e253b2dca5bd6f184",
+    "hash": "e69e6061ded76959f2ef8da33f3a50ee",
+    "content-hash": "731d5525c8b917d2284f66f752aa96dc",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -934,16 +934,16 @@
     "packages-dev": [
         {
             "name": "caouecs/laravel-lang",
-            "version": "3.0.17",
+            "version": "3.0.18",
             "source": {
                 "type": "git",
                 "url": "https://github.com/caouecs/Laravel-lang.git",
-                "reference": "f22feed58adaa8051918ceb86fa2d991afad63ad"
+                "reference": "7c5d9ba460165b964408114c2d6e8e32258f3873"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/caouecs/Laravel-lang/zipball/f22feed58adaa8051918ceb86fa2d991afad63ad",
-                "reference": "f22feed58adaa8051918ceb86fa2d991afad63ad",
+                "url": "https://api.github.com/repos/caouecs/Laravel-lang/zipball/7c5d9ba460165b964408114c2d6e8e32258f3873",
+                "reference": "7c5d9ba460165b964408114c2d6e8e32258f3873",
                 "shasum": ""
             },
             "require-dev": {
@@ -970,7 +970,7 @@
                 "laravel",
                 "lpm"
             ],
-            "time": "2016-10-10 18:52:34"
+            "time": "2016-10-31 19:34:07"
         },
         {
             "name": "doctrine/instantiator",
@@ -2030,16 +2030,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v3.1.5",
+            "version": "v3.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "368b9738d4033c8b93454cb0dbd45d305135a6d3"
+                "reference": "7ff51b06c6c3d5cc6686df69004a42c69df09e27"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/368b9738d4033c8b93454cb0dbd45d305135a6d3",
-                "reference": "368b9738d4033c8b93454cb0dbd45d305135a6d3",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/7ff51b06c6c3d5cc6686df69004a42c69df09e27",
+                "reference": "7ff51b06c6c3d5cc6686df69004a42c69df09e27",
                 "shasum": ""
             },
             "require": {
@@ -2075,7 +2075,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2016-09-25 08:27:07"
+            "time": "2016-10-24 18:41:13"
         },
         {
             "name": "vlucas/phpdotenv",

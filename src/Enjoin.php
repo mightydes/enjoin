@@ -34,8 +34,8 @@ class Enjoin
         # Register model:
         $Definition = new $definitionClass;
         return $Factory->models[$definitionClass] = $Definition->expanseModel
-            ? new $Definition->expanseModel($Definition)
-            : new Model($Definition);
+            ? new $Definition->expanseModel($Definition, $modelName)
+            : new Model($Definition, $modelName);
     }
 
     /**
