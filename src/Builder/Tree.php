@@ -70,7 +70,7 @@ class Tree
     {
         $node = new stdClass;
         $node->Model = $Model;
-        $node->key = $Model->unique;
+        $node->key = $Model->getUnique();
         $node->prefix = null;
         $node->asProp = null;
 
@@ -83,7 +83,7 @@ class Tree
 
         # Handle `attributes`:
         $node->skip = [];
-        $attrs = array_keys($Model->Definition->getAttributes());
+        $attrs = array_keys($Model->getDefinition()->getAttributes());
         # Handle timestamps:
         if ($Model->isTimestamps()) {
             $attrs [] = $Model->getCreatedAtAttr();
@@ -167,9 +167,9 @@ class Tree
         if ($child->as) {
             $where['as'] = $child->as;
         }
-        $relation = Extras::findWhere($parent->Model->Definition->getRelations(), $where);
-        $missedErr = "Unable to find relation between '{$parent->Model->unique}' " .
-            "and '{$child->Model->unique}', foreign key: '{$child->key}'.";
+        $relation = Extras::findWhere($parent->Model->getDefinition()->getRelations(), $where);
+        $missedErr = "Unable to find relation between '{$parent->Model->getUnique()}' " .
+            "and '{$child->Model->getUnique()}', foreign key: '{$child->key}'.";
         $relation ?: Error::dropModelException($missedErr);
         $child->relation = $relation;
         $child->foreignKey = $relation->foreignKey;
@@ -182,10 +182,10 @@ class Tree
         if (!$child->as) {
             if ($relation->type === Extras::HAS_ONE || $relation->type === Extras::BELONGS_TO) {
                 # On `hasOne`, `belongsTo`:
-                $child->as = Inflector::singularize($child->Model->Definition->table);
+                $child->as = Inflector::singularize($child->Model->getTableName());
             } else {
                 # On `hasMany`:
-                $child->as = Inflector::pluralize($child->Model->Definition->table);
+                $child->as = Inflector::pluralize($child->Model->getTableName());
             }
             $child->asProp = Inflector::camelize($child->as);
         } else {

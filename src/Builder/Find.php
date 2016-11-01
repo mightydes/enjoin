@@ -97,7 +97,7 @@ class Find
         if ($node->prefix) {
             $prefix = $node->prefix;
         } elseif ($this->Tree->hasChildren) {
-            $prefix = $this->Model->Definition->table;
+            $prefix = $this->Model->getTableName();
         }
         !$prefix ?: $prefix = "{$e}$prefix{$e}.";
         $glue = Extras::GLUE_CHAR;
@@ -122,12 +122,12 @@ class Find
     {
         $e = $node->Model->dialectify()->getEscapeChar();
         $parent = $path[$depth - 1];
-        $parentPrefix = $parent->prefix ?: $this->Model->Definition->table;
+        $parentPrefix = $parent->prefix ?: $this->Model->getTableName();
         $on = $node->relation->type === Extras::BELONGS_TO
             ? "{$e}$parentPrefix{$e}.{$e}{$node->relation->foreignKey}{$e} = {$e}{$node->prefix}{$e}.{$e}id{$e}"
             : "{$e}$parentPrefix{$e}.{$e}id{$e} = {$e}{$node->prefix}{$e}.{$e}{$node->relation->foreignKey}{$e}";
         $junction = $node->required ? 'INNER' : 'LEFT OUTER';
-        $query = "$junction JOIN {$e}{$node->Model->Definition->table}{$e} AS {$e}{$node->prefix}{$e} ON $on";
+        $query = "$junction JOIN {$e}{$node->Model->getTableName()}{$e} AS {$e}{$node->prefix}{$e} ON $on";
 
         $where = '';
         $place = [];
@@ -203,7 +203,7 @@ class Find
     private function handle()
     {
         $e = $this->Model->dialectify()->getEscapeChar();
-        $table = $this->Model->Definition->table;
+        $table = $this->Model->getTableName();
         $select = join(', ', $this->select);
         $query = "SELECT $select FROM {$e}$table{$e} AS {$e}$table{$e}";
 
@@ -231,7 +231,7 @@ class Find
     private function handleSubquery()
     {
         $e = $this->Model->dialectify()->getEscapeChar();
-        $table = $this->Model->Definition->table;
+        $table = $this->Model->getTableName();
         $subSelect = join(', ', $this->subSelect);
         $sub = "SELECT $subSelect FROM {$e}$table{$e} AS {$e}$table{$e}";
         !$this->subJoin ?: $sub .= ' ' . join(' ', $this->subJoin);
@@ -245,7 +245,7 @@ class Find
         !$where ?: $sub .= ' WHERE ' . $where;
         !$this->prepLimit ?: $sub .= ' ' . $this->prepLimit;
 
-        array_unshift($this->select, "{$e}{$this->Model->Definition->table}{$e}.*");
+        array_unshift($this->select, "{$e}{$this->Model->getTableName()}{$e}.*");
         $select = join(', ', $this->select);
         $query = "SELECT $select FROM ($sub) AS {$e}$table{$e}";
         !$this->join ?: $query .= ' ' . join(' ', $this->join);

@@ -17,7 +17,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testModelUpdateWithoutWhere';
+    private $debugFunction = 'testCache';
 
     public function testBootstrap()
     {
@@ -1040,9 +1040,10 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testCache()
     {
         $this->handleDebug(__FUNCTION__);
+        Factory::getCache()->flush();
         $it = Enjoin::get('Books')->findById(1, Enjoin::WITH_CACHE);
-        $cache = Factory::getCache()->tags('Models\Books')->get('9125bfc211f5ddbce7352499c9c71973');
-        $this->assertEquals($it, $cache);
+        $cache = Enjoin::get('Books')->cache()->getCacheInstance()->get('9125bfc211f5ddbce7352499c9c71973');
+        $this->assertEquals($it->__toArray(), $cache->__toArray());
     }
 
     /**
@@ -1056,11 +1057,11 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
             'include' => Enjoin::get('Authors')
         ];
         $it = Enjoin::get('Books')->findOne($params, Enjoin::WITH_CACHE);
-        $cacheKey = Enjoin::get('Books')->CacheJar->keyify(['findOne', $params]);
-        $cache = Factory::getCache()->tags('Models\Books')->get($cacheKey);
-        $this->assertEquals($it, $cache);
+        $cacheKey = Enjoin::get('Books')->cache()->keyify(['findOne', $params]);
+        $cache = Enjoin::get('Books')->cache()->getCacheInstance()->get($cacheKey);
+        $this->assertEquals($it->__toArray(), $cache->__toArray());
         $cache->author->update(['name' => 'George Orwell']);
-        $cache = Factory::getCache()->tags('Models\Books')->get($cacheKey);
+        $cache = Enjoin::get('Books')->cache()->getCacheInstance()->get($cacheKey);
         $this->assertNull($cache);
     }
 

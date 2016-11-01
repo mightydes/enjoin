@@ -31,7 +31,7 @@ class Count extends Find
     private function handlePrimitive()
     {
         $e = $this->Model->dialectify()->getEscapeChar();
-        $table = $this->Model->Definition->table;
+        $table = $this->Model->getTableName();
         $query = "SELECT count(*) AS {$e}count{$e} FROM {$e}$table{$e} AS {$e}$table{$e}";
         !$this->prepWhere ?: $query .= ' WHERE ' . $this->prepWhere;
         return [$query, $this->placeWhere];
@@ -43,7 +43,7 @@ class Count extends Find
     private function handleEager()
     {
         $e = $this->Model->dialectify()->getEscapeChar();
-        $table = $this->Model->Definition->table;
+        $table = $this->Model->getTableName();
         $query = "SELECT count({$e}$table{$e}.{$e}id{$e}) AS {$e}count{$e} FROM {$e}$table{$e} AS {$e}$table{$e}";
         !$this->join ?: $query .= ' ' . join(' ', $this->join);
         !$this->prepWhere ?: $query .= ' WHERE ' . $this->prepWhere;

@@ -15,12 +15,20 @@ class CacheJar
     protected $Model;
 
     /**
+     * @var \Illuminate\Cache\TaggedCache
+     */
+    private $TaggedCache;
+
+    /**
      * CacheJar constructor.
      * @param Model $Model
      */
     public function __construct(Model $Model)
     {
         $this->Model = $Model;
+        if ($Cache = Factory::getCache()) {
+            $this->TaggedCache = $Cache->tags([$this->Model->getUnique()]);
+        }
     }
 
     /**
@@ -44,7 +52,7 @@ class CacheJar
         if ($flags & Enjoin::WITH_CACHE) {
             return true;
         }
-        return $this->Model->Definition->cache;
+        return $this->Model->getDefinition()->cache;
     }
 
     public function cachify(array $keyBasis, Closure $getDataFn, $flags = 0)
@@ -63,14 +71,20 @@ class CacheJar
     }
 
     /**
+     * @return \Illuminate\Cache\TaggedCache
+     */
+    public function getCacheInstance()
+    {
+        return $this->TaggedCache;
+    }
+
+    /**
      * @param string $key
-     * @return mixed
+     * @return bool
      */
     public function has($key)
     {
-        return Factory::getCache()
-            ->tags($this->Model->unique)
-            ->has($key);
+        return $this->getCacheInstance()->has($key);
     }
 
     /**
@@ -79,21 +93,16 @@ class CacheJar
      */
     public function get($key)
     {
-        return Factory::getCache()
-            ->tags($this->Model->unique)
-            ->get($key);
+        return $this->getCacheInstance()->get($key);
     }
 
     /**
      * @param string $key
      * @param mixed $data
-     * @return mixed
      */
     public function forever($key, $data)
     {
-        return Factory::getCache()
-            ->tags($this->Model->unique)
-            ->forever($key, $data);
+        $this->getCacheInstance()->forever($key, $data);
     }
 
     /**
@@ -116,13 +125,13 @@ class CacheJar
      */
     public function getFlushTags(array &$tags)
     {
-        $unique = $this->Model->unique;
+        $unique = $this->Model->getUnique();
         if (in_array($unique, $tags)) {
             return null;
         }
         $tags [] = $unique;
-        foreach ($this->Model->Definition->getRelations() as $relation) {
-            $relation->Model->CacheJar->getFlushTags($tags);
+        foreach ($this->Model->getDefinition()->getRelations() as $relation) {
+            $relation->Model->cache()->getFlushTags($tags);
         }
     }
 

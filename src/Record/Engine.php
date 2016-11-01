@@ -63,7 +63,7 @@ class Engine
             $this->Record->$updatedAtField = Carbon::now();
         }
 
-        $defAttributes = $this->Model->Definition->getAttributes();
+        $defAttributes = $this->Model->getDefinition()->getAttributes();
         $pick = isset($params['fields']) ? $params['fields'] : null;
         $volume = [];
         $validate = [];
@@ -111,7 +111,7 @@ class Engine
     public function destroy()
     {
         $this->Model->queryBuilder()->where('id', $this->id)->take(1)->delete();
-        $this->Model->CacheJar->flush();
+        $this->Model->cache()->flush();
         return true;
     }
 
@@ -131,7 +131,7 @@ class Engine
                 $DB->insert($this->Model->dialectify()->getInsertEmptyQuery())
                     ?: Error::dropRecordException('Unable to insert empty record!');
             }
-            $this->Model->CacheJar->flush();
+            $this->Model->cache()->flush();
             $id = $DB->getPdo()->lastInsertId($this->Model->dialectify()->getIdSequence());
             return (int)$id;
         });
@@ -152,7 +152,7 @@ class Engine
                 ->where('id', $this->id)// use constructed id
                 ->take(1)
                 ->update($volume); // id can be changed
-            $this->Model->CacheJar->flush();
+            $this->Model->cache()->flush();
             return isset($volume['id']) ? $volume['id'] : $this->id;
         });
     }

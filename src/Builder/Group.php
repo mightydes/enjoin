@@ -146,7 +146,7 @@ class Group
             $model = $it;
         }
         foreach ($list as $idx => $node) {
-            if ($node->Model->unique === $model->unique &&
+            if ($node->Model->getUnique() === $model->getUnique() &&
                 (!$as || $node->as === $as)
             ) {
                 $idxList [] = $idx;
@@ -154,7 +154,7 @@ class Group
             }
         }
         $errCtx = $this instanceof Group ? 'group' : 'order';
-        Error::dropBuilderException("Invalid '$errCtx' model: '$model->unique'");
+        Error::dropBuilderException("Invalid '$errCtx' model: '{$model->getUnique()}'");
     }
 
 }

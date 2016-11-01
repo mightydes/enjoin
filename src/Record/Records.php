@@ -57,7 +57,7 @@ class Records
             }
 
             # Perform getters:
-            $defAttributes = $node->Model->Definition->getAttributes();
+            $defAttributes = $node->Model->getDefinition()->getAttributes();
             foreach ($node->attributes as $attr) {
                 if (!in_array($attr, $skip)) {
                     $node->getters[$attr] = $Getters->perform($node->Model, $defAttributes[$attr]);
@@ -126,7 +126,7 @@ class Records
         $id = $node->prefix
             ? $row->{$node->prefix . Extras::GLUE_CHAR . 'id'}
             : $row->id;
-        $recordClass = $node->Model->Definition->expanseRecord ?: Record::class;
+        $recordClass = $node->Model->getDefinition()->expanseRecord ?: Record::class;
         $Record = new $recordClass($node->Model, Engine::PERSISTENT, (int)$id);
 
         # Handle attributes:

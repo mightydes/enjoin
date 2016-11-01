@@ -102,14 +102,14 @@ class Enjoin
         if (array_key_exists('foreignKey', $options)) {
             $foreignKey = $options['foreignKey'];
         } else {
-            $className = get_class($Model->Definition);
+            $className = get_class($Model->getDefinition());
             if ($pos = strrpos($className, '\\')) {
                 $className = substr($className, $pos + 1);
             }
             $foreignKey = Inflector::tableize($className) . '_id';
         }
 
-        $relatedKey = $Model->unique;
+        $relatedKey = $Model->getUnique();
         !$as ?: $relatedKey .= Extras::GLUE_CHAR . $as;
 
         $relation = new stdClass;

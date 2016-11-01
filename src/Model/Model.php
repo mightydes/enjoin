@@ -26,19 +26,19 @@ class Model
      * Model definition instance.
      * @var \Enjoin\Model\Definition
      */
-    public $Definition;
+    private $Definition;
 
     /**
      * @var null|\Enjoin\Dialectify\Dialectify
      */
-    public $Dialectify = null;
+    private $Dialectify = null;
 
     /**
      * @var \Enjoin\Model\CacheJar
      */
-    public $CacheJar;
+    private $CacheJar;
 
-    public $unique;
+    private $unique;
 
     /**
      * Model constructor.
@@ -62,7 +62,7 @@ class Model
      */
     public function connection()
     {
-        return Factory::getConnection($this->Definition->connection);
+        return Factory::getConnection($this->getDefinition()->connection);
     }
 
     /**
@@ -80,7 +80,7 @@ class Model
     public function build($collection = null)
     {
         $collection ?: $collection = [];
-        $recordClass = $this->Definition->expanseRecord ?: Record::class;
+        $recordClass = $this->getDefinition()->expanseRecord ?: Record::class;
         $Record = new $recordClass($this);
         foreach ($collection as $k => $v) {
             $Record->$k = $v;
@@ -98,7 +98,7 @@ class Model
         if (isset($params['fields'])) {
             $collection = Extras::pick($collection, $params['fields']);
         }
-        $this->CacheJar->flush();
+        $this->cache()->flush();
         return $this->build($collection)->save();
     }
 
@@ -111,7 +111,7 @@ class Model
     {
         $bulk = [];
         $Setters = Factory::getSetters();
-        $defAttributes = $this->Definition->getAttributes();
+        $defAttributes = $this->getDefinition()->getAttributes();
         foreach ($collections as $record) {
             $volume = [];
             $skip = [];
@@ -139,7 +139,7 @@ class Model
             !$validate ?: $Setters->validate($validate);
             $bulk [] = $volume;
         }
-        $this->CacheJar->flush();
+        $this->cache()->flush();
         return $this->queryBuilder()->insert($bulk);
     }
 
@@ -158,7 +158,7 @@ class Model
             return PdoDebugger::show($query, $place);
         }
         $affected = $this->connection()->update($query, $place);
-        $this->CacheJar->flush();
+        $this->cache()->flush();
         return $affected;
     }
 
@@ -180,7 +180,7 @@ class Model
             return PdoDebugger::show($query, $place);
         }
         $affected = $this->connection()->update($query, $place);
-        $this->CacheJar->flush();
+        $this->cache()->flush();
         return $affected;
     }
 
@@ -192,7 +192,7 @@ class Model
      */
     public function findOne(array $params, $flags = 0)
     {
-        return $this->CacheJar->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
+        return $this->cache()->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
             unset($params['offset']);
             $params['limit'] = 1;
             $Find = new Find($this, $params);
@@ -244,7 +244,7 @@ class Model
     public function findAll(array $params = null, $flags = 0)
     {
         $params ?: $params = [];
-        return $this->CacheJar->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
+        return $this->cache()->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
             $Find = new Find($this, $params);
             list($query, $place) = $Find->getPrepared();
             if ($flags & Enjoin::SQL) {
@@ -301,7 +301,7 @@ class Model
     public function count(array $params = null, $flags = 0)
     {
         $params ?: $params = [];
-        return $this->CacheJar->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
+        return $this->cache()->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
             $Count = new Count($this, $params);
             list($query, $place) = $Count->getPrepared();
             if ($flags & Enjoin::SQL) {
@@ -320,7 +320,7 @@ class Model
     public function findAndCountAll(array $params = null, $flags = 0)
     {
         $params ?: $params = [];
-        $count = $this->CacheJar->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
+        $count = $this->cache()->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
             $Count = new Count($this, $params);
             list($query, $place) = $Count->getPrepared();
             if ($flags & Enjoin::SQL) {
@@ -349,8 +349,8 @@ class Model
      */
     public function isTimestamps()
     {
-        if (isset($this->Definition->timestamps) && is_bool($this->Definition->timestamps)) {
-            return $this->Definition->timestamps;
+        if (isset($this->getDefinition()->timestamps) && is_bool($this->getDefinition()->timestamps)) {
+            return $this->getDefinition()->timestamps;
         }
         return true;
     }
@@ -369,8 +369,8 @@ class Model
      */
     public function getCreatedAtField()
     {
-        if (isset($this->Definition->createdAt) && $this->Definition->createdAt) {
-            return $this->Definition->createdAt;
+        if (isset($this->getDefinition()->createdAt) && $this->getDefinition()->createdAt) {
+            return $this->getDefinition()->createdAt;
         }
         return 'created_at';
     }
@@ -389,10 +389,26 @@ class Model
      */
     public function getUpdatedAtField()
     {
-        if (isset($this->Definition->updatedAt) && $this->Definition->updatedAt) {
-            return $this->Definition->updatedAt;
+        if (isset($this->getDefinition()->updatedAt) && $this->getDefinition()->updatedAt) {
+            return $this->getDefinition()->updatedAt;
         }
         return 'updated_at';
+    }
+
+    /**
+     * @return string
+     */
+    public function getUnique()
+    {
+        return $this->unique;
+    }
+
+    /**
+     * @return \Enjoin\Model\Definition
+     */
+    public function getDefinition()
+    {
+        return $this->Definition;
     }
 
     /**
@@ -419,6 +435,14 @@ class Model
             $this->Dialectify = new $dialect($this);
         }
         return $this->Dialectify;
+    }
+
+    /**
+     * @return \Enjoin\Model\CacheJar
+     */
+    public function cache()
+    {
+        return $this->CacheJar;
     }
 
 }
