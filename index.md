@@ -6,16 +6,21 @@ Enjoin ORM
 
 [![Build Status](https://travis-ci.org/mightydes/enjoin.svg?branch=master)](https://travis-ci.org/mightydes/enjoin)
 
-# Getting Started
+[Documentation](http://mightydes.github.io/enjoin/)
 
-## Introduction
+
+## Getting Started
+
+
+### Introduction
 
 Enjoin is an active-record ORM for PHP.
 Enjoin built on [Laravel Components](https://github.com/illuminate) and inspired by [Sequelize](https://github.com/sequelize/sequelize) for Node.js.
 It supports MySQL and PostgreSQL dialects.
 Unlike Eloquent, Enjoin features eager loading, built-in validation and more.
 
-## Installation
+
+### Installation
 
 Enjoin is available via Composer:
 
@@ -41,7 +46,8 @@ Then add `Models` autoload entry to your `composer.json` file:
   }
 ```
 
-## Stand-alone bootstrap
+
+### Stand-alone bootstrap
 
 ```php
 <?php
@@ -90,7 +96,8 @@ Factory::bootstrap([
 ]);
 ```
 
-## Laravel bootstrap
+
+### Laravel bootstrap
 
 First add `Enjoin\EnjoinServiceProvider` to `providers` list,
 and `'Enjoin' => 'Enjoin\EnjoinFacade'` to `aliases` list in `config/app.php`.
@@ -117,7 +124,8 @@ class ConfigServiceProvider extends ServiceProvider
 }
 ```
 
-## Model Definition
+
+### Model Definition
 
 You need to define mapping between tables and models.
 For example, table `books` with columns:
@@ -158,7 +166,8 @@ class Books extends Definition
 }
 ```
 
-### Definition.connection
+
+#### connection
 
 Connection to use. Equals to `default` connection by default.
 Example:
@@ -177,7 +186,8 @@ class Books extends Definition
 }
 ```
 
-### Definition.table
+
+#### table
 
 Table name. Equals to `Inflector::tableize(<ModelClassName>)` by default.
 Example:
@@ -196,7 +206,8 @@ class Books extends Definition
 }
 ```
 
-### Definition.timestamps
+
+#### timestamps
 
 Enables or disables timestamps (ie `created_at`, `updated_at`). Equals to `true` by default.
 Example:
@@ -215,7 +226,8 @@ class Books extends Definition
 }
 ```
 
-### Definition.createdAt
+
+#### createdAt
 
 CreatedAt column name. Equals to `created_at` by default.
 Example:
@@ -234,7 +246,8 @@ class Books extends Definition
 }
 ```
 
-### Definition.updatedAt
+
+#### updatedAt
 
 UpdatedAt column name. Equals to `updated_at` by default.
 Example:
@@ -253,7 +266,8 @@ class Books extends Definition
 }
 ```
 
-### Definition.cache
+
+#### cache
 
 Enables or disables cache. Equals to `false` by default.
 Example:
@@ -272,7 +286,8 @@ class Books extends Definition
 }
 ```
 
-### Definition.expanseModel
+
+#### expanseModel
 
 Class name to extend generic model class.
 It is useful, if you want to define custom model methods.
@@ -292,7 +307,8 @@ class Books extends Definition
 }
 ```
 
-### Definition.expanseRecord
+
+#### expanseRecord
 
 Class name to extend generic record class.
 It is useful, if you want to define custom record methods.
@@ -312,11 +328,13 @@ class Books extends Definition
 }
 ```
 
-### Definition.getAttributes()
+
+#### getAttributes()
 
 Returns associative array, where each key is a table column.
 
-### Definition.getAttributes().type
+
+#### getAttributes().type
 
 * Enjoin::Integer()
 * Enjoin::Boolean()
@@ -326,17 +344,20 @@ Returns associative array, where each key is a table column.
 * Enjoin::Date()
 * Enjoin::Enum()
 
-### Definition.getAttributes().allowNull
+
+#### getAttributes().allowNull
 
 Indicates is `NULL` allowed on field.
 By default is `true`.
 
-### Definition.getAttributes().validate
+
+#### getAttributes().validate
 
 Validation rules for field.
 You can read more about validation [here](https://laravel.com/docs/5.2/validation).
 
-### Definition.getAttributes().get
+
+#### getAttributes().get
 
 You can define custom getter closure for field:
 
@@ -357,7 +378,8 @@ You can define custom getter closure for field:
     ]
 ```
 
-### Definition.getAttributes().set
+
+#### getAttributes().set
 
 You can define custom setter closure for field:
 
@@ -374,7 +396,8 @@ You can define custom setter closure for field:
     ]
 ```
 
-### Definition.getRelations()
+
+#### getRelations()
 
 Returns array, where each value is a relation.
 Supported relations:
@@ -397,7 +420,8 @@ Example:
     }
 ```
 
-### Definition.getRelations().foreignKey
+
+#### getRelations().foreignKey
 
 Foreign key column name.
 Example:
@@ -411,7 +435,8 @@ Example:
     }
 ```
 
-### Definition.getRelations().as
+
+#### getRelations().as
 
 Foreign key column `as` alias.
 Example:

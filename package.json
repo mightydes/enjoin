@@ -9,6 +9,7 @@
     "gulp-load-plugins": "^1.4.0",
     "less": "^2.7.1",
     "less-plugin-autoprefix": "^1.5.1",
-    "less-plugin-clean-css": "^1.5.1"
+    "less-plugin-clean-css": "^1.5.1",
+    "shelljs": "^0.7.5"
   }
 }
