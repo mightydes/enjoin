@@ -1,6 +1,6 @@
 .idea
 .vagrant
 node_modules
-test
+site-test
 vendor
 .env

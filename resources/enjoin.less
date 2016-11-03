@@ -1,0 +1,57 @@
+@color-enjoin: #2d87e2;
+@color-code: #f7f7f7;
+@color-shadow: #999;
+@width--menu: 320px;
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+code, pre {
+  font-family: 'Roboto Mono', monospace;
+}
+
+pre {
+  color: @color-code;
+}
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: @width--menu;
+  padding: 0 30px 30px;
+  background: @color-enjoin;
+  color: white;
+  box-shadow: 2px 0 4px @color-shadow;
+  overflow-y: auto;
+}
+
+.toc {
+  margin: 15px 0;
+}
+
+.toc a {
+  color: @color-code;
+}
+
+.toc ul {
+  margin: 0;
+  padding: 0;
+}
+
+.toc li {
+  margin: 8px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc .level-2 {
+  margin-left: 18px;
+}
+
+.content {
+  max-width: 800px;
+  margin-left: @width--menu;
+}
