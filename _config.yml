@@ -4,4 +4,3 @@ page_name: Enjoin
 page_desc: Multi dialect ORM for PHP inspired by Sequelize.JS
 gh_home: https://github.com/mightydes/enjoin
 gh_name: mightydes/enjoin
-bs_ver: '3.3.7'
