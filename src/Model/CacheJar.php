@@ -59,11 +59,16 @@ class CacheJar
     {
         if ($this->enabled($flags)) {
             $key = $this->keyify($keyBasis);
-            if ($this->has($key)) {
-                return $this->get($key);
+
+            if ($cache = $this->get($key)) {
+                if ($cache instanceof EmptyCache) {
+                    return $cache->getValue();
+                }
+                return $cache;
             }
+
             $data = $getDataFn();
-            $this->forever($key, $data);
+            $this->set($key, $data);
             return $data;
         } else {
             return $getDataFn();
@@ -80,15 +85,6 @@ class CacheJar
 
     /**
      * @param string $key
-     * @return bool
-     */
-    public function has($key)
-    {
-        return $this->getCacheInstance()->has($key);
-    }
-
-    /**
-     * @param string $key
      * @return mixed
      */
     public function get($key)
@@ -100,8 +96,11 @@ class CacheJar
      * @param string $key
      * @param mixed $data
      */
-    public function forever($key, $data)
+    public function set($key, $data)
     {
+        if (!$data) {
+            $data = new EmptyCache($data);
+        }
         $this->getCacheInstance()->forever($key, $data);
     }
 
