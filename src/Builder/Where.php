@@ -127,6 +127,11 @@ class Where
     private function prepPrimary($field, $value)
     {
         $query = $this->getTableField($field) . ' ';
+        if ($value === true) {
+            $value = 1;
+        } elseif ($value === false) {
+            $value = null;
+        }
         $query .= is_null($value) ? 'IS NULL' : '= ?';
         return [$query, $value];
     }

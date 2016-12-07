@@ -17,7 +17,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testCache';
+    private $debugFunction = 'testDefinitionBooleanType';
 
     public function testBootstrap()
     {
@@ -1124,6 +1124,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      */
     public function testRecordDestroy()
     {
+        $this->handleDebug(__FUNCTION__);
         $it = Enjoin::get('Authors')->create([
             'name' => 'John Dow'
         ]);
@@ -1131,6 +1132,35 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $it->destroy();
         $check = Enjoin::get('Authors')->findById($id);
         $this->assertNull($check);
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testDefinitionBooleanType()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $log = Enjoin::logify(function () {
+            $it = Enjoin::get('Pile')->findCreateFind([
+                'where' => [
+                    'on_state' => true,
+                    'date_till' => '2016-12-07 00:00:00'
+                ]
+            ]);
+            $it = Enjoin::get('Pile')->findCreateFind([
+                'where' => [
+                    'on_state' => false,
+                    'date_till' => '2016-12-07 01:00:00'
+                ]
+            ]);
+        });
+        $this->assertEquals([
+            "SELECT `id`, `on_state`, `date_till`, `created_at`, `updated_at` FROM `pile` AS `pile` WHERE `pile`.`on_state` = 1 AND `pile`.`date_till` = '2016-12-07 00:00:00' LIMIT 1",
+            "SELECT `id`, `on_state`, `date_till`, `created_at`, `updated_at` FROM `pile` AS `pile` WHERE `pile`.`on_state` IS NULL AND `pile`.`date_till` = '2016-12-07 01:00:00' LIMIT 1"
+        ], [
+            $log[0],
+            $log[3]
+        ]);
     }
 
     // TODO: test model description getter/setter...

@@ -12,6 +12,7 @@ class Pile extends Definition
     {
         return [
             'id' => ['type' => Enjoin::Integer()],
+            'on_state' => ['type' => Enjoin::Boolean()],
             'date_till' => ['type' => Enjoin::Date()]
         ];
     }
