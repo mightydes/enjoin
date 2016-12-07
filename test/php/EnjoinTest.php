@@ -1154,10 +1154,18 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
                 ]
             ]);
         });
-        $this->assertEquals([
-            "SELECT `id`, `on_state`, `date_till`, `created_at`, `updated_at` FROM `pile` AS `pile` WHERE `pile`.`on_state` = 1 AND `pile`.`date_till` = '2016-12-07 00:00:00' LIMIT 1",
-            "SELECT `id`, `on_state`, `date_till`, `created_at`, `updated_at` FROM `pile` AS `pile` WHERE `pile`.`on_state` IS NULL AND `pile`.`date_till` = '2016-12-07 01:00:00' LIMIT 1"
-        ], [
+        if ($this->ifPostgreSql()) {
+            $expected = [
+                "SELECT \"id\", \"on_state\", \"date_till\", \"created_at\", \"updated_at\" FROM \"pile\" AS \"pile\" WHERE \"pile\".\"on_state\" = 1 AND \"pile\".\"date_till\" = '2016-12-07 00:00:00' LIMIT 1",
+                "SELECT \"id\", \"on_state\", \"date_till\", \"created_at\", \"updated_at\" FROM \"pile\" AS \"pile\" WHERE \"pile\".\"on_state\" IS NULL AND \"pile\".\"date_till\" = '2016-12-07 01:00:00' LIMIT 1"
+            ];
+        } else {
+            $expected = [
+                "SELECT `id`, `on_state`, `date_till`, `created_at`, `updated_at` FROM `pile` AS `pile` WHERE `pile`.`on_state` = 1 AND `pile`.`date_till` = '2016-12-07 00:00:00' LIMIT 1",
+                "SELECT `id`, `on_state`, `date_till`, `created_at`, `updated_at` FROM `pile` AS `pile` WHERE `pile`.`on_state` IS NULL AND `pile`.`date_till` = '2016-12-07 01:00:00' LIMIT 1"
+            ];
+        }
+        $this->assertEquals($expected, [
             $log[0],
             $log[3]
         ]);
@@ -1209,12 +1217,18 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param \Closure $test
+     * @param Closure|null $test
+     * @return mixed|bool
      */
-    private function ifPostgreSql(Closure $test)
+    private function ifPostgreSql(Closure $test = null)
     {
-        if (getenv('ENJ_DIALECT') === 'postgresql') {
-            $test();
+        $itIs = getenv('ENJ_DIALECT') === 'postgresql';
+        if (is_callable($test)) {
+            if ($itIs) {
+                return $test();
+            }
+        } else {
+            return $itIs;
         }
     }
 
