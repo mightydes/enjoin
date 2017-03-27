@@ -19,7 +19,7 @@ use PdoDebugger;
  * Class Model
  * @package Enjoin\Model
  */
-class Model
+class Model implements \JsonSerializable
 {
 
     /**
@@ -454,6 +454,14 @@ class Model
     public function cache()
     {
         return $this->CacheJar;
+    }
+
+    /**
+     * @return string
+     */
+    public function jsonSerialize()
+    {
+        return $this->modelName;
     }
 
 }

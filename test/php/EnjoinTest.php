@@ -81,6 +81,16 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     /**
      * @depends testBootstrap
+     */
+    public function testJsonSerializable()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $r = json_encode(Enjoin::get('Authors'));
+        $this->assertEquals('"Authors"', $r);
+    }
+
+    /**
+     * @depends testBootstrap
      * @return Record
      */
     public function testModelBuild()
