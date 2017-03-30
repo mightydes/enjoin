@@ -286,7 +286,11 @@ class Model implements \JsonSerializable
      */
     public function findCreateFind(array $params)
     {
-        $it = $this->findOne(['where' => $params['where']]);
+        $findParams = ['where' => $params['where']];
+        if (array_key_exists('attributes', $params)) {
+            $findParams['attributes'] = $params['attributes'];
+        }
+        $it = $this->findOne($findParams);
         if (!$it) {
             $collection = isset($params['defaults'])
                 ? array_merge($params['where'], $params['defaults'])

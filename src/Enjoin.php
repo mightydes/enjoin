@@ -45,7 +45,7 @@ class Enjoin
     public static function getModelDefinitionClass($modelName)
     {
         return Factory::getConfig()['enjoin']['models_namespace'] .
-        '\\' . str_replace('.', '\\', $modelName);
+            '\\' . str_replace('.', '\\', $modelName);
     }
 
     /**
@@ -141,47 +141,52 @@ class Enjoin
 
     /**
      * Enable query log for connection.
+     * @param string|null $connectionKey
      */
-    public static function enableQueryLog()
+    public static function enableQueryLog($connectionKey = null)
     {
-        Factory::getConnection()->enableQueryLog();
+        Factory::getConnection($connectionKey)->enableQueryLog();
     }
 
     /**
      * Disable query log for connection.
+     * @param string|null $connectionKey
      */
-    public static function disableQueryLog()
+    public static function disableQueryLog($connectionKey = null)
     {
-        Factory::getConnection()->disableQueryLog();
+        Factory::getConnection($connectionKey)->disableQueryLog();
     }
 
     /**
      * Flush query log for connection.
+     * @param string|null $connectionKey
      */
-    public static function flushQueryLog()
+    public static function flushQueryLog($connectionKey = null)
     {
-        Factory::getConnection()->flushQueryLog();
+        Factory::getConnection($connectionKey)->flushQueryLog();
     }
 
     /**
+     * @param string|null $connectionKey
      * @return array
      */
-    public static function getQueryLog()
+    public static function getQueryLog($connectionKey = null)
     {
-        return Factory::getConnection()->getQueryLog();
+        return Factory::getConnection($connectionKey)->getQueryLog();
     }
 
     /**
      * @param Closure $fn
+     * @param string|null $connectionKey
      * @return array
      */
-    public static function logify(Closure $fn)
+    public static function logify(Closure $fn, $connectionKey = null)
     {
-        static::flushQueryLog();
-        static::enableQueryLog();
+        static::flushQueryLog($connectionKey);
+        static::enableQueryLog($connectionKey);
         $fn();
-        static::disableQueryLog();
-        $log = static::getQueryLog();
+        static::disableQueryLog($connectionKey);
+        $log = static::getQueryLog($connectionKey);
         $out = [];
         foreach ($log as $it) {
             $out [] = PdoDebugger::show($it['query'], $it['bindings']);

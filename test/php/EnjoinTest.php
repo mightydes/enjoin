@@ -17,7 +17,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testDefinitionBooleanType';
+    private $debugFunction = 'testModelFindOrCreateBoolean';
 
     public function testBootstrap()
     {
@@ -1155,30 +1155,60 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
                 'where' => [
                     'on_state' => true,
                     'date_till' => '2016-12-07 00:00:00'
-                ]
+                ],
+                'attributes' => ['id', 'on_state', 'date_till']
             ]);
             $it = Enjoin::get('Pile')->findCreateFind([
                 'where' => [
                     'on_state' => false,
                     'date_till' => '2016-12-07 01:00:00'
-                ]
+                ],
+                'attributes' => ['id', 'on_state', 'date_till']
             ]);
         });
         if ($this->ifPostgreSql()) {
             $expected = [
-                "SELECT \"id\", \"on_state\", \"date_till\", \"created_at\", \"updated_at\" FROM \"pile\" AS \"pile\" WHERE \"pile\".\"on_state\" = 1 AND \"pile\".\"date_till\" = '2016-12-07 00:00:00' LIMIT 1",
-                "SELECT \"id\", \"on_state\", \"date_till\", \"created_at\", \"updated_at\" FROM \"pile\" AS \"pile\" WHERE \"pile\".\"on_state\" IS NULL AND \"pile\".\"date_till\" = '2016-12-07 01:00:00' LIMIT 1"
+                "SELECT \"id\", \"on_state\", \"date_till\" FROM \"pile\" AS \"pile\" WHERE \"pile\".\"on_state\" = 1 AND \"pile\".\"date_till\" = '2016-12-07 00:00:00' LIMIT 1",
+                "SELECT \"id\", \"on_state\", \"date_till\" FROM \"pile\" AS \"pile\" WHERE \"pile\".\"on_state\" IS NULL AND \"pile\".\"date_till\" = '2016-12-07 01:00:00' LIMIT 1"
             ];
         } else {
             $expected = [
-                "SELECT `id`, `on_state`, `date_till`, `created_at`, `updated_at` FROM `pile` AS `pile` WHERE `pile`.`on_state` = 1 AND `pile`.`date_till` = '2016-12-07 00:00:00' LIMIT 1",
-                "SELECT `id`, `on_state`, `date_till`, `created_at`, `updated_at` FROM `pile` AS `pile` WHERE `pile`.`on_state` IS NULL AND `pile`.`date_till` = '2016-12-07 01:00:00' LIMIT 1"
+                "SELECT `id`, `on_state`, `date_till` FROM `pile` AS `pile` WHERE `pile`.`on_state` = 1 AND `pile`.`date_till` = '2016-12-07 00:00:00' LIMIT 1",
+                "SELECT `id`, `on_state`, `date_till` FROM `pile` AS `pile` WHERE `pile`.`on_state` IS NULL AND `pile`.`date_till` = '2016-12-07 01:00:00' LIMIT 1"
             ];
         }
         $this->assertEquals($expected, [
             $log[0],
             $log[3]
         ]);
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testModelFindOrCreateBoolean()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $res = [];
+        $log = Enjoin::logify(function () use (&$res) {
+            $clause = [
+                'where' => [
+                    'on_state' => false,
+                    'name' => 'Frodo',
+                    'date_till' => '2017-03-29 14:00:00'
+                ]
+            ];
+            $a = Enjoin::get('Pile')->findOrCreate($clause);
+            $b = Enjoin::get('Pile')->findOrCreate($clause);
+            $res['false'] = ['a' => $a->id, 'b' => $b->id];
+            $clause['where']['on_state'] = true;
+            $a = Enjoin::get('Pile')->findOrCreate($clause);
+            $b = Enjoin::get('Pile')->findOrCreate($clause);
+            $res['true'] = ['a' => $a->id, 'b' => $b->id];
+        });
+        $this->assertEquals(6, count($log));
+        $this->assertEquals($res['false']['a'], $res['false']['b']);
+        $this->assertEquals($res['true']['a'], $res['true']['b']);
     }
 
     // TODO: test model description getter/setter...
