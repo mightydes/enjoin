@@ -17,7 +17,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testModelFindOrCreateBoolean';
+    private $debugFunction = 'testModelFindOneEager';
 
     public function testBootstrap()
     {

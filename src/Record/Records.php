@@ -5,7 +5,6 @@ namespace Enjoin\Record;
 use Enjoin\Builder\Tree;
 use Enjoin\Factory;
 use Enjoin\Extras;
-use Enjoin\Enjoin;
 use stdClass;
 
 class Records
@@ -203,9 +202,9 @@ class Records
 
             # Perform branch pointer:
             if (is_array($branch)) {
-                $branch_link =& $branch[$mile['index']]->$road[0]['prop'];
+                $branch_link =& $branch[$mile['index']]->{$road[0]['prop']};
             } else {
-                $branch_link =& $branch->$road[0]['prop'];
+                $branch_link =& $branch->{$road[0]['prop']};
             }
 
             # Fire:
