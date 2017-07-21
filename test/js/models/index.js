@@ -61,7 +61,7 @@ function describeRelations(ctx) {
     ctx.PublishersBooks.belongsTo(ctx.Publishers, {foreignKey: 'publishers_id'});
 
     // Publishers--Publishers:
-    ctx.Publishers.hasMany(ctx.Publishers, {foreignKey: 'pid', as: 'child'});
+    ctx.Publishers.hasMany(ctx.Publishers, {foreignKey: 'pid', as: 'children'});
     ctx.Publishers.belongsTo(ctx.Publishers, {foreignKey: 'pid', as: 'parent'});
 
     // PublishersBooks--Preorders:

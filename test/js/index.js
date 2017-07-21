@@ -1,5 +1,5 @@
-var models = require('./models');
-var compare = require('./compare');
+const models = require('./models');
+const compare = require('./compare');
 
 module.exports = {
     testModelCreate: testModelCreate,
@@ -63,7 +63,9 @@ module.exports = {
     testModelFindAndCountAllEagerRequiredLimited: testModelFindAndCountAllEagerRequiredLimited,
 
     testModelDestroy: testModelDestroy,
-    testModelUpdate: testModelUpdate
+    testModelUpdate: testModelUpdate,
+
+    testModelFindAllEagerAs: testModelFindAllEagerAs
 };
 
 function testModelCreate(callback) {
@@ -977,5 +979,21 @@ function testModelUpdate(callback) {
         name: 'Korean'
     }, {
         where: {id: 200}
+    }).then(callback);
+}
+
+function testModelFindAllEagerAs(callback) {
+    compare.save('testModelFindAllEagerAs', models.Publishers, 'findAll', {
+        where: {
+            id: null
+        },
+        include: {
+            model: models.Publishers,
+            as: 'children'
+        },
+        order: [
+            'name',
+            [{model: models.Publishers, as: 'children'}, 'name', 'DESC']
+        ]
     }).then(callback);
 }

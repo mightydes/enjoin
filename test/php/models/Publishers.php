@@ -22,7 +22,7 @@ class Publishers extends Definition
         return [
             Enjoin::hasMany(Enjoin::get('PublishersBooks'), ['foreignKey' => 'publishers_id']),
             Enjoin::belongsTo(Enjoin::get('Publishers'), ['foreignKey' => 'pid', 'as' => 'parent']),
-            Enjoin::hasMany(Enjoin::get('Publishers'), ['foreignKey' => 'pid', 'as' => 'child'])
+            Enjoin::hasMany(Enjoin::get('Publishers'), ['foreignKey' => 'pid', 'as' => 'children'])
         ];
     }
 

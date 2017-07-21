@@ -68,7 +68,9 @@ var testList = handleFilters([
     'testModelFindAndCountAllEagerRequiredLimited',
 
     'testModelDestroy',
-    'testModelUpdate'
+    'testModelUpdate',
+
+    'testModelFindAllEagerAs'
 ]);
 
 gulp.task('create-tables', function (callback) {

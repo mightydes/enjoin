@@ -17,7 +17,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testModelFindOneEager';
+    private $debugFunction = 'testModelFindAllEagerAs';
 
     public function testBootstrap()
     {
@@ -1209,6 +1209,32 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(6, count($log));
         $this->assertEquals($res['false']['a'], $res['false']['b']);
         $this->assertEquals($res['true']['a'], $res['true']['b']);
+    }
+
+    /**
+     * @depends testMockDataB
+     */
+    public function testMockDataC()
+    {
+        $root = Enjoin::get('Publishers')->findAll([
+            'limit' => 1
+        ])[0];
+        $bulk = [];
+        foreach ($this->getDataArray('publishers') as $it) {
+            $it['pid'] = $root->id;
+            $bulk [] = $it;
+        }
+        $this->assertTrue(Enjoin::get('Publishers')->bulkCreate($bulk));
+    }
+
+    /**
+     * @depends testMockDataC
+     */
+    public function testModelFindAllEagerAs()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $sql = Enjoin::get('Publishers')->findAll($this->getCompareParams(__FUNCTION__), Enjoin::SQL);
+        $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
     }
 
     // TODO: test model description getter/setter...

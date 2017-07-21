@@ -1,6 +1,6 @@
-var debug = require('debug')('compare');
-var fs = require('fs');
-var _ = require('underscore');
+const debug = require('debug')('compare');
+const fs = require('fs');
+const _ = require('underscore');
 
 module.exports = {
     save: save
