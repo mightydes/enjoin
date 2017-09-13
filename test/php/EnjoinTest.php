@@ -17,7 +17,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testModelFindAllEagerAs';
+    private $debugFunction = 'testModelFindOneEagerSelfNestedNoSubQuery';
 
     public function testBootstrap()
     {
@@ -694,7 +694,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @todo: see https://github.com/sequelize/sequelize/issues/3917
+     * TODO...
+     * Does not work... See: https://github.com/sequelize/sequelize/issues/3007
+     *                       https://github.com/sequelize/sequelize/issues/3917
      * @depends testMockDataA
      */
     public function testModelFindOneEagerSelfNestedNoSubQuery()
