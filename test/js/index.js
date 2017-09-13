@@ -530,6 +530,7 @@ function testModelFindOneEagerNestedDeep(callback) {
 
 /**
  * Note: https://github.com/sequelize/sequelize/issues/3917
+ * TODO...
  */
 function testModelFindOneEagerSelfNestedNoSubQuery(callback) {
     compare.save('testModelFindOneEagerSelfNestedNoSubQuery', models.Books, 'findOne', {

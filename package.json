@@ -7,9 +7,9 @@
     "gulp": "^3.9.1",
     "gulp-phpunit": "^0.16.0",
     "gulp-util": "^3.0.7",
-    "mysql": "^2.11.1",
+    "mysql": "^2.14.1",
     "pg": "^6.1.0",
-    "sequelize": "^3.23.4",
+    "sequelize": "~3.30.4",
     "underscore": "^1.8.3"
   }
 }
