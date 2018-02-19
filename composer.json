@@ -1,7 +1,7 @@
 {
   "name": "mightydes/enjoin",
   "description": "Multi dialect ORM for PHP inspired by Sequelize.JS",
-  "license": "GNU",
+  "license": "LGPL-3.0-or-later",
   "keywords": [
     "mysql",
     "postgresql",
