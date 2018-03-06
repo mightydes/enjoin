@@ -1,4 +1,3 @@
 site_name: Enjoin ORM
-pages:
-- Usage: README.md
-theme: readthedocs
+repo_url: https://github.com/mightydes/enjoin
+markdown_extensions: [meta, toc, tables, fenced_code]
