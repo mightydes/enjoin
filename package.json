@@ -11,5 +11,8 @@
     "pg": "^6.1.0",
     "sequelize": "~3.30.4",
     "underscore": "^1.8.3"
+  },
+  "scripts": {
+    "create-tables": "node ./node_modules/gulp/bin/gulp.js create-tables"
   }
 }

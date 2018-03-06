@@ -31,6 +31,6 @@ before_script:
   - if [ $POSTGRESQL ]; then bin/postgresql.sh; fi
   - if [ $REDIS ];      then bin/redis.sh; fi
   - if [ $MEMCACHED ];  then bin/memcached.sh; fi
-  - gulp create-tables
+  - npm run create-tables
 
 script: phpunit
