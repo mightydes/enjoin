@@ -1,0 +1,4 @@
+site_name: Enjoin ORM
+pages:
+- Usage: README.md
+theme: readthedocs
