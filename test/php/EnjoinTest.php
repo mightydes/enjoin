@@ -17,7 +17,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testModelFindOneEagerSelfNestedNoSubQuery';
+    private $debugFunction = 'testModelFindAllEagerOneThenMany';
 
     public function testBootstrap()
     {
@@ -753,6 +753,11 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
             $bulk [] = $it;
         }
         $this->assertTrue(Enjoin::get('Articles')->bulkCreate($bulk));
+
+        $res = Enjoin::get('Articles')->findAll([
+            'where' => ['authors_id' => 2]
+        ]);
+        $this->assertEquals(12, count($res));
     }
 
     /**
