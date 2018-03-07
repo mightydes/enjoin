@@ -771,9 +771,17 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($this->getCompareSql(__FUNCTION__), $sql);
 
         $r = Enjoin::get('Books')->findAll($params);
+        $record = null;
+        foreach ($r as $it) {
+            if ($it->author->id === 2) {
+                $record = $it;
+                break;
+            }
+        }
+        $this->assertNotNull($record);
         $this->assertEquals(
-            [22, 1, 2, 12],
-            [count($r), $r[0]->id, $r[0]->author->id, count($r[0]->author->articles)]
+            [22, 1, 12],
+            [count($r), $record->id, count($record->author->articles)]
         );
     }
 
@@ -1303,6 +1311,15 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         } else {
             return $itIs;
         }
+    }
+
+    /**
+     * @param string $filename
+     * @param mixed $data
+     */
+    private function dumpData($filename, $data)
+    {
+        file_put_contents(__DIR__ . '/../dummy/' . $filename, json_encode($data, JSON_PRETTY_PRINT));
     }
 
 }
