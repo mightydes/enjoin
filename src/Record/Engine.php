@@ -23,6 +23,9 @@ class Engine
      * @param array|null $params
      * @param int $flags
      * @return \Enjoin\Record\Record
+     * @throws \Enjoin\Exceptions\ValidationException
+     * @throws \Exception
+     * @throws \Throwable
      */
     public static function save(Record $Record, array $params = null, $flags = 0)
     {
@@ -87,6 +90,9 @@ class Engine
      * @param array $collection
      * @param array|null $params
      * @return \Enjoin\Record\Record
+     * @throws \Enjoin\Exceptions\ValidationException
+     * @throws \Exception
+     * @throws \Throwable
      */
     public static function update(Record $Record, array $collection, array $params = null)
     {
@@ -125,9 +131,6 @@ class Engine
     {
         $out = [];
         foreach ($Record as $prop => $value) {
-//            if ($value instanceof Engine) {
-//                continue;
-//            }
             if ($value instanceof Record) {
                 $out[$prop] = $value->__toArray();
             } elseif (is_array($value)) {
@@ -150,6 +153,8 @@ class Engine
      * @param \Enjoin\Record\Record $Record
      * @param array $volume
      * @return mixed
+     * @throws \Exception
+     * @throws \Throwable
      */
     private static function saveNonPersistent(Record $Record, array $volume)
     {
@@ -175,6 +180,8 @@ class Engine
      * @param \Enjoin\Record\Record $Record
      * @param array $volume
      * @return mixed
+     * @throws \Exception
+     * @throws \Throwable
      */
     private static function savePersistent(Record $Record, array $volume)
     {

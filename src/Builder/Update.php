@@ -2,6 +2,7 @@
 
 namespace Enjoin\Builder;
 
+use Enjoin\Factory;
 use Enjoin\Model\Model;
 
 class Update
@@ -30,6 +31,8 @@ class Update
 
     /**
      * @return array
+     * @throws \Enjoin\Exceptions\ModelException
+     * @throws \Enjoin\Exceptions\ValidationException
      */
     public function getPrepared()
     {
@@ -50,15 +53,48 @@ class Update
     /**
      * @param string $e
      * @return array
+     * @throws \Enjoin\Exceptions\ModelException
+     * @throws \Enjoin\Exceptions\ValidationException
      */
     private function handleSet($e)
     {
         $query = [];
         $place = [];
+
+        $Setters = Factory::getSetters();
+        $defAttributes = $this->Model->getDefinition()->getAttributes();
+
+        # Perform timestamps:
+        $createdAtField = null;
+        $updatedAtField = null;
+        if ($this->Model->isTimestamps()) {
+            $createdAtField = $this->Model->getCreatedAtField();
+            $updatedAtField = $this->Model->getUpdatedAtField();
+        }
+
+        $validate = [];
         foreach ($this->collection as $field => $value) {
             $query [] = "{$e}$field{$e}=?";
+
+            if ($field === $createdAtField) {
+                $value = $Setters->getCreatedAt($this->Model, $value);
+            } elseif ($field === $updatedAtField) {
+                $value = $Setters->getUpdatedAt($this->Model, $value);
+            } else {
+                if (!isset($defAttributes[$field])) {
+                    continue;
+                }
+                $value = $Setters->perform($this->Model, $this->collection, $defAttributes[$field], $field);
+                if (isset($defAttributes[$field]['validate'])) {
+                    $validate [] = [$field, $value, $defAttributes[$field]['validate']];
+                }
+            }
+
             $place [] = $value;
         }
+
+        !$validate ?: $Setters->validate($validate);
+
         return [join(', ', $query), $place];
     }
 

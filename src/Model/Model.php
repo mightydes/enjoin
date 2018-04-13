@@ -106,9 +106,11 @@ class Model implements \JsonSerializable
     }
 
     /**
-     * @todo: Add second argument: array|null $params (see http://docs.sequelizejs.com/en/v3/api/model/).
+     * @TODO: Add second argument: array|null $params (see http://docs.sequelizejs.com/en/v3/api/model/).
      * @param array $collections
      * @return bool
+     * @throws \Enjoin\Exceptions\ModelException
+     * @throws \Enjoin\Exceptions\ValidationException
      */
     public function bulkCreate(array $collections)
     {
@@ -151,6 +153,8 @@ class Model implements \JsonSerializable
      * @param array|null $params
      * @param int $flags
      * @return int|mixed
+     * @throws \Enjoin\Exceptions\ModelException
+     * @throws \Enjoin\Exceptions\ValidationException
      */
     public function update(array $collection, array $params = null, $flags = 0)
     {
@@ -188,7 +192,7 @@ class Model implements \JsonSerializable
     }
 
     /**
-     * @todo: call without params feature.
+     * @TODO: call without params feature...
      * @param array $params
      * @param int $flags
      * @return \Enjoin\Record\Record|null|array
@@ -201,7 +205,6 @@ class Model implements \JsonSerializable
             $Find = new Find($this, $params);
             list($query, $place) = $Find->getPrepared();
             if ($flags & Enjoin::SQL) {
-//                !Enjoin::debug() ?: sd($query, $place);
                 return PdoDebugger::show($query, $place);
             }
             $rows = $this->connection()->select($query, $place);
@@ -264,6 +267,8 @@ class Model implements \JsonSerializable
     /**
      * @param array $params
      * @return \Enjoin\Record\Record
+     * @throws \Exception
+     * @throws \Throwable
      */
     public function findOrCreate(array $params)
     {
@@ -319,7 +324,7 @@ class Model implements \JsonSerializable
     }
 
     /**
-     * @todo: Create `findAndCount` alias.
+     * @TODO: Create `findAndCount` alias...
      * @param array|null $params
      * @param int $flags
      * @return array
@@ -436,6 +441,7 @@ class Model implements \JsonSerializable
 
     /**
      * @return \Enjoin\Dialectify\Dialectify|null
+     * @throws \Enjoin\Exceptions\ModelException
      */
     public function dialectify()
     {

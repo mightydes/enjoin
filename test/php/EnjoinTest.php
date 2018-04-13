@@ -17,7 +17,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testModelFindAllEagerOneThenMany';
+    private $debugFunction = 'testModelUpdateBoolean';
 
     public function testBootstrap()
     {
@@ -1224,6 +1224,30 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(6, count($log));
         $this->assertEquals($res['false']['a'], $res['false']['b']);
         $this->assertEquals($res['true']['a'], $res['true']['b']);
+    }
+
+    /**
+     * @depends testMockDataB
+     * @throws ValidationException
+     * @throws \Enjoin\Exceptions\ModelException
+     */
+    public function testModelUpdateBoolean()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $name = 'testModelUpdateBoolean';
+        $it = Enjoin::get('Pile')->create([
+            'on_state' => true,
+            'name' => $name
+        ]);
+        $sql = Enjoin::get('Pile')->update([
+            'on_state' => false
+        ], [
+            'where' => ['name' => $name]
+        ], Enjoin::SQL);
+        $expected = $this->ifPostgreSql()
+            ? "UPDATE \"pile\" SET \"on_state\"=NULL WHERE \"name\" = '$name'"
+            : "UPDATE `pile` SET `on_state`=NULL WHERE `name` = '$name'";
+        $this->assertEquals($expected, $sql);
     }
 
     /**

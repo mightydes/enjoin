@@ -17,6 +17,7 @@ class Setters
      * @param array $descAttr
      * @param string $attr
      * @return string
+     * @throws \Enjoin\Exceptions\ModelException
      */
     public function perform(Model $Model, array $record, array $descAttr, $attr)
     {
@@ -62,7 +63,7 @@ class Setters
     }
 
     /**
-     * @param array $validate [ [attr, value, rules] ... ]
+     * @param array $validate [ [attr, value, rules], ... ]
      * @throws \Enjoin\Exceptions\ValidationException
      */
     public function validate(array $validate)
@@ -88,6 +89,7 @@ class Setters
      * @param Model $Model
      * @param mixed $value
      * @return mixed
+     * @throws \Enjoin\Exceptions\ModelException
      */
     public function getCreatedAt(Model $Model, $value = null)
     {
@@ -103,6 +105,7 @@ class Setters
      * @param Model $Model
      * @param mixed $value
      * @return mixed
+     * @throws \Enjoin\Exceptions\ModelException
      */
     public function getUpdatedAt(Model $Model, $value = null)
     {
@@ -114,6 +117,7 @@ class Setters
      * @param Model $Model
      * @param mixed $value
      * @return mixed
+     * @throws \Enjoin\Exceptions\ModelException
      */
     private function getDate(Model $Model, $value)
     {
