@@ -14,7 +14,7 @@ class Enjoin
 
     # BITWISE:
     const SQL = 1; // TODO: drop it...
-    const WITH_CACHE = 2;
+    const CACHE = 2;
     const NO_CACHE = 4;
 
     private static $debug = false;

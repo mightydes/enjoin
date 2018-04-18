@@ -1066,7 +1066,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     {
         $this->handleDebug(__FUNCTION__);
         Factory::getCache()->flush();
-        $it = Enjoin::get('Books')->findById(1, Enjoin::WITH_CACHE);
+        $it = Enjoin::get('Books')->findById(1, Enjoin::CACHE);
         $cache = Enjoin::get('Books')->cache()->getCacheInstance()->get('9125bfc211f5ddbce7352499c9c71973');
         $this->assertEquals($it, $cache);
     }
@@ -1081,7 +1081,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
             'where' => ['id' => 1],
             'include' => Enjoin::get('Authors')
         ];
-        $it = Enjoin::get('Books')->findOne($params, Enjoin::WITH_CACHE);
+        $it = Enjoin::get('Books')->findOne($params, Enjoin::CACHE);
         $cacheKey = Enjoin::get('Books')->cache()->keyify(['findOne', $params]);
         $cache = Enjoin::get('Books')->cache()->getCacheInstance()->get($cacheKey);
         $this->assertEquals($it, $cache);

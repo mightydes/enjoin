@@ -49,7 +49,7 @@ class CacheJar
         if (($flags & Enjoin::NO_CACHE) || ($flags & Enjoin::SQL)) {
             return false;
         }
-        if ($flags & Enjoin::WITH_CACHE) {
+        if ($flags & Enjoin::CACHE) {
             return true;
         }
         return $this->Model->getDefinition()->cache;
