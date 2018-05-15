@@ -17,8 +17,8 @@ PACKAGES=(
 )
 
 MYSQL_ROOT_PWD=enjoin_test
-MYSQL_USER=enjoin_test
-MYSQL_USER_PWD=enjoin_test
-MYSQL_DB_LIST=(
+SQL_USER=enjoin_test
+SQL_USER_PWD=enjoin_test
+SQL_DB_LIST=(
     enjoin_test
 )

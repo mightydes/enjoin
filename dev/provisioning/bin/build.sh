@@ -8,7 +8,10 @@ cd $BASE_DIR
 source config.sh
 source functions.sh
 
-DEBUG=false
+yellow "Install PostgreSQL"
+source "../postgresql/make.sh"
+
+DEBUG=true
 if [ "$DEBUG" = false ] ; then
 
 yellow "Update locales"
