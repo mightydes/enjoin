@@ -101,7 +101,7 @@ class Model implements \JsonSerializable
         if (isset($params['fields'])) {
             $collection = Extras::pick($collection, $params['fields']);
         }
-        $this->cache()->flush();
+        $this->cache()->setUntrusted();
         return $this->build($collection)->save();
     }
 
@@ -109,8 +109,6 @@ class Model implements \JsonSerializable
      * @TODO: Add second argument: array|null $params (see http://docs.sequelizejs.com/en/v3/api/model/).
      * @param array $collections
      * @return bool
-     * @throws \Enjoin\Exceptions\ModelException
-     * @throws \Enjoin\Exceptions\ValidationException
      */
     public function bulkCreate(array $collections)
     {
@@ -144,7 +142,7 @@ class Model implements \JsonSerializable
             !$validate ?: $Setters->validate($validate);
             $bulk [] = $volume;
         }
-        $this->cache()->flush();
+        $this->cache()->setUntrusted();
         return $this->queryBuilder()->insert($bulk);
     }
 
@@ -153,8 +151,6 @@ class Model implements \JsonSerializable
      * @param array|null $params
      * @param int $flags
      * @return int|mixed
-     * @throws \Enjoin\Exceptions\ModelException
-     * @throws \Enjoin\Exceptions\ValidationException
      */
     public function update(array $collection, array $params = null, $flags = 0)
     {
@@ -165,7 +161,7 @@ class Model implements \JsonSerializable
             return PdoDebugger::show($query, $place);
         }
         $affected = $this->connection()->update($query, $place);
-        $this->cache()->flush();
+        $this->cache()->setUntrusted();
         return $affected;
     }
 
@@ -187,7 +183,7 @@ class Model implements \JsonSerializable
             return PdoDebugger::show($query, $place);
         }
         $affected = $this->connection()->update($query, $place);
-        $this->cache()->flush();
+        $this->cache()->setUntrusted();
         return $affected;
     }
 
@@ -199,22 +195,26 @@ class Model implements \JsonSerializable
      */
     public function findOne(array $params, $flags = 0)
     {
-        return $this->cache()->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
-            unset($params['offset']);
-            $params['limit'] = 1;
-            $Find = new Find($this, $params);
-            list($query, $place) = $Find->getPrepared();
-            if ($flags & Enjoin::SQL) {
-                return PdoDebugger::show($query, $place);
-            }
-            $rows = $this->connection()->select($query, $place);
-            if ($rows) {
-                $Records = new Records($Find->Tree);
-                $out = $Records->handleRows($rows)[0];
-                return $out;
-            }
-            return null;
-        }, $flags);
+        return $this->cache()->cachify([
+            'key' => [__FUNCTION__, $params],
+            'get' => function () use ($params, $flags) {
+                unset($params['offset']);
+                $params['limit'] = 1;
+                $Find = new Find($this, $params);
+                list($query, $place) = $Find->getPrepared();
+                if ($flags & Enjoin::SQL) {
+                    return PdoDebugger::show($query, $place);
+                }
+                $rows = $this->connection()->select($query, $place);
+                if ($rows) {
+                    $Records = new Records($Find->Tree);
+                    $out = $Records->handleRows($rows)[0];
+                    return $out;
+                }
+                return null;
+            },
+            'parseInclude' => $params
+        ], $flags);
     }
 
     /**
@@ -250,25 +250,27 @@ class Model implements \JsonSerializable
     public function findAll(array $params = null, $flags = 0)
     {
         $params ?: $params = [];
-        return $this->cache()->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
-            $Find = new Find($this, $params);
-            list($query, $place) = $Find->getPrepared();
-            if ($flags & Enjoin::SQL) {
-                return PdoDebugger::show($query, $place);
-            }
-            if ($rows = $this->connection()->select($query, $place)) {
-                $Records = new Records($Find->Tree);
-                return $Records->handleRows($rows);
-            }
-            return [];
-        }, $flags);
+        return $this->cache()->cachify([
+            'key' => [__FUNCTION__, $params],
+            'get' => function () use ($params, $flags) {
+                $Find = new Find($this, $params);
+                list($query, $place) = $Find->getPrepared();
+                if ($flags & Enjoin::SQL) {
+                    return PdoDebugger::show($query, $place);
+                }
+                if ($rows = $this->connection()->select($query, $place)) {
+                    $Records = new Records($Find->Tree);
+                    return $Records->handleRows($rows);
+                }
+                return [];
+            },
+            'parseInclude' => $params
+        ], $flags);
     }
 
     /**
      * @param array $params
      * @return \Enjoin\Record\Record
-     * @throws \Exception
-     * @throws \Throwable
      */
     public function findOrCreate(array $params)
     {
@@ -313,14 +315,18 @@ class Model implements \JsonSerializable
     public function count(array $params = null, $flags = 0)
     {
         $params ?: $params = [];
-        return $this->cache()->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
-            $Count = new Count($this, $params);
-            list($query, $place) = $Count->getPrepared();
-            if ($flags & Enjoin::SQL) {
-                return PdoDebugger::show($query, $place);
-            }
-            return (int)$this->connection()->select($query, $place)[0]->count;
-        }, $flags);
+        return $this->cache()->cachify([
+            'key' => [__FUNCTION__, $params],
+            'get' => function () use ($params, $flags) {
+                $Count = new Count($this, $params);
+                list($query, $place) = $Count->getPrepared();
+                if ($flags & Enjoin::SQL) {
+                    return PdoDebugger::show($query, $place);
+                }
+                return (int)$this->connection()->select($query, $place)[0]->count;
+            },
+            'parseInclude' => $params
+        ], $flags);
     }
 
     /**
@@ -332,14 +338,18 @@ class Model implements \JsonSerializable
     public function findAndCountAll(array $params = null, $flags = 0)
     {
         $params ?: $params = [];
-        $count = $this->cache()->cachify([__FUNCTION__, $params], function () use ($params, $flags) {
-            $Count = new Count($this, $params);
-            list($query, $place) = $Count->getPrepared();
-            if ($flags & Enjoin::SQL) {
-                return PdoDebugger::show($query, $place);
-            }
-            return (int)$this->connection()->select($query, $place)[0]->count;
-        }, $flags);
+        $count = $this->cache()->cachify([
+            'key' => [__FUNCTION__, $params],
+            'get' => function () use ($params, $flags) {
+                $Count = new Count($this, $params);
+                list($query, $place) = $Count->getPrepared();
+                if ($flags & Enjoin::SQL) {
+                    return PdoDebugger::show($query, $place);
+                }
+                return (int)$this->connection()->select($query, $place)[0]->count;
+            },
+            'parseInclude' => $params
+        ], $flags);
         if ($flags & Enjoin::SQL) {
             return [
                 'count' => $count,
@@ -441,7 +451,6 @@ class Model implements \JsonSerializable
 
     /**
      * @return \Enjoin\Dialectify\Dialectify|null
-     * @throws \Enjoin\Exceptions\ModelException
      */
     public function dialectify()
     {

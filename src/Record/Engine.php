@@ -23,9 +23,6 @@ class Engine
      * @param array|null $params
      * @param int $flags
      * @return \Enjoin\Record\Record
-     * @throws \Enjoin\Exceptions\ValidationException
-     * @throws \Exception
-     * @throws \Throwable
      */
     public static function save(Record $Record, array $params = null, $flags = 0)
     {
@@ -90,9 +87,6 @@ class Engine
      * @param array $collection
      * @param array|null $params
      * @return \Enjoin\Record\Record
-     * @throws \Enjoin\Exceptions\ValidationException
-     * @throws \Exception
-     * @throws \Throwable
      */
     public static function update(Record $Record, array $collection, array $params = null)
     {
@@ -115,7 +109,7 @@ class Engine
         $scope = $Record->scope();
         $Model = Enjoin::get($scope->modelName);
         $Model->queryBuilder()->where('id', $scope->id)->take(1)->delete();
-        $Model->cache()->flush();
+        $Model->cache()->setUntrusted();
         foreach ($Record as $prop => $v) {
             unset($Record->$prop);
         }
@@ -170,7 +164,7 @@ class Engine
                 $DB->insert($Model->dialectify()->getInsertEmptyQuery())
                     ?: Error::dropRecordException('Unable to insert empty record!');
             }
-            $Model->cache()->flush();
+            $Model->cache()->setUntrusted();
             $id = $DB->getPdo()->lastInsertId($Model->dialectify()->getIdSequence());
             return (int)$id;
         });
@@ -196,7 +190,7 @@ class Engine
                 ->where('id', $scope->id)// use constructed id
                 ->take(1)
                 ->update($volume);       // id can be changed
-            $Model->cache()->flush();
+            $Model->cache()->setUntrusted();
             return isset($volume['id']) ? $volume['id'] : $scope->id;
         });
     }

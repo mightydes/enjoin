@@ -17,7 +17,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testModelUpdateBoolean';
+    private $debugFunction = 'testCacheUpdate';
 
     public function testBootstrap()
     {
@@ -49,24 +49,9 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
             ],
             'enjoin' => [
                 'lang_dir' => 'vendor/caouecs/laravel-lang'
-            ],
-            'cache' => [
-                'default' => getenv('ENJ_CACHE'),
-                'stores' => [
-                    'redis' => [
-                        'driver' => 'redis',
-                        'connection' => 'default'
-                    ],
-                    'memcached' => [
-                        'driver' => 'memcached',
-                        'servers' => [
-                            ['host' => '127.0.0.1', 'port' => 11211, 'weight' => 100]
-                        ],
-                    ]
-                ],
-                'prefix' => 'enjoin_test'
             ]
         ]);
+        Factory::getRedis()->flushAll();
     }
 
     /**
@@ -152,6 +137,15 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @depends testNewRecordSave
+     */
+    public function testRecordSetUntrusted()
+    {
+        $all = Factory::getRedis()->hGetAll(Factory::getConfig()['enjoin']['trusted_models_cache']);
+        $this->assertEquals('untrusted', $all['Models\Authors']);
+    }
+
+    /**
      * @depends testNewRecordNestedSave
      * @param Record $it
      */
@@ -178,6 +172,15 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $it = Enjoin::get('Publishers')->create($this->getCompareCollection(__FUNCTION__));
         $this->assertEquals(1, $it->id);
         return $it;
+    }
+
+    /**
+     * @depends testModelCreate
+     */
+    public function testModelSetUntrusted()
+    {
+        $all = Factory::getRedis()->hGetAll(Factory::getConfig()['enjoin']['trusted_models_cache']);
+        $this->assertEquals('untrusted', $all['Models\Publishers']);
     }
 
     /**
@@ -1065,10 +1068,14 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testCache()
     {
         $this->handleDebug(__FUNCTION__);
-        Factory::getCache()->flush();
-        $it = Enjoin::get('Books')->findById(1, Enjoin::CACHE);
-        $cache = Enjoin::get('Books')->cache()->getCacheInstance()->get('9125bfc211f5ddbce7352499c9c71973');
-        $this->assertEquals($it, $cache);
+        $res = [];
+        $log = Enjoin::logify(function () use (&$res) {
+            for ($i = 0; $i < 2; $i++) {
+                $res[$i] = Enjoin::get('Books')->findById(1, Enjoin::CACHE);
+            }
+        });
+        $this->assertEquals($res[0], $res[1]);
+        $this->assertEquals(1, count($log));
     }
 
     /**
@@ -1081,13 +1088,23 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
             'where' => ['id' => 1],
             'include' => Enjoin::get('Authors')
         ];
-        $it = Enjoin::get('Books')->findOne($params, Enjoin::CACHE);
-        $cacheKey = Enjoin::get('Books')->cache()->keyify(['findOne', $params]);
-        $cache = Enjoin::get('Books')->cache()->getCacheInstance()->get($cacheKey);
-        $this->assertEquals($it, $cache);
-        $cache->author->update(['name' => 'George Orwell']);
-        $cache = Enjoin::get('Books')->cache()->getCacheInstance()->get($cacheKey);
-        $this->assertNull($cache);
+        $res = [];
+        $log = Enjoin::logify(function () use ($params, &$res) {
+            for ($i = 0; $i < 2; $i++) {
+                $res[$i] = Enjoin::get('Books')->findOne($params, Enjoin::CACHE);
+            }
+        });
+        $this->assertEquals($res[0], $res[1]);
+        $this->assertEquals(1, count($log));
+
+        $res[0]->author->update(['name' => 'George Orwell']);
+        $trustList = Enjoin::get('Authors')->cache()->getTrustList();
+        $this->assertEquals('untrusted', $trustList['Models\Authors']);
+        $this->assertEquals('trusted', $trustList['Models\Books']);
+        $log = Enjoin::logify(function () use ($params) {
+            Enjoin::get('Books')->findOne($params, Enjoin::CACHE);
+        });
+        $this->assertEquals(1, count($log));
     }
 
     /**

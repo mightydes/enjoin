@@ -3,4 +3,5 @@
 node_modules
 site-test
 vendor
+dev.md
 .env

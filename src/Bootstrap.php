@@ -23,8 +23,6 @@ class Bootstrap
         isset($options['enjoin']) ?: $options['enjoin'] = [];
         $options['enjoin'] = $this->handleEnjoinOptions($options['enjoin']);
 
-        isset($options['cache']) ?: $options['cache'] = null;
-
         $options = array_merge($options, $this->flattenOptions($options));
         $Factory->config = $options;
 
@@ -46,7 +44,6 @@ class Bootstrap
     /**
      * @param array $database
      * @return array
-     * @throws Exceptions\BootstrapException
      */
     private function handleDatabaseOptions(array $database)
     {
@@ -75,11 +72,16 @@ class Bootstrap
      */
     private function handleEnjoinOptions(array $enjoin)
     {
+        $cache_prefix = 'enjoin_';
         $enjoin = array_merge([
+            # Default options:
             'models_namespace' => '\Models',
             'locale' => 'en',
             'lang_dir' => 'resources/lang',
-            'auto_require' => true
+            'auto_require' => true,
+            'cache_enabled' => true,
+            'cache_prefix' => $cache_prefix,
+            'trusted_models_cache' => $cache_prefix . 'trusted_models'
         ], $enjoin);
         $enjoin['models_namespace'][0] === '\\'
             ?: $enjoin['models_namespace'] = '\\' . $enjoin['models_namespace'];

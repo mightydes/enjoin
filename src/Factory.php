@@ -6,9 +6,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Translation\FileLoader;
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Factory as Validator;
-use Illuminate\Cache\CacheManager;
-use Illuminate\Redis\Database;
-use Illuminate\Cache\MemcachedConnector;
+use Illuminate\Redis\Database as RedisDatabase;
 use Illuminate\Container\Container;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Enjoin\Record\Getters;
@@ -40,7 +38,10 @@ class Factory
      */
     protected $Validator = null;
 
-    protected $Cache = null;
+    /**
+     * @var \Illuminate\Redis\Database|null
+     */
+    protected $Redis = null;
 
     /**
      * @var Getters|null
@@ -102,6 +103,7 @@ class Factory
     {
         $Factory = self::getInstance();
         if (!$Factory->Validator) {
+
             if ($Factory->App) {
 
                 # Use Laravel validator:
@@ -115,41 +117,30 @@ class Factory
                 $Factory->Validator = new Validator($Translator, $Factory->Container);
 
             }
+
         }
         return $Factory->Validator;
     }
 
     /**
-     * @return mixed|null
+     * @return \Illuminate\Redis\Database
      */
-    public static function getCache()
+    public static function getRedis()
     {
         $Factory = self::getInstance();
-        if (!$Factory->Cache) {
+        if (!$Factory->Redis) {
             if ($Factory->App) {
-
-                # Use Laravel cache:
-                $Factory->Cache = $Factory->App['cache'];
-
+                $Factory->Redis = $Factory->App['redis'];
             } else {
+                $Factory->Redis = static::createRedisIfNotExists();
+            }
 
-                # Create cache manager:
-                if ($cache = $Factory->config['cache']) {
-                    switch ($cache['default']) {
-                        case 'redis':
-                            $Factory->Container['redis'] = new Database($Factory->config['database']['redis']);
-                            break;
-                        case 'memcached':
-                            $Factory->Container['memcached.connector'] = new MemcachedConnector;
-                            break;
-                    }
-                    $CacheManager = new CacheManager($Factory->Container);
-                    $Factory->Cache = $CacheManager->store();
-                }
-
+            $trusted_models_cache = $Factory->getConfig()['enjoin']['trusted_models_cache'];
+            if (!$Factory->Redis->exists($trusted_models_cache)) {
+                $Factory->Redis->hSet($trusted_models_cache, '__TRUSTED_MODELS_CACHE__', date('Y-m-d H:i:s'));
             }
         }
-        return $Factory->Cache;
+        return $Factory->Redis;
     }
 
     /**
@@ -188,6 +179,18 @@ class Factory
             $Factory->Setters = new Setters;
         }
         return $Factory->Setters;
+    }
+
+    /**
+     * @return \Illuminate\Redis\Database
+     */
+    protected static function createRedisIfNotExists()
+    {
+        $Factory = self::getInstance();
+        if (!isset($Factory->Container['redis'])) {
+            $Factory->Container['redis'] = new RedisDatabase($Factory->getConfig()['database']['redis']);
+        }
+        return $Factory->Container['redis'];
     }
 
 }

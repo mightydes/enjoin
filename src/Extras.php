@@ -117,4 +117,21 @@ class Extras
         return key($arr) !== 0;
     }
 
+    /**
+     * @return bool
+     */
+    public static function isCacheEnabled()
+    {
+        return (bool)Factory::getConfig()['enjoin']['cache_enabled'];
+    }
+
+    /**
+     * @param string $cache_key
+     * @return string
+     */
+    public static function withCachePrefix($cache_key)
+    {
+        return Factory::getConfig()['enjoin']['cache_prefix'] . $cache_key;
+    }
+
 }

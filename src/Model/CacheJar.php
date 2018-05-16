@@ -4,20 +4,18 @@ namespace Enjoin\Model;
 
 use Enjoin\Enjoin;
 use Enjoin\Factory;
-use Closure;
+use Enjoin\Extras;
 
 class CacheJar
 {
+
+    const TRUSTED = 'trusted';
+    const UNTRUSTED = 'untrusted';
 
     /**
      * @var Model
      */
     protected $Model;
-
-    /**
-     * @var \Illuminate\Cache\TaggedCache
-     */
-    private $TaggedCache;
 
     /**
      * CacheJar constructor.
@@ -26,9 +24,6 @@ class CacheJar
     public function __construct(Model $Model)
     {
         $this->Model = $Model;
-        if ($Cache = Factory::getCache()) {
-            $this->TaggedCache = $Cache->tags([$this->Model->getUnique()]);
-        }
     }
 
     /**
@@ -46,7 +41,7 @@ class CacheJar
      */
     public function enabled($flags = 0)
     {
-        if (($flags & Enjoin::NO_CACHE) || ($flags & Enjoin::SQL)) {
+        if (!Extras::isCacheEnabled() || ($flags & Enjoin::NO_CACHE) || ($flags & Enjoin::SQL)) {
             return false;
         }
         if ($flags & Enjoin::CACHE) {
@@ -55,32 +50,49 @@ class CacheJar
         return $this->Model->getDefinition()->cache;
     }
 
-    public function cachify(array $keyBasis, Closure $getDataFn, $flags = 0)
+    /**
+     * @param array $options
+     * @option array 'key' -- required cache key...
+     * @option \Closure 'get' -- required get data closure...
+     * @option \Enjoin\Model[] 'include' -- optional list of included models...
+     * @option array 'parseInclude' -- optional find params array...
+     * @param int $flags
+     * @return mixed
+     */
+    public function cachify(array $options = [], $flags = 0)
     {
         if ($this->enabled($flags)) {
-            $key = $this->keyify($keyBasis);
+            $key = $this->keyify($options['key']);
+            $affected = [
+                $this->Model->getUnique() => true
+            ];
 
-            if ($cache = $this->get($key)) {
+            if (isset($options['parseInclude'])) {
+                $this->parseInclude($options['parseInclude'], $affected);
+            }
+
+            if (isset($options['include'])) {
+                foreach ($options['include'] as $model) {
+                    $affected[$model->getUnique()] = true;
+                }
+            }
+
+            $this->flushIfSomeUntrusted(array_keys($affected));
+
+            $cache = $this->get($key);
+            if ($cache) {
                 if ($cache instanceof EmptyCache) {
                     return $cache->getValue();
                 }
                 return $cache;
             }
 
-            $data = $getDataFn();
+            $data = $options['get']();
             $this->set($key, $data);
             return $data;
         } else {
-            return $getDataFn();
+            return $options['get']();
         }
-    }
-
-    /**
-     * @return \Illuminate\Cache\TaggedCache
-     */
-    public function getCacheInstance()
-    {
-        return $this->TaggedCache;
     }
 
     /**
@@ -89,7 +101,13 @@ class CacheJar
      */
     public function get($key)
     {
-        return $this->getCacheInstance()->get($key);
+        $model_key = $this->Model->getUnique();
+        $hash_key = Extras::withCachePrefix($model_key);
+        $val = Factory::getRedis()->hGet($hash_key, $key);
+        if ($val) {
+            $val = unserialize($val);
+        }
+        return $val;
     }
 
     /**
@@ -98,39 +116,90 @@ class CacheJar
      */
     public function set($key, $data)
     {
+        $model_key = $this->Model->getUnique();
+        $hash_key = Extras::withCachePrefix($model_key);
         if (!$data) {
             $data = new EmptyCache($data);
         }
-        $this->getCacheInstance()->forever($key, $data);
+        Factory::getRedis()->hSet($hash_key, $key, serialize($data));
     }
 
     /**
-     * Flush cache.
+     * @param string|null $model_key
      */
-    public function flush()
+    public function setUntrusted($model_key = null)
     {
-        if ($Cache = Factory::getCache()) {
-            $tags = [];
-            $this->getFlushTags($tags);
-            if ($tags) {
-                $Cache->tags($tags)->flush();
+        if (Extras::isCacheEnabled()) {
+            $model_key ?: $model_key = $this->Model->getUnique();
+            Factory::getRedis()->hSet(
+                Factory::getConfig()['enjoin']['trusted_models_cache'],
+                $model_key,
+                self::UNTRUSTED
+            );
+        }
+    }
+
+    /**
+     * @param string|null $model_key
+     */
+    public function setTrusted($model_key = null)
+    {
+        if (Extras::isCacheEnabled()) {
+            $model_key ?: $model_key = $this->Model->getUnique();
+            Factory::getRedis()->hSet(
+                Factory::getConfig()['enjoin']['trusted_models_cache'],
+                $model_key,
+                self::TRUSTED
+            );
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getTrustList()
+    {
+        $out = [];
+        if (Extras::isCacheEnabled()) {
+            $out = Factory::getRedis()->hGetAll(Factory::getConfig()['enjoin']['trusted_models_cache']);
+        }
+        return $out;
+    }
+
+    /**
+     * @param mixed $findParams
+     * @param array $affected
+     */
+    protected function parseInclude($findParams, array &$affected)
+    {
+        if (!is_array($findParams)) {
+            $findParams = [$findParams];
+        }
+        array_walk_recursive($findParams, function ($v) use (&$affected) {
+            if ($v instanceof Model) {
+                $affected[$v->getUnique()] = true;
+            }
+        });
+    }
+
+    /**
+     * @param array $affected
+     */
+    protected function flushIfSomeUntrusted(array $affected)
+    {
+        $list = $this->getTrustList();
+        $flush = false;
+        foreach ($affected as $model_key) {
+            if (!isset($list[$model_key]) || $list[$model_key] !== self::TRUSTED) {
+                $flush = true;
+                break;
             }
         }
-    }
-
-    /**
-     * @param array $tags
-     * @return null
-     */
-    public function getFlushTags(array &$tags)
-    {
-        $unique = $this->Model->getUnique();
-        if (in_array($unique, $tags)) {
-            return null;
-        }
-        $tags [] = $unique;
-        foreach ($this->Model->getDefinition()->getRelations() as $relation) {
-            $relation->Model->cache()->getFlushTags($tags);
+        if ($flush) {
+            foreach ($affected as $model_key) {
+                Factory::getRedis()->del(Extras::withCachePrefix($model_key));
+                $this->setTrusted($model_key);
+            }
         }
     }
 
