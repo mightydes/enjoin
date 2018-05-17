@@ -77,9 +77,8 @@ class CacheJar
                 }
             }
 
-            $this->flushIfSomeUntrusted(array_keys($affected));
-
-            $cache = $this->get($key);
+            $flushed = $this->flushIfSomeUntrusted(array_keys($affected));
+            $cache = !$flushed ? $this->get($key) : null;
             if ($cache) {
                 if ($cache instanceof EmptyCache) {
                     return $cache->getValue();
@@ -184,23 +183,25 @@ class CacheJar
 
     /**
      * @param array $affected
+     * @return bool
      */
     protected function flushIfSomeUntrusted(array $affected)
     {
         $list = $this->getTrustList();
-        $flush = false;
+        $flushed = false;
         foreach ($affected as $model_key) {
             if (!isset($list[$model_key]) || $list[$model_key] !== self::TRUSTED) {
-                $flush = true;
+                $flushed = true;
                 break;
             }
         }
-        if ($flush) {
+        if ($flushed) {
             foreach ($affected as $model_key) {
                 Factory::getRedis()->del(Extras::withCachePrefix($model_key));
                 $this->setTrusted($model_key);
             }
         }
+        return $flushed;
     }
 
 }
