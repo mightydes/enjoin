@@ -6,6 +6,7 @@ end
 
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/trusty64"
+  config.vm.box_version = "20180510.0.1"
   config.vm.network "private_network", ip: "192.168.56.115"
   config.vm.synced_folder ".", "/vagrant", type: "nfs",
     mount_options: ["rw", "vers=3", "tcp", "fsc" ,"actimeo=1"],
