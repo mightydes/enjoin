@@ -154,6 +154,16 @@ class CacheJar
     }
 
     /**
+     * Flush cached data...
+     */
+    public function flush()
+    {
+        if (Extras::isCacheEnabled()) {
+            Factory::getRedis()->del(Factory::getConfig()['enjoin']['trusted_models_cache']);
+        }
+    }
+
+    /**
      * @return array
      */
     public function getTrustList()
