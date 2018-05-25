@@ -35,7 +35,7 @@ class PostgreSql extends Dialectify
      */
     public function getDateFormat()
     {
-        return 'Y-m-d H:i:s P';
+        return self::DATE_FORMAT_MS_TZ;
     }
 
     /**

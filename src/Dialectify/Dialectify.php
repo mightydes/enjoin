@@ -7,6 +7,11 @@ use \Enjoin\Model\Model;
 class Dialectify
 {
 
+    const DATE_FORMAT_NOMS_NOTZ = 'Y-m-d H:i:s';
+    const DATE_FORMAT_NOMS_TZ = 'Y-m-d H:i:s P';
+    const DATE_FORMAT_MS_TZ = 'Y-m-d H:i:s.uO';
+    const DATE_FORMAT_MS = 'Y-m-d H:i:s.u';
+
     protected $Model;
 
     /**
@@ -48,7 +53,7 @@ class Dialectify
      */
     public function getDateFormat()
     {
-        return 'Y-m-d H:i:s';
+        return self::DATE_FORMAT_NOMS_NOTZ;
     }
 
     /**

@@ -31,8 +31,6 @@ class Update
 
     /**
      * @return array
-     * @throws \Enjoin\Exceptions\ModelException
-     * @throws \Enjoin\Exceptions\ValidationException
      */
     public function getPrepared()
     {
@@ -53,8 +51,6 @@ class Update
     /**
      * @param string $e
      * @return array
-     * @throws \Enjoin\Exceptions\ModelException
-     * @throws \Enjoin\Exceptions\ValidationException
      */
     private function handleSet($e)
     {

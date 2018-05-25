@@ -5,6 +5,7 @@ namespace Enjoin\Record;
 use Enjoin\Extras;
 use Enjoin\Factory;
 use Enjoin\Model\Model;
+use Enjoin\Dialectify\Dialectify;
 use Carbon\Carbon;
 use Closure;
 
@@ -108,6 +109,20 @@ class Getters
         $dateFormat = $Model->dialectify()->getDateFormat();
         return function ($attr, Closure $getValue) use ($dateFormat) {
             $value = $getValue($attr);
+
+            if (is_string($value)) {
+                $char_19 = substr($value, 19, 1);
+                if ($char_19 === '.') {
+                    if ($dateFormat === Dialectify::DATE_FORMAT_NOMS_NOTZ) { // Default for MySQL
+                        $dateFormat = Dialectify::DATE_FORMAT_MS;
+                    }
+                } elseif ($char_19 === '+') {
+                    if ($dateFormat === Dialectify::DATE_FORMAT_MS_TZ) { // Default for PostgreSQL
+                        $dateFormat = Dialectify::DATE_FORMAT_NOMS_TZ;
+                    }
+                }
+            }
+
             return is_string($value)
                 ? Carbon::createFromFormat($dateFormat, $value, Factory::getConfig()['enjoin']['timezone'])
                 : $value;
