@@ -17,7 +17,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
 
     use CompareTrait;
 
-    private $debugFunction = 'testCacheUpdate';
+    private $debugFunction = '';
 
     public function testBootstrap()
     {
@@ -207,10 +207,17 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     public function testModelCreateWithDateField()
     {
         $this->handleDebug(__FUNCTION__);
-        $collection = ['date_till' => new Carbon];
+        $collection = ['date_till' => Carbon::now(new DateTimeZone(Factory::getConfig()['enjoin']['timezone']))];
         $created = Enjoin::get('Pile')->create($collection);
         $it = Enjoin::get('Pile')->findById($created->id);
-        $this->assertTrue($created->date_till->eq($it->date_till));
+        $this->assertEquals(
+            $created->date_till
+                ->setTimezone('UTC')
+                ->toDateTimeString(),
+            $it->date_till
+                ->setTimezone('UTC')
+                ->toDateTimeString()
+        );
     }
 
     /**

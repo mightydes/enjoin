@@ -3,6 +3,7 @@
 namespace Enjoin\Record;
 
 use Enjoin\Extras;
+use Enjoin\Factory;
 use Enjoin\Model\Model;
 use Carbon\Carbon;
 use Closure;
@@ -108,7 +109,7 @@ class Getters
         return function ($attr, Closure $getValue) use ($dateFormat) {
             $value = $getValue($attr);
             return is_string($value)
-                ? Carbon::createFromFormat($dateFormat, $value)
+                ? Carbon::createFromFormat($dateFormat, $value, Factory::getConfig()['enjoin']['timezone'])
                 : $value;
         };
     }

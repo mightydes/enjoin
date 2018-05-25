@@ -7,6 +7,7 @@ use Enjoin\Extras;
 use Enjoin\Factory;
 use Enjoin\Exceptions\Error;
 use Enjoin\Model\Model;
+use DateTimeZone;
 
 class Setters
 {
@@ -17,7 +18,6 @@ class Setters
      * @param array $descAttr
      * @param string $attr
      * @return string
-     * @throws \Enjoin\Exceptions\ModelException
      */
     public function perform(Model $Model, array $record, array $descAttr, $attr)
     {
@@ -64,7 +64,6 @@ class Setters
 
     /**
      * @param array $validate [ [attr, value, rules], ... ]
-     * @throws \Enjoin\Exceptions\ValidationException
      */
     public function validate(array $validate)
     {
@@ -89,7 +88,6 @@ class Setters
      * @param Model $Model
      * @param mixed $value
      * @return mixed
-     * @throws \Enjoin\Exceptions\ModelException
      */
     public function getCreatedAt(Model $Model, $value = null)
     {
@@ -98,14 +96,13 @@ class Setters
                 ? $value->format($Model->dialectify()->getDateFormat())
                 : $value;
         }
-        return Carbon::now()->format($Model->dialectify()->getDateFormat());
+        return Carbon::now(new DateTimeZone(Factory::getConfig()['enjoin']['timezone']))->format($Model->dialectify()->getDateFormat());
     }
 
     /**
      * @param Model $Model
      * @param mixed $value
      * @return mixed
-     * @throws \Enjoin\Exceptions\ModelException
      */
     public function getUpdatedAt(Model $Model, $value = null)
     {
@@ -117,7 +114,6 @@ class Setters
      * @param Model $Model
      * @param mixed $value
      * @return mixed
-     * @throws \Enjoin\Exceptions\ModelException
      */
     private function getDate(Model $Model, $value)
     {

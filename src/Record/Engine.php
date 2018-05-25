@@ -7,6 +7,7 @@ use Enjoin\Exceptions\Error;
 use Enjoin\Factory;
 use Enjoin\Extras;
 use Carbon\Carbon;
+use DateTimeZone;
 
 class Engine
 {
@@ -34,11 +35,11 @@ class Engine
             if ($scope->type === self::NON_PERSISTENT ||
                 $scope->type === self::PERSISTENT && !isset($Record->$createdAtField)
             ) {
-                $Record->$createdAtField = Carbon::now();
+                $Record->$createdAtField = Carbon::now(new DateTimeZone(Factory::getConfig()['enjoin']['timezone']));
             }
 
             $updatedAtField = $Model->getUpdatedAtField();
-            $Record->$updatedAtField = Carbon::now();
+            $Record->$updatedAtField = Carbon::now(new DateTimeZone(Factory::getConfig()['enjoin']['timezone']));
         }
 
         $defAttributes = $Model->getDefinition()->getAttributes();

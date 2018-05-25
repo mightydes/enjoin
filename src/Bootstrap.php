@@ -81,7 +81,8 @@ class Bootstrap
             'auto_require' => true,
             'cache_enabled' => true,
             'cache_prefix' => $cache_prefix,
-            'trusted_models_cache' => $cache_prefix . 'trusted_models'
+            'trusted_models_cache' => $cache_prefix . 'trusted_models',
+            'timezone' => 'UTC'
         ], $enjoin);
         $enjoin['models_namespace'][0] === '\\'
             ?: $enjoin['models_namespace'] = '\\' . $enjoin['models_namespace'];
