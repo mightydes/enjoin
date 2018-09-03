@@ -48,8 +48,11 @@ source "../nodejs$NODEJS_VER/make.sh"
 yellow "Install Redis $REDIS_VER"
 source "../redis$REDIS_VER/make.sh"
 
-yellow "Install MySQL Percona Server $PERCONA_VER"
-source "../percona$PERCONA_VER/make.sh"
+#yellow "Install MySQL Percona Server $PERCONA_VER"
+#source "../percona$PERCONA_VER/make.sh"
+
+yellow "Install MySQL Server $MYSQL_VER"
+source "../mysql$MYSQL_VER/make.sh"
 
 yellow "Install PostgreSQL Server $PGSQL_VER"
 source "../postgresql$PGSQL_VER/make.sh"
