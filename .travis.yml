@@ -4,33 +4,30 @@ dist: trusty
 language: php
 
 php:
-  - '5.5'
-  - '5.6'
-  - '7.0'
-  - '7.1'
-  - '7.2'
+- '7.1'
+- '7.2'
 
 env:
-  - MYSQL=true      REDIS=true
-  - POSTGRESQL=true REDIS=true
+- MYSQL=true      REDIS=true
+- POSTGRESQL=true REDIS=true
 
 cache:
   directories:
-    - node_modules
-    - vendor
+  - node_modules
+  - vendor
 
 services:
-  - redis-server
+- redis-server
 
 install:
-  - npm install
-  - composer install
+- npm install
+- composer install
 
 before_script:
-  - cp -a .env.example .env
-  - if [ $MYSQL ];      then bin/mysql.sh; fi
-  - if [ $POSTGRESQL ]; then bin/postgresql.sh; fi
-  - if [ $REDIS ];      then bin/redis.sh; fi
-  - npm run create-tables
+- cp -a .env.example .env
+- if [ $MYSQL ];      then bin/mysql.sh; fi
+- if [ $POSTGRESQL ]; then bin/postgresql.sh; fi
+- if [ $REDIS ];      then bin/redis.sh; fi
+- npm run create-tables
 
 script: phpunit

@@ -18,13 +18,13 @@
     }
   ],
   "require": {
-    "php": ">=7.0",
+    "php": ">=7.1.3",
     "illuminate/container": "5.5.*",
     "illuminate/database": "5.5.*",
     "illuminate/redis": "5.5.*",
     "illuminate/translation": "5.5.*",
     "illuminate/validation": "5.5.*",
-    "doctrine/inflector": "~1.0",
+    "doctrine/inflector": "1.3.*",
     "nesbot/carbon": "~1.0",
     "panique/pdo-debug": "0.2"
   },
