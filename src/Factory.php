@@ -6,7 +6,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Translation\FileLoader;
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Factory as Validator;
-use Illuminate\Redis\Database as RedisDatabase;
+use Illuminate\Redis\RedisManager;
 use Illuminate\Container\Container;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Enjoin\Record\Getters;
@@ -39,7 +39,7 @@ class Factory
     protected $Validator = null;
 
     /**
-     * @var \Illuminate\Redis\Database|null
+     * @var \Illuminate\Redis\RedisManager|null
      */
     protected $Redis = null;
 
@@ -123,7 +123,7 @@ class Factory
     }
 
     /**
-     * @return \Illuminate\Redis\Database
+     * @return \Illuminate\Redis\RedisManager
      */
     public static function getRedis()
     {
@@ -182,13 +182,13 @@ class Factory
     }
 
     /**
-     * @return \Illuminate\Redis\Database
+     * @return \Illuminate\Redis\RedisManager
      */
     protected static function createRedisIfNotExists()
     {
         $Factory = self::getInstance();
         if (!isset($Factory->Container['redis'])) {
-            $Factory->Container['redis'] = new RedisDatabase($Factory->getConfig()['database']['redis']);
+            $Factory->Container['redis'] = new RedisManager('predis', $Factory->getConfig()['database']['redis']);
         }
         return $Factory->Container['redis'];
     }

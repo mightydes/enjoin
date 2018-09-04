@@ -14,16 +14,16 @@
   "authors": [
     {
       "name": "Lev Nazarenko",
-      "email": "gwae@yandex.ru"
+      "email": "lynazarenko@gmail.com"
     }
   ],
   "require": {
-    "php": ">=5.4.0",
-    "illuminate/container": "~5",
-    "illuminate/database": "~5",
-    "illuminate/redis": "~5",
-    "illuminate/translation": "~5",
-    "illuminate/validation": "~5",
+    "php": ">=7.0",
+    "illuminate/container": "5.5.*",
+    "illuminate/database": "5.5.*",
+    "illuminate/redis": "5.5.*",
+    "illuminate/translation": "5.5.*",
+    "illuminate/validation": "5.5.*",
     "doctrine/inflector": "~1.0",
     "nesbot/carbon": "~1.0",
     "panique/pdo-debug": "0.2"
