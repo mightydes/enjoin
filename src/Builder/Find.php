@@ -4,7 +4,6 @@ namespace Enjoin\Builder;
 
 use Enjoin\Model\Model;
 use Enjoin\Extras;
-use Enjoin\Enjoin;
 use stdClass;
 
 class Find
@@ -101,16 +100,27 @@ class Find
         }
         !$prefix ?: $prefix = "{$e}$prefix{$e}.";
         $glue = Extras::GLUE_CHAR;
-        foreach ($node->attributes as $attr) {
+        $nodeAttrs = $node->attributes;
+        $isSubSelect = $this->isSubquery && (!$depth || $depth && $node->required && $node->relation->type === Extras::BELONGS_TO);
+        if ($isSubSelect && isset($node->children)) {
+            foreach ($node->children as $child) {
+                if ($child->relation->type === Extras::BELONGS_TO) {
+                    $fk = $child->relation->foreignKey;
+                    if (!in_array($fk, $nodeAttrs)) {
+                        $nodeAttrs [] = $fk;
+                    }
+                }
+            }
+        }
+        foreach ($nodeAttrs as $attr) {
             $as = $node->as ? " AS {$e}{$node->prefix}{$glue}{$attr}{$e}" : '';
             $query = "$prefix{$e}$attr{$e}$as";
-            if ($this->isSubquery && (!$depth || $depth && $node->required && $node->relation->type === Extras::BELONGS_TO)) {
+            if ($isSubSelect) {
                 $this->subSelect [] = $query;
             } else {
                 $this->select [] = $query;
             }
         }
-//        !Enjoin::debug() ?: sd($this->select);
     }
 
     /**
