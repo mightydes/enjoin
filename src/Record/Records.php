@@ -5,27 +5,19 @@ namespace Enjoin\Record;
 use Enjoin\Builder\Tree;
 use Enjoin\Factory;
 use Enjoin\Extras;
+use Enjoin\Exceptions\LeftJoinNullIdException;
 use stdClass;
 
 class Records
 {
 
+    const INDEX_KEY = 0;
+    const CHILDREN_KEY = 1;
+
     /**
      * @var Tree
      */
     protected $Tree;
-
-    /**
-     * List of records.
-     * @var array
-     */
-    private $records = [];
-
-    /**
-     * Handled rows.
-     * @var array
-     */
-    private $cache = [];
 
     /**
      * Records constructor.
@@ -57,7 +49,7 @@ class Records
 
             # Perform getters:
             $defAttributes = $node->Model->getDefinition()->getAttributes();
-            foreach ($node->attributes as $attr) {
+            foreach ($node->attributes as &$attr) {
                 if (!in_array($attr, $skip)) {
                     $node->getters[$attr] = $Getters->perform($node->Model, $defAttributes[$attr]);
                 }
@@ -69,49 +61,98 @@ class Records
      * @param array $rows
      * @return array
      */
-    public function handleRows(array $rows)
+    public function handleRows(array &$rows)
     {
-        $this->records = [];
-        $this->cache = [];
-        foreach ($rows as $row) {
-            $this->handleRow($row);
+        $indexes = [];
+        $records = [];
+        for ($k = 0; $k < count($rows); $k++) {
+            try {
+                $this->handleRow($rows[$k], $indexes, $records);
+            } catch (LeftJoinNullIdException $e) {
+                // Thrown on eager loading with `LEFT JOIN` condition...
+            }
+            $rows[$k] = null;
         }
-//        !Enjoin::debug() ?: sd($this->cache);
-        return $this->records;
+        $rows = [];
+        return $records;
     }
 
-    /**
-     * @param stdClass $row
-     */
-    private function handleRow(stdClass $row)
+    protected function handleRow(stdClass $row, array &$indexes, array &$records)
     {
-        $this->Tree->walk(function (stdClass $node, array $path) use ($row) {
-            # Check is this part already handled. Perform road.
-            $road = [];
-            $cache = $this->cache;
-            foreach ($path as $it) {
-//                !Enjoin::debug() ?: sd($row);
-                $id = $it->prefix
-                    ? $row->{$it->prefix . Extras::GLUE_CHAR . 'id'}
-                    : $row->id;
-                if (is_null($id)) {
-                    # Skip handle on `id = NULL` in sql result.
-                    // TODO: break walk
-                    return null;
-                }
-//                !Enjoin::debug() ?: sd($path);
-                $prop = isset($it->asProp) ? $it->asProp : null;
-                $mile = ['id' => $id, 'prop' => $prop];
-                list($cache, $mile['index']) = $this->getIndex($cache, $id, $prop);
-                $road [] = $mile;
-            }
+        $this->Tree->walk(function (stdClass $node, array &$path) use ($row, &$indexes, &$records) {
+            $idx_ref =& $indexes;
+            $rec_ref =& $records;
+            foreach ($path as $pathIx => $it) { // $it -- stdClass...
+                $isRoot = is_null($it->prefix);
 
-            # Check last mile cache index:
-//            if (is_null($mile['index'])) {
-            if (!isset($mile['index'])) {
-                $Record = $this->getRecord($node, $row);
-                $this->applyRecord($this->records, $this->cache, $Record, $road);
-            }
+                $id = $isRoot
+                    ? $row->id
+                    : $row->{$it->prefix . Extras::GLUE_CHAR . 'id'};
+
+                if (is_null($id)) {
+                    throw new LeftJoinNullIdException;
+                }
+
+                # NULL for root node, and STRING for other nodes...
+                $prop = isset($it->asProp) ? $it->asProp : null;
+
+                $oneToMany = true;
+                if (!$isRoot && $it->relation->type !== Extras::HAS_MANY) {
+                    $oneToMany = false;
+                }
+
+                $isCache = $isRoot
+                    ? isset($idx_ref[$id])
+                    : isset($idx_ref[$prop][$id]);
+
+                if (!$isCache) { // Create array on new id occurrence...
+                    $addIx = $oneToMany
+                        ? 0 // ono-to-many relation...
+                        : null; // ono-to-one relation...
+                    if ($isRoot) {
+                        $idx_ref[$id] = [
+                            self::INDEX_KEY => $addIx,
+                            self::CHILDREN_KEY => []
+                        ];
+                        // Always one-to-many...
+                        $idx_ref[$id][self::INDEX_KEY] = count($idx_ref) - 1;
+                    } else {
+                        $idx_ref[$prop][$id] = [
+                            self::INDEX_KEY => $addIx,
+                            self::CHILDREN_KEY => []
+                        ];
+                        if ($oneToMany) {
+                            $idx_ref[$prop][$id][self::INDEX_KEY] = count($idx_ref[$prop]) - 1;
+                        }
+                    }
+                }
+
+                $ix = $isRoot
+                    ? $idx_ref[$id][self::INDEX_KEY]
+                    : $idx_ref[$prop][$id][self::INDEX_KEY];
+
+                if (!$isCache) { // Apply record...
+                    $Record = $this->getRecord($node, $row);
+                    if ($isRoot) {
+                        // Always one-to-many...
+                        $rec_ref[$ix] = $Record;
+                    } else {
+                        is_null($ix) // ono-to-one relation...
+                            ? $rec_ref->{$prop} = $Record
+                            : $rec_ref->{$prop}[$ix] = $Record;
+                    }
+                }
+
+                if ($isRoot) {
+                    $idx_ref =& $idx_ref[$id][self::CHILDREN_KEY];
+                    $rec_ref =& $rec_ref[$ix];
+                } else {
+                    $idx_ref =& $idx_ref[$prop][$id][self::CHILDREN_KEY];
+                    is_null($ix) // ono-to-one relation...
+                        ? $rec_ref =& $rec_ref->{$prop}
+                        : $rec_ref =& $rec_ref->{$prop}[$ix];
+                }
+            } // end `$path` foreach...
         });
     }
 
@@ -120,7 +161,7 @@ class Records
      * @param stdClass $row
      * @return Record
      */
-    private function getRecord(stdClass $node, stdClass $row)
+    protected function getRecord(stdClass $node, stdClass $row)
     {
         $id = $node->prefix
             ? $row->{$node->prefix . Extras::GLUE_CHAR . 'id'}
@@ -136,7 +177,7 @@ class Records
             }
             return isset($row->$col) ? $row->$col : null;
         };
-        foreach ($node->attributes as $attr) {
+        foreach ($node->attributes as &$attr) {
             if (!in_array($attr, $node->skip) && !isset($Record->$attr)) {
                 $Record->$attr = $node->getters[$attr]($attr, $getValue);
             }
@@ -144,7 +185,7 @@ class Records
 
         # Handle relations:
         if (isset($node->children)) {
-            foreach ($node->children as $child) {
+            foreach ($node->children as $child) { // $child -- Model...
                 $asProp = $child->asProp;
                 if (!isset($Record->$asProp)) {
                     $Record->$asProp = $child->relation->type === Extras::HAS_MANY
@@ -154,80 +195,6 @@ class Records
         }
 
         return $Record;
-    }
-
-    /**
-     * @param array $cache
-     * @param int $id
-     * @param string $prop
-     * @return array[ <body>[], <index> ]
-     */
-    private function getIndex(array $cache, $id, $prop)
-    {
-        $nan = [[], null];
-
-        if (!is_null($prop)) {
-            if (!array_key_exists($prop, $cache) || !array_key_exists($id, $cache[$prop])) {
-                return $nan;
-            }
-            return [$cache[$prop][$id]['body'], $cache[$prop][$id]['index']];
-        }
-
-        # Root:
-        if (!array_key_exists($id, $cache)) {
-            return $nan;
-        }
-        return [$cache[$id]['body'], $cache[$id]['index']];
-    }
-
-    /**
-     * @param array|Record $branch
-     * @param array $cache
-     * @param Record $Record
-     * @param array $road
-     */
-    private function applyRecord(&$branch, &$cache, $Record, array $road)
-    {
-        $mile = array_shift($road);
-
-        if ($road) {
-            # Go on the road.
-
-            # Perform cache pointer:
-            if (is_null($mile['prop'])) {
-                $cache_link =& $cache[$mile['id']]['body'];
-            } else {
-                $cache_link =& $cache[$mile['prop']][$mile['id']]['body'];
-            }
-
-            # Perform branch pointer:
-            if (is_array($branch)) {
-                $branch_link =& $branch[$mile['index']]->{$road[0]['prop']};
-            } else {
-                $branch_link =& $branch->{$road[0]['prop']};
-            }
-
-            # Fire:
-            $this->applyRecord($branch_link, $cache_link, $Record, $road);
-        } else {
-            # Apply record:
-            $count = 0;
-            if (is_array($branch)) {
-                # Many children:
-                $count = array_push($branch, $Record);
-            } else {
-                # One child:
-                $branch = $Record;
-            }
-
-            # Store array index in cache:
-            $index = $count > 0 ? $count - 1 : 0;
-            if (is_null($mile['prop'])) { // ie root
-                $cache[$mile['id']] = ['index' => $index, 'body' => []];
-            } else {
-                $cache[$mile['prop']][$mile['id']] = ['index' => $index, 'body' => []];
-            }
-        }
     }
 
 }

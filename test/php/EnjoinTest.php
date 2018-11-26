@@ -1365,7 +1365,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
      * @param string $filename
      * @param mixed $data
      */
-    private function dumpData($filename, $data)
+    public static function dumpData($filename, $data)
     {
         file_put_contents(__DIR__ . '/../dummy/' . $filename, json_encode($data, JSON_PRETTY_PRINT));
     }
