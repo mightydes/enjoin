@@ -104,7 +104,7 @@ class CacheJar
         $hash_key = Extras::withCachePrefix($model_key);
         $val = Factory::getRedis()->hGet($hash_key, $key);
         if ($val) {
-            $val = unserialize($val);
+            $val = $this->unserialize($val);
         }
         return $val;
     }
@@ -120,7 +120,7 @@ class CacheJar
         if (!$data) {
             $data = new EmptyCache($data);
         }
-        Factory::getRedis()->hSet($hash_key, $key, serialize($data));
+        Factory::getRedis()->hSet($hash_key, $key, $this->serialize($data));
     }
 
     /**
@@ -212,6 +212,30 @@ class CacheJar
             }
         }
         return $flushed;
+    }
+
+    /**
+     * @param mixed $data
+     * @return string
+     */
+    protected function serialize($data)
+    {
+        if (function_exists('igbinary_serialize')) {
+            return igbinary_serialize($data);
+        }
+        return serialize($data);
+    }
+
+    /**
+     * @param string $val
+     * @return mixed
+     */
+    protected function unserialize($val)
+    {
+        if (function_exists('igbinary_unserialize')) {
+            return igbinary_unserialize($val);
+        }
+        return unserialize($val);
     }
 
 }

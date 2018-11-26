@@ -5,19 +5,20 @@ namespace Enjoin\Record;
 use Enjoin\Builder\Tree;
 use Enjoin\Factory;
 use Enjoin\Extras;
+use Enjoin\Enjoin;
 use Enjoin\Exceptions\LeftJoinNullIdException;
-use stdClass;
+use Illuminate\Database\Connection;
+use stdClass, PDO;
 
 class Records
 {
-
-    const INDEX_KEY = 0;
-    const CHILDREN_KEY = 1;
 
     /**
      * @var Tree
      */
     protected $Tree;
+
+    protected $triggers = [];
 
     /**
      * Records constructor.
@@ -58,29 +59,76 @@ class Records
     }
 
     /**
+     * @param Connection $connection
+     * @param string $query
+     * @param array $place
+     * @param int $flags
+     * @return array
+     */
+    public function handleRows(Connection $connection, &$query, array &$place = [], $flags = 0)
+    {
+        if ($flags & Enjoin::UNBUFFERED_QUERY) {
+            if (strtolower($connection->getConfig('driver')) === 'mysql') {
+                return $this->handleMysqlUnbuffered($connection, $query, $place);
+            }
+        }
+
+        $rows = $connection->select($query, $place);
+        return $this->handleBufferedRows($rows);
+    }
+
+    /**
+     * @param Connection $connection
+     * @param string $query
+     * @param array $place
+     * @return array
+     */
+    protected function handleMysqlUnbuffered(Connection $connection, &$query, array &$place = [])
+    {
+        $records = [];
+        $pdo = $connection->getPdo();
+        $origFlag = $pdo->getAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY);
+        try {
+            $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+            $query = $pdo->prepare($query);
+            $query->execute($place);
+            while ($row = $query->fetch(PDO::FETCH_OBJ)) {
+                try {
+                    $this->handleRow($row, $records);
+                } catch (LeftJoinNullIdException $e) {
+                    // Thrown on eager loading with `LEFT JOIN` condition...
+                }
+            }
+        } finally {
+            $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, $origFlag);
+        }
+        $this->fixRecordsIndexes($records);
+        return $records;
+    }
+
+    /**
      * @param array $rows
      * @return array
      */
-    public function handleRows(array &$rows)
+    protected function handleBufferedRows(array &$rows)
     {
-        $indexes = [];
         $records = [];
         for ($k = 0; $k < count($rows); $k++) {
             try {
-                $this->handleRow($rows[$k], $indexes, $records);
+                $this->handleRow($rows[$k], $records);
             } catch (LeftJoinNullIdException $e) {
                 // Thrown on eager loading with `LEFT JOIN` condition...
             }
             $rows[$k] = null;
         }
         $rows = [];
+        $this->fixRecordsIndexes($records);
         return $records;
     }
 
-    protected function handleRow(stdClass $row, array &$indexes, array &$records)
+    protected function handleRow(stdClass $row, array &$records)
     {
-        $this->Tree->walk(function (stdClass $node, array &$path) use ($row, &$indexes, &$records) {
-            $idx_ref =& $indexes;
+        $this->Tree->walk(function (stdClass $node, array &$path) use ($row, &$records) {
             $rec_ref =& $records;
             foreach ($path as $pathIx => $it) { // $it -- stdClass...
                 $isRoot = is_null($it->prefix);
@@ -92,6 +140,7 @@ class Records
                 if (is_null($id)) {
                     throw new LeftJoinNullIdException;
                 }
+                $tmp_id = '_' . $id; // Must be string...
 
                 # NULL for root node, and STRING for other nodes...
                 $prop = isset($it->asProp) ? $it->asProp : null;
@@ -101,56 +150,37 @@ class Records
                     $oneToMany = false;
                 }
 
-                $isCache = $isRoot
-                    ? isset($idx_ref[$id])
-                    : isset($idx_ref[$prop][$id]);
-
-                if (!$isCache) { // Create array on new id occurrence...
-                    $addIx = $oneToMany
-                        ? 0 // ono-to-many relation...
-                        : null; // ono-to-one relation...
-                    if ($isRoot) {
-                        $idx_ref[$id] = [
-                            self::INDEX_KEY => $addIx,
-                            self::CHILDREN_KEY => []
-                        ];
-                        // Always one-to-many...
-                        $idx_ref[$id][self::INDEX_KEY] = count($idx_ref) - 1;
-                    } else {
-                        $idx_ref[$prop][$id] = [
-                            self::INDEX_KEY => $addIx,
-                            self::CHILDREN_KEY => []
-                        ];
-                        if ($oneToMany) {
-                            $idx_ref[$prop][$id][self::INDEX_KEY] = count($idx_ref[$prop]) - 1;
-                        }
-                    }
+                // Handle is record exists...
+                if ($oneToMany) {
+                    $isExists = $isRoot
+                        ? isset($rec_ref[$tmp_id])
+                        : isset($rec_ref->{$prop}[$tmp_id]);
+                } else {
+                    $isExists = isset($rec_ref->{$prop});
                 }
 
-                $ix = $isRoot
-                    ? $idx_ref[$id][self::INDEX_KEY]
-                    : $idx_ref[$prop][$id][self::INDEX_KEY];
-
-                if (!$isCache) { // Apply record...
+                if (!$isExists) { // Apply record...
                     $Record = $this->getRecord($node, $row);
                     if ($isRoot) {
                         // Always one-to-many...
-                        $rec_ref[$ix] = $Record;
+                        $rec_ref[$tmp_id] = $Record;
                     } else {
-                        is_null($ix) // ono-to-one relation...
-                            ? $rec_ref->{$prop} = $Record
-                            : $rec_ref->{$prop}[$ix] = $Record;
+                        $oneToMany
+                            ? $rec_ref->{$prop}[$tmp_id] = $Record
+                            : $rec_ref->{$prop} = $Record;
                     }
                 }
 
                 if ($isRoot) {
-                    $idx_ref =& $idx_ref[$id][self::CHILDREN_KEY];
-                    $rec_ref =& $rec_ref[$ix];
+                    $rec_ref =& $rec_ref[$tmp_id];
                 } else {
-                    $idx_ref =& $idx_ref[$prop][$id][self::CHILDREN_KEY];
-                    is_null($ix) // ono-to-one relation...
-                        ? $rec_ref =& $rec_ref->{$prop}
-                        : $rec_ref =& $rec_ref->{$prop}[$ix];
+                    $oneToMany
+                        ? $rec_ref =& $rec_ref->{$prop}[$tmp_id]
+                        : $rec_ref =& $rec_ref->{$prop};
+                }
+
+                if (!$isRoot) {
+                    $this->triggers[$pathIx][$prop] = ['oneToMany' => $oneToMany];
                 }
             } // end `$path` foreach...
         });
@@ -195,6 +225,54 @@ class Records
         }
 
         return $Record;
+    }
+
+    /**
+     * @param array $records
+     * @param int $lvl
+     */
+    protected function fixRecordsIndexes(array &$records, $lvl = 0)
+    {
+        $keys = array_keys($records);
+        $ix = 0;
+        $nextLvl = $lvl + 1;
+        foreach ($keys as &$tmp_id) {
+            if (isset($this->triggers[$nextLvl])) {
+                foreach ($this->triggers[$nextLvl] as $prop => $opt) {
+                    if (isset($records[$tmp_id]->{$prop})) {
+                        if ($opt['oneToMany']) {
+                            $this->fixRecordsIndexes($records[$tmp_id]->{$prop}, $nextLvl);
+                        } else {
+                            $this->fixOneToOneIndexes($records[$tmp_id]->{$prop}, $nextLvl);
+                        }
+                    }
+                }
+            }
+
+            $records[$ix] = $records[$tmp_id];
+            unset($records[$tmp_id]);
+            $ix++;
+        }
+    }
+
+    /**
+     * @param Record $record
+     * @param int $lvl
+     */
+    protected function fixOneToOneIndexes(Record $record, $lvl = 0)
+    {
+        $nextLvl = $lvl + 1;
+        if (isset($this->triggers[$nextLvl])) {
+            foreach ($this->triggers[$nextLvl] as $prop => $opt) {
+                if (isset($record->{$prop})) {
+                    if ($opt['oneToMany']) {
+                        $this->fixRecordsIndexes($record->{$prop}, $nextLvl);
+                    } else {
+                        $this->fixOneToOneIndexes($record->{$prop}, $nextLvl);
+                    }
+                }
+            }
+        }
     }
 
 }
