@@ -13,9 +13,11 @@ class Enjoin
     use DataTypes;
 
     # BITWISE:
-    const SQL = 1; // TODO: drop it...
+    // TODO: switch to options...
+    const SQL = 1;
     const CACHE = 2;
     const NO_CACHE = 4;
+    const UNBUFFERED_QUERY = 8;
 
     private static $debug = false;
 

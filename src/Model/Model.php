@@ -205,13 +205,9 @@ class Model implements \JsonSerializable
                 if ($flags & Enjoin::SQL) {
                     return PdoDebugger::show($query, $place);
                 }
-                $rows = $this->connection()->select($query, $place);
-                if ($rows) {
-                    $Records = new Records($Find->Tree);
-                    $out = $Records->handleRows($rows)[0];
-                    return $out;
-                }
-                return null;
+                $Records = new Records($Find->Tree);
+                $res = $Records->handleRows($this->connection(), $query, $place, $flags);
+                return isset($res[0]) ? $res[0] : null;
             },
             'parseInclude' => $params
         ], $flags);
@@ -258,11 +254,8 @@ class Model implements \JsonSerializable
                 if ($flags & Enjoin::SQL) {
                     return PdoDebugger::show($query, $place);
                 }
-                if ($rows = $this->connection()->select($query, $place)) {
-                    $Records = new Records($Find->Tree);
-                    return $Records->handleRows($rows);
-                }
-                return [];
+                $Records = new Records($Find->Tree);
+                return $Records->handleRows($this->connection(), $query, $place, $flags);
             },
             'parseInclude' => $params
         ], $flags);
