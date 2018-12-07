@@ -6,7 +6,6 @@ use Enjoin\Builder\Tree;
 use Enjoin\Factory;
 use Enjoin\Extras;
 use Enjoin\Enjoin;
-use Enjoin\Exceptions\LeftJoinNullIdException;
 use Illuminate\Database\Connection;
 use stdClass, PDO;
 
@@ -93,11 +92,7 @@ class Records
             $query = $pdo->prepare($query);
             $query->execute($place);
             while ($row = $query->fetch(PDO::FETCH_OBJ)) {
-                try {
-                    $this->handleRow($row, $records);
-                } catch (LeftJoinNullIdException $e) {
-                    // Thrown on eager loading with `LEFT JOIN` condition...
-                }
+                $this->handleRow($row, $records);
             }
         } finally {
             $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, $origFlag);
@@ -114,11 +109,7 @@ class Records
     {
         $records = [];
         for ($k = 0; $k < count($rows); $k++) {
-            try {
-                $this->handleRow($rows[$k], $records);
-            } catch (LeftJoinNullIdException $e) {
-                // Thrown on eager loading with `LEFT JOIN` condition...
-            }
+            $this->handleRow($rows[$k], $records);
             $rows[$k] = null;
         }
         $rows = [];
@@ -138,7 +129,7 @@ class Records
                     : $row->{$it->prefix . Extras::GLUE_CHAR . 'id'};
 
                 if (is_null($id)) {
-                    throw new LeftJoinNullIdException;
+                    continue;
                 }
                 $tmp_id = '_' . $id; // Must be string...
 
