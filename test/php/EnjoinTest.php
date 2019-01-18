@@ -1107,7 +1107,7 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
         $res[0]->author->update(['name' => 'George Orwell']);
         $trustList = Enjoin::get('Authors')->cache()->getTrustList();
         $this->assertEquals('untrusted', $trustList['Models\Authors']);
-        $this->assertEquals('trusted', $trustList['Models\Books']);
+        $this->assertEquals('untrusted', $trustList['Models\Books']);
         $log = Enjoin::logify(function () use ($params) {
             Enjoin::get('Books')->findOne($params, Enjoin::CACHE);
         });

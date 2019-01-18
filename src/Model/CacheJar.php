@@ -129,12 +129,20 @@ class CacheJar
     public function setUntrusted($model_key = null)
     {
         if (Extras::isCacheEnabled()) {
-            $model_key ?: $model_key = $this->Model->getUnique();
-            Factory::getRedis()->hSet(
-                Factory::getConfig()['enjoin']['trusted_models_cache'],
-                $model_key,
-                self::UNTRUSTED
-            );
+            if ($model_key) {
+                $list = [$model_key];
+            } else {
+                $neighbors = [];
+                $this->getModelNeighbors($neighbors);
+                $list = array_keys($neighbors);
+            }
+            foreach ($list as $model_key) {
+                Factory::getRedis()->hSet(
+                    Factory::getConfig()['enjoin']['trusted_models_cache'],
+                    $model_key,
+                    self::UNTRUSTED
+                );
+            }
         }
     }
 
@@ -173,6 +181,20 @@ class CacheJar
             $out = Factory::getRedis()->hGetAll(Factory::getConfig()['enjoin']['trusted_models_cache']);
         }
         return $out;
+    }
+
+    /**
+     * @param array $neighbors
+     */
+    public function getModelNeighbors(array &$neighbors)
+    {
+        $model_key = $this->Model->getUnique();
+        if (!isset($neighbors[$model_key])) {
+            $neighbors[$model_key] = true;
+            foreach ($this->Model->getDefinition()->getRelations() as $relation) {
+                $relation->Model->cache()->getModelNeighbors($neighbors);
+            }
+        }
     }
 
     /**
