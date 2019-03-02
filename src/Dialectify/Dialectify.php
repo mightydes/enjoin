@@ -85,7 +85,9 @@ class Dialectify
             'in' => 'IN',
             'notIn' => 'NOT IN',
             'like' => 'LIKE',
-            'notLike' => 'NOT LIKE'
+            'notLike' => 'NOT LIKE',
+            'between' => 'BETWEEN',
+            'notBetween' => 'NOT BETWEEN'
         ];
     }
 
