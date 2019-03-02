@@ -3,6 +3,7 @@
 namespace Enjoin\Builder;
 
 use Enjoin\Enjoin;
+use Enjoin\Exceptions\BuilderException;
 use Enjoin\Model\Model;
 
 class Where
@@ -96,6 +97,8 @@ class Where
                     $data [] = $this->handle($value, $field, $key === 'or');
                 } elseif ($key === 'in' || $key === 'notIn') {
                     $data [] = $this->prepIn($field, $value, $key === 'notIn');
+                } elseif ($key === 'between' || $key === 'notBetween') {
+                    $data [] = $this->prepBetween($field, $value, $key === 'notBetween');
                 } else {
                     $data [] = $this->prepCommon($field, $value, $key);
                 }
@@ -153,6 +156,24 @@ class Where
         }
         $query = "{$this->getTableField($field)} $operator $prep";
         return [$query, $in];
+    }
+
+    /**
+     * @param string $field
+     * @param array $between
+     * @param bool $isNot
+     * @return array
+     * @throws BuilderException
+     */
+    private function prepBetween($field, array $between, $isNot = false)
+    {
+        if (count($between) !== 2) {
+            throw new BuilderException("Invalid 'between' list length!");
+        }
+        $operator = $isNot ? 'NOT BETWEEN' : 'BETWEEN';
+        $prep = '? AND ?';
+        $query = "{$this->getTableField($field)} $operator $prep";
+        return [$query, $between];
     }
 
     /**

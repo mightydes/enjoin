@@ -1070,6 +1070,35 @@ class EnjoinTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @depends testModelFindCreateFind
+     */
+    public function testModelFindAllBetween()
+    {
+        $this->handleDebug(__FUNCTION__);
+        $expected = $this->ifPostgreSql()
+            ? "SELECT \"id\", \"authors_id\", \"languages_id\", \"title\", \"year\", \"created_at\", \"updated_at\" FROM \"books\" AS \"books\" WHERE \"books\".\"updated_at\" BETWEEN '2019-03-01' AND '2019-03-02'"
+            : "SELECT `id`, `authors_id`, `languages_id`, `title`, `year`, `created_at`, `updated_at` FROM `books` AS `books` WHERE `books`.`updated_at` BETWEEN '2019-03-01' AND '2019-03-02'";
+        $sql = Enjoin::get('Books')->findAll([
+            'where' => [
+                'updated_at' => ['between' => ['2019-03-01', '2019-03-02']]
+            ]
+        ], Enjoin::SQL);
+        $this->assertTrue(CompareQueries::isSame($expected, $sql));
+
+        $now = strtotime('now');
+        $between = [
+            date('Y-m-d H:i:s', $now - 86400),
+            date('Y-m-d H:i:s', $now + 86400)
+        ];
+        $res = Enjoin::get('Books')->findAll([
+            'where' => [
+                'updated_at' => ['between' => $between]
+            ]
+        ]);
+        $this->assertEquals(25, count($res));
+    }
+
+    /**
      * @depends testModelFindOrCreate
      */
     public function testCache()
